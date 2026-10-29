@@ -1,0 +1,588 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Clients Directory{% endblock %}
+{% block page_title %}Clients Directory{% endblock %}
+{% block page_subtitle %}Provision new client accounts, assign industry specializations, track job postings, and manage client access.{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-primary btn-sm px-3 py-2 rounded-3 fw-bold shadow-sm" style="background:#0284C7;border-color:#0284C7;" data-bs-toggle="modal" data-bs-target="#createClientModal">
+    + Provision Client
+</button>
+{% endblock %}
+
+{% block content %}
+<style>
+    /* ═══════════════════════════════════════════════════════════════
+       LUXURY CLIENTS DIRECTORY DESIGN SYSTEM
+       ═══════════════════════════════════════════════════════════════ */
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 24px 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 22px;
+    }
+
+    .adm-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .kpi-metric-tile {
+        background: #FFFFFF;
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 24px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.08);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .kpi-metric-tile::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+    }
+
+    .kpi-tile-sky::before {
+        background: linear-gradient(90deg, #0284C7, #38BDF8);
+    }
+
+    .kpi-tile-emerald::before {
+        background: linear-gradient(90deg, #10B981, #34D399);
+    }
+
+    .kpi-tile-amber::before {
+        background: linear-gradient(90deg, #F59E0B, #FBBF24);
+    }
+
+    .kpi-tile-indigo::before {
+        background: linear-gradient(90deg, #6366F1, #818CF8);
+    }
+
+    .kpi-metric-tile:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 30px -4px rgba(2, 132, 199, 0.18);
+        border-color: #0284C7;
+    }
+
+    .kpi-tile-title {
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+
+    .kpi-tile-badge {
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-family: monospace;
+        letter-spacing: 0.05em;
+        padding: 2px 8px;
+        border-radius: 6px;
+        display: inline-block;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #0F172A;
+    }
+
+    .kpi-tile-number {
+        font-size: 2.35rem;
+        font-weight: 800;
+        letter-spacing: -0.04em;
+        line-height: 1.1;
+        color: #0F172A !important;
+        margin: 10px 0 6px 0;
+    }
+
+    .kpi-tile-desc {
+        font-size: 0.78rem;
+        color: #64748B;
+        margin: 0;
+        font-weight: 500;
+    }
+
+    .client-avatar-pill {
+        width: 40px;
+        height: 40px;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        border: 1px solid #BAE6FD;
+        color: #0369A1;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
+    }
+
+    .filter-tab-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 999px;
+        text-decoration: none;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .filter-tab-pill:hover {
+        background: #F0F9FF;
+        border-color: #BAE6FD;
+        color: #0284C7;
+    }
+
+    .filter-tab-pill.active {
+        background: #0284C7;
+        border-color: #0284C7;
+        color: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+
+    .filter-tab-pill .pill-counter {
+        background: rgba(0, 0, 0, 0.06);
+        border-radius: 999px;
+        padding: 2px 7px;
+        font-size: 0.7rem;
+    }
+
+    .filter-tab-pill.active .pill-counter {
+        background: rgba(255, 255, 255, 0.25);
+        color: #FFFFFF;
+    }
+
+    .client-table tbody tr:hover td {
+        background-color: #F8FAFC;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <div class="adm-hero-tag">
+            <span style="width:6px;height:6px;border-radius:50%;background:#0284C7;display:inline-block;"></span>
+            <span>EMPLOYER DIRECTORY &bull; ACCESS GOVERNANCE</span>
+        </div>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.65rem;letter-spacing:-0.02em;">Client Accounts &amp; Industry Roles</h2>
+        <p class="text-secondary small mb-0" style="max-width:620px;">
+            Provision new client accounts with assigned industry domains, manage posting authorizations, and monitor active marketplace engagements.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background:#0284C7;border-color:#0284C7;" data-bs-toggle="modal" data-bs-target="#createClientModal">
+            + Provision New Client
+        </button>
+    </div>
+</div>
+
+<!-- 4 Luxury KPI Metric Tiles -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Clients -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-metric-tile kpi-tile-sky">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-tile-title">Total Clients</span>
+                <span class="kpi-tile-badge">01</span>
+            </div>
+            <div class="kpi-tile-number">{{ total_clients }}</div>
+            <p class="kpi-tile-desc">Verified client accounts</p>
+        </div>
+    </div>
+
+    <!-- Card 2: Active Accounts -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-metric-tile kpi-tile-emerald">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-tile-title">Active Accounts</span>
+                <span class="kpi-tile-badge">02</span>
+            </div>
+            <div class="kpi-tile-number">{{ active_clients }}</div>
+            <p class="kpi-tile-desc">Authorized to post projects</p>
+        </div>
+    </div>
+
+    <!-- Card 3: Pending Approval -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-metric-tile kpi-tile-amber">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-tile-title">Pending Approval</span>
+                <span class="kpi-tile-badge">03</span>
+            </div>
+            <div class="kpi-tile-number">{{ pending_clients }}</div>
+            <p class="kpi-tile-desc">Awaiting admin review</p>
+        </div>
+    </div>
+
+    <!-- Card 4: Client Projects -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="kpi-metric-tile kpi-tile-indigo">
+            <div class="d-flex justify-content-between align-items-center">
+                <span class="kpi-tile-title">Client Projects</span>
+                <span class="kpi-tile-badge">04</span>
+            </div>
+            <div class="kpi-tile-number">{{ total_client_projects }}</div>
+            <p class="kpi-tile-desc">Total marketplace job listings</p>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Quick Filter Strip & Search Card -->
+<div class="admin-card p-4 mb-4">
+    <!-- Quick Filter Tabs -->
+    <div class="d-flex flex-wrap align-items-center gap-2 mb-3 pb-3 border-bottom">
+        <span class="adm-kpi-label me-2">Directory Filter:</span>
+        <a href="{% url 'adminpanel_clients' %}" class="filter-tab-pill {% if not status_filter %}active{% endif %}">
+            All Clients <span class="pill-counter">{{ total_clients }}</span>
+        </a>
+        <a href="{% url 'adminpanel_clients' %}?status=approved" class="filter-tab-pill {% if status_filter == 'approved' %}active{% endif %}">
+            Approved Clients <span class="pill-counter">{{ approved_clients }}</span>
+        </a>
+        <a href="{% url 'adminpanel_clients' %}?status=pending" class="filter-tab-pill {% if status_filter == 'pending' %}active{% endif %}">
+            Pending Review <span class="pill-counter">{{ pending_clients }}</span>
+        </a>
+        <a href="{% url 'adminpanel_clients' %}?status=inactive" class="filter-tab-pill {% if status_filter == 'inactive' %}active{% endif %}">
+            Suspended <span class="pill-counter">{{ suspended_clients }}</span>
+        </a>
+    </div>
+
+    <!-- Search Form -->
+    <form method="GET" action="{% url 'adminpanel_clients' %}" class="row g-2 align-items-center">
+        <div class="col-md-7">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by client name, username, email, company, or specialization...">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Verification Statuses</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Approval</option>
+                <option value="approved" {% if status_filter == 'approved' %}selected{% endif %}>Approved Accounts</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Logins</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Suspended Accounts</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or status_filter %}
+                <a href="{% url 'adminpanel_clients' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Clients Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <div class="d-flex align-items-center gap-2">
+            <span class="fw-bold text-dark">Authorized Clients ({{ clients|length }})</span>
+            <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">PROVISIONED</span>
+        </div>
+        <span class="text-muted small">Showing platform employers and client organizations</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0 client-table">
+            <thead>
+                <tr>
+                    <th class="ps-4">Client Profile</th>
+                    <th>Industry Domain &amp; Company</th>
+                    <th>Direct Contact</th>
+                    <th>Location</th>
+                    <th>Engagements</th>
+                    <th>Governance</th>
+                    <th>Account Status</th>
+                    <th>Enrolled</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in clients %}
+                <tr>
+                    <!-- Client Profile -->
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="client-avatar-pill">
+                                {{ c.first_name|slice:":1"|upper|default:c.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark">{{ c.get_full_name|default:c.username }}</div>
+                                <span class="text-muted small">@{{ c.username }}</span>
+                            </div>
+                        </div>
+                    </td>
+
+                    <!-- Industry & Company -->
+                    <td>
+                        <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;font-weight:600;font-size:0.75rem;padding:4px 9px;">
+                            {{ c.profile.title|default:"Client / Employer" }}
+                        </span>
+                        {% if c.profile.company_name %}
+                            <div class="text-secondary small mt-1 fw-medium">{{ c.profile.company_name }}</div>
+                        {% endif %}
+                    </td>
+
+                    <!-- Contact -->
+                    <td>
+                        <a href="mailto:{{ c.email }}" class="text-decoration-none text-dark small fw-medium d-block">
+                            {{ c.email|default:"No email registered" }}
+                        </a>
+                        {% if c.profile.phone %}
+                            <span class="text-muted" style="font-size:0.75rem;font-family:monospace;">{{ c.profile.phone }}</span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Location -->
+                    <td>
+                        <span class="badge bg-light text-secondary border px-2 py-1 font-monospace small">
+                            {{ c.profile.location|default:"Remote" }}
+                        </span>
+                    </td>
+
+                    <!-- Engagements -->
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <a href="{% url 'adminpanel_projects' %}?q={{ c.username }}" class="badge text-decoration-none px-2 py-1" style="background:#F8FAFC;border:1px solid #E2E8F0;color:#0F172A;width:fit-content;">
+                                <strong>{{ c.proj_count }}</strong> Projects Posted
+                            </a>
+                            <span class="text-muted" style="font-size:0.72rem;">
+                                {{ c.contract_count }} active agreements
+                            </span>
+                        </div>
+                    </td>
+
+                    <!-- Governance Approval -->
+                    <td>
+                        {% if c.profile.is_approved %}
+                            <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;padding:5px 10px;">
+                                Approved
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background:#FEF3C7;color:#92400E;font-weight:700;padding:5px 10px;">
+                                Pending Review
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Account Status -->
+                    <td>
+                        {% if c.is_active %}
+                            <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;padding:5px 10px;">
+                                Active
+                            </span>
+                        {% else %}
+                            <span class="badge" style="background:#FEE2E2;color:#991B1B;font-weight:700;padding:5px 10px;">
+                                Suspended
+                            </span>
+                        {% endif %}
+                    </td>
+
+                    <!-- Date Joined -->
+                    <td class="text-muted small">{{ c.date_joined|date:"M d, Y" }}</td>
+
+                    <!-- Actions Dropdown -->
+                    <td class="text-end pe-4">
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewClientModal{{ c.id }}">
+                                        View Profile Details
+                                    </button>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{% url 'adminpanel_client_approve' c.id %}" onsubmit="return confirm('{% if not c.profile.is_approved %}Approve{% else %}Revoke approval for{% endif %} client {{ c.username }}?');" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item rounded-2 small py-2 text-primary">
+                                            {% if not c.profile.is_approved %}Approve Account{% else %}Revoke Approval{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{% url 'adminpanel_client_toggle_status' c.id %}" onsubmit="return confirm('{% if c.is_active %}Suspend{% else %}Activate{% endif %} client {{ c.username }}?');" class="m-0">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item rounded-2 small py-2 {% if c.is_active %}text-warning{% else %}text-success{% endif %}">
+                                            {% if c.is_active %}Suspend Client{% else %}Activate Client{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <a href="{% url 'adminpanel_projects' %}?q={{ c.username }}" class="dropdown-item rounded-2 small py-2">
+                                        View Client Projects ({{ c.proj_count }})
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteClientModal{{ c.id }}">
+                                        Delete Client Account
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        No clients found matching the search criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for c in clients %}
+<!-- View Client Modal -->
+<div class="modal fade" id="viewClientModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header p-4" style="background:#F0F9FF;border-bottom:1px solid #BAE6FD;">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="client-avatar-pill" style="width:46px;height:46px;font-size:1.1rem;">
+                        {{ c.first_name|slice:":1"|upper|default:c.username|slice:":1"|upper }}
+                    </div>
+                    <div>
+                        <h5 class="modal-title fw-bold text-dark mb-0">{{ c.get_full_name|default:c.username }}</h5>
+                        <small class="text-muted">Client Details &bull; @{{ c.username }} &bull; Joined {{ c.date_joined|date:"F d, Y" }}</small>
+                    </div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Industry / Specialization</span>
+                            <strong class="text-dark">{{ c.profile.title|default:"Client / Employer" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Company Name</span>
+                            <strong class="text-dark">{{ c.profile.company_name|default:"Not specified" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Email Address</span>
+                            <strong class="text-dark">{{ c.email|default:"Not specified" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Phone Number</span>
+                            <strong class="text-dark font-monospace">{{ c.profile.phone|default:"Not specified" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Operating Location</span>
+                            <strong class="text-dark">{{ c.profile.location|default:"Remote" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Job Listings Posted</span>
+                            <strong class="text-dark">{{ c.proj_count }} projects</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Governance Approval</span>
+                            {% if c.profile.is_approved %}
+                                <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;">Approved</span>
+                            {% else %}
+                                <span class="badge" style="background:#FEF3C7;color:#92400E;font-weight:700;">Pending Review</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Account Login Status</span>
+                            {% if c.is_active %}
+                                <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;">Active</span>
+                            {% else %}
+                                <span class="badge" style="background:#FEE2E2;color:#991B1B;font-weight:700;">Suspended</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-white p-3 d-flex justify-content-between">
+                <a href="{% url 'adminpanel_projects' %}?q={{ c.username }}" class="btn btn-primary btn-sm rounded-3 px-3 fw-bold" style="background:#0284C7;border-color:#0284C7;">
+                    View Posted Projects ({{ c.proj_count }}) &rarr;
+                </a>
+                <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Client Modal -->
+<div class="modal fade" id="deleteClientModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header p-3" style="background:#FEF2F2;border-bottom:1px solid #FECACA;">
+                <h6 class="modal-title fw-bold mb-0 text-danger">Confirm Delete Client</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <span class="badge mb-3" style="background:#FEE2E2;color:#991B1B;font-size:0.85rem;padding:6px 12px;font-weight:700;">
+                    PERMANENT REMOVAL
+                </span>
+                <h5 class="fw-bold text-dark">Delete Client "{{ c.username }}"?</h5>
+                <p class="text-muted small mb-0">
+                    This action will permanently purge the client account and all related marketplace project listings from the database.
+                </p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_client_delete' c.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-3 px-3 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

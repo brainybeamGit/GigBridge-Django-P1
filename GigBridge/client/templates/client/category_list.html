@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Explore Project Categories | GigBridge Marketplace{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════
+     CATEGORY DIRECTORY HERO BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-categories-hero">
+    <div class="container position-relative" style="z-index: 2;">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Categories</li>
+            </ol>
+        </nav>
+
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <div class="gb-hero-pill-badge">
+                    <i class="bi bi-grid-1x2-fill"></i> Discover Marketplace Specializations
+                </div>
+                <h1 class="gb-categories-hero-title">Explore Project Categories &amp; Domains</h1>
+                <p class="gb-categories-hero-subtitle">
+                    Connect with high-caliber talent across all disciplines. Browse open projects by specialized domain or find top freelancers ready to work on your ideas.
+                </p>
+
+                <!-- Search Input for Categories -->
+                <div class="gb-hero-search-box">
+                    <i class="bi bi-search text-muted fs-5 ms-1"></i>
+                    <input type="text" id="categorySearchInput" value="{{ q }}" class="gb-hero-search-input" placeholder="Quickly filter categories by name (e.g. Web, AI, Design, Marketing)..." onkeyup="filterCategoriesRealtime()">
+                    <button type="button" class="gb-hero-search-btn" onclick="filterCategoriesRealtime()">
+                        <span>Find Category</span>
+                        <i class="bi bi-arrow-right-short fs-5"></i>
+                    </button>
+                </div>
+
+                <!-- Stats Strip -->
+                <div class="d-flex align-items-center gap-3 mt-3 pt-1 flex-wrap text-white-50 small">
+                    <span class="d-inline-flex align-items-center gap-1 text-white">
+                        <i class="bi bi-check-circle-fill text-info"></i> {{ total_categories }} Specializations
+                    </span>
+                    <span>&bull;</span>
+                    <span class="d-inline-flex align-items-center gap-1 text-white">
+                        <i class="bi bi-briefcase-fill text-primary"></i> {{ total_open_projects }} Active Projects
+                    </span>
+                    <span>&bull;</span>
+                    <span class="d-inline-flex align-items-center gap-1 text-white">
+                        <i class="bi bi-shield-check text-success"></i> 100% Escrow Protected
+                    </span>
+                </div>
+            </div>
+
+            <!-- Right Visual Banner Card -->
+            <div class="col-lg-4 text-lg-end d-none d-lg-block">
+                <div class="card border-0 rounded-4 p-4 text-start text-dark shadow-lg" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="gb-stat-icon-circle bg-primary-subtle text-primary" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-navy fs-5">Post in Any Domain</div>
+                            <div class="text-muted small">Reach certified specialists</div>
+                        </div>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Need something unique? Create a project in minutes and receive proposals from top industry experts.
+                    </p>
+                    <a href="{% url 'client_project_create' %}" class="btn btn-primary w-100 rounded-3 fw-bold btn-sm py-2 shadow-sm">
+                        <i class="bi bi-plus-circle me-1"></i> Post a Project Now
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TRENDING / ACTIVE CATEGORIES SPOTLIGHT
+     ═══════════════════════════════════════════════════════════ -->
+{% if top_categories %}
+<section class="py-4 bg-white border-bottom">
+    <div class="container">
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold">Popular Now</span>
+                <h5 class="fw-bold text-navy mb-0 fs-6">Domains with Active Gigs</h5>
+            </div>
+            <a href="{% url 'project_list' %}" class="text-primary small fw-semibold text-decoration-none">
+                Browse All Open Projects <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+
+        <div class="d-flex gap-2 overflow-x-auto pb-2" style="scrollbar-width: none;">
+            {% for cat in top_categories %}
+                <a href="{% url 'project_list' %}?category={{ cat.slug }}" class="btn btn-light bg-light rounded-pill px-3 py-2 text-navy text-nowrap d-inline-flex align-items-center gap-2 border border-secondary-subtle hover-primary" style="font-size: 0.85rem; font-weight: 600;">
+                    <i class="bi {{ cat.icon|default:'bi-briefcase' }} text-primary"></i>
+                    <span>{{ cat.name }}</span>
+                    <span class="badge bg-primary text-white rounded-pill ms-1" style="font-size: 0.7rem;">{{ cat.open_project_count }}</span>
+                </a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ═══════════════════════════════════════════════════════════
+     ALL CATEGORIES CATALOG GRID
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Catalog Header & Filter Info -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <div>
+                <h2 class="fw-bold text-navy mb-1 fs-4">All Specializations</h2>
+                <p class="text-muted small mb-0">Browse through our complete catalog of skills and industries</p>
+            </div>
+            <div class="text-muted small" id="categoryCountSummary">
+                Showing <strong class="text-navy" id="visibleCategoryCount">{{ categories|length }}</strong> categories
+            </div>
+        </div>
+
+        <!-- Categories Grid -->
+        <div class="row g-4" id="categoriesGrid">
+            {% for cat in categories %}
+                <div class="col-lg-4 col-md-6 category-item-col" data-name="{{ cat.name|lower }}" data-desc="{{ cat.description|lower }}">
+                    <a href="{% url 'project_list' %}?category={{ cat.slug }}" class="gb-category-card-v2">
+                        <!-- Category Icon Box with alternating palette -->
+                        <div class="gb-cat-icon-v2 
+                            {% cycle 'gb-cat-icon-blue' 'gb-cat-icon-purple' 'gb-cat-icon-teal' 'gb-cat-icon-orange' 'gb-cat-icon-sky' 'gb-cat-icon-emerald' 'gb-cat-icon-rose' 'gb-cat-icon-indigo' %}">
+                            <i class="bi {{ cat.icon|default:'bi-briefcase' }}"></i>
+                        </div>
+
+                        <!-- Category Title -->
+                        <h3 class="gb-category-card-title">{{ cat.name }}</h3>
+
+                        <!-- Category Description -->
+                        <p class="gb-category-card-desc">
+                            {{ cat.description|default:"Discover top-rated freelancers and post high-impact projects in this category." }}
+                        </p>
+
+                        <!-- Card Footer Meta -->
+                        <div class="gb-category-card-footer">
+                            {% if cat.open_project_count > 0 %}
+                                <span class="gb-cat-project-badge active-gigs">
+                                    <span class="status-pulse-dot"></span>
+                                    {{ cat.open_project_count }} open project{{ cat.open_project_count|pluralize }}
+                                </span>
+                            {% else %}
+                                <span class="gb-cat-project-badge">
+                                    Explore Domain
+                                </span>
+                            {% endif %}
+
+                            <span class="gb-cat-browse-link">
+                                <span>Browse</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </span>
+                        </div>
+                    </a>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="gb-empty-state-box">
+                        <div class="gb-empty-icon-wrap">
+                            <i class="bi bi-grid"></i>
+                        </div>
+                        <h4 class="fw-bold text-navy mb-2">No Categories Found</h4>
+                        <p class="text-muted small mb-4">No categories matched your search term.</p>
+                        <a href="{% url 'category_list' %}" class="btn btn-primary rounded-pill px-4">
+                            Clear Search
+                        </a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Real-time Filter No Results Box -->
+        <div class="col-12 d-none mt-4" id="noFilterMatchBox">
+            <div class="gb-empty-state-box">
+                <div class="gb-empty-icon-wrap">
+                    <i class="bi bi-search"></i>
+                </div>
+                <h4 class="fw-bold text-navy mb-2">No Categories Match Your Filter</h4>
+                <p class="text-muted small mb-4">We couldn't find any category matching your search. Try another keyword or clear the search.</p>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="resetCategorySearch()">
+                    Clear Search Filter
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CALL TO ACTION BANNER (BOTTOM)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white border-top">
+    <div class="container text-center py-4">
+        <div class="card border-0 rounded-4 p-5 text-white shadow-lg mx-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); max-width: 900px;">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8 text-lg-start">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-2 px-3 py-2 fw-semibold">Need Custom Expertise?</span>
+                    <h3 class="fw-bold mb-2 text-white">Have a Unique Project Requirement?</h3>
+                    <p class="text-white-50 mb-0">Whether you need an individual specialist or a cross-functional team, post your project in minutes and get proposals with milestone escrow.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="{% url 'client_project_create' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap">
+                        <i class="bi bi-plus-lg me-1"></i> Post a Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Real-time instantaneous client-side filter
+    function filterCategoriesRealtime() {
+        const input = document.getElementById('categorySearchInput');
+        const query = input.value.toLowerCase().trim();
+        const items = document.querySelectorAll('.category-item-col');
+        let visibleCount = 0;
+
+        items.forEach(function(item) {
+            const name = item.getAttribute('data-name') || '';
+            const desc = item.getAttribute('data-desc') || '';
+            if (name.includes(query) || desc.includes(query)) {
+                item.classList.remove('d-none');
+                visibleCount++;
+            } else {
+                item.classList.add('d-none');
+            }
+        });
+
+        const countSpan = document.getElementById('visibleCategoryCount');
+        if (countSpan) countSpan.textContent = visibleCount;
+
+        const noMatchBox = document.getElementById('noFilterMatchBox');
+        if (noMatchBox) {
+            if (visibleCount === 0) {
+                noMatchBox.classList.remove('d-none');
+            } else {
+                noMatchBox.classList.add('d-none');
+            }
+        }
+    }
+
+    function resetCategorySearch() {
+        const input = document.getElementById('categorySearchInput');
+        if (input) {
+            input.value = '';
+            filterCategoriesRealtime();
+        }
+    }
+</script>
+{% endblock %}

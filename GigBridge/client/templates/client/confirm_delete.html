@@ -1,0 +1,33 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Confirm Delete{% endblock %}
+{% block dashboard_title %}Confirm Deletion{% endblock %}
+
+{% block dashboard_content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white text-center">
+            <div class="user-avatar-sm mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.8rem; background: var(--gb-danger-bg); color: var(--gb-danger);">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+            </div>
+            <h4 class="fw-bold text-navy mb-2">Are you sure?</h4>
+            <p class="text-muted small mb-4">
+                You are about to delete <strong>"{{ item }}"</strong>. This action cannot be undone.
+            </p>
+
+            <form method="POST">
+                {% csrf_token %}
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="{% url 'client_projects' %}" class="btn btn-outline-secondary px-4">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn btn-danger px-4">
+                        <i class="bi bi-trash me-1"></i> Yes, Delete {{ type }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

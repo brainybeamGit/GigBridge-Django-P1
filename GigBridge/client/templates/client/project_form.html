@@ -1,0 +1,350 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}{% if is_edit %}Edit Project{% else %}Post Project{% endif %}{% endblock %}
+{% block dashboard_title %}{% if is_edit %}Edit Project Listing{% else %}Create Project Brief{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Project Form - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .pf-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .pf-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .pf-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .pf-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .pf-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 660px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. FORM CARD & INPUTS ─── */
+    .pf-form-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 36px 40px;
+        box-shadow: 0 2px 14px rgba(15, 23, 42, 0.03);
+    }
+
+    .pf-section-tag {
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0284C7;
+        margin-bottom: 4px;
+    }
+
+    .pf-section-title {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: #0F172A;
+        letter-spacing: -0.01em;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .form-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        color: #0F172A;
+        background-color: #FFFFFF;
+        transition: all 0.15s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    /* Compensation Model Box */
+    .pf-budget-box {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 12px;
+        padding: 22px;
+        margin-bottom: 24px;
+    }
+
+    /* Primary & Outline Buttons */
+    .btn-pf-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 11px 26px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-pf-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-pf-outline {
+        background: #FFFFFF;
+        color: #475569 !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 600;
+        padding: 11px 22px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.15s ease;
+    }
+
+    .btn-pf-outline:hover {
+        border-color: #94A3B8;
+        color: #0F172A !important;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="pf-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="pf-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Project Builder</span>
+            </div>
+            <h2 class="pf-hero-title">
+                {% if is_edit %}Edit Project Listing{% else %}Create Project Brief{% endif %}
+            </h2>
+            <p class="pf-hero-sub">
+                Publish project specifications, requirements, budget boundaries, and milestone expectations to attract verified specialists across the marketplace.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_projects' %}" class="btn-pf-outline">
+                &larr; Back to Listings
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. MAIN FORM CARD
+     ========================================================================= -->
+<div class="row justify-content-center">
+    <div class="col-lg-11 col-xl-10">
+        <div class="pf-form-card">
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- Section 01: Core Information -->
+                <div class="mb-4">
+                    <div class="pf-section-tag">01 / Scope &amp; Categorization</div>
+                    <h5 class="pf-section-title">Core Project Information</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Project Title <span class="text-danger">*</span></label>
+                        {{ form.title }}
+                        {% if form.title.errors %}
+                            <div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Specialized Category <span class="text-danger">*</span></label>
+                            {{ form.category }}
+                            {% if form.category.errors %}
+                                <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Publishing Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">{{ form.status.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 02: Description & Skills -->
+                <div class="mb-4">
+                    <div class="pf-section-tag">02 / Technical Requirements</div>
+                    <h5 class="pf-section-title">Scope Description &amp; Stack</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Comprehensive Project Description <span class="text-danger">*</span></label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Required Skills &amp; Stack</label>
+                            {{ form.required_skills }}
+                            <div class="form-text small">Comma-separated e.g. Python, Django, React, AWS</div>
+                            {% if form.required_skills.errors %}
+                                <div class="text-danger small mt-1">{{ form.required_skills.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Target Completion Deadline</label>
+                            {{ form.deadline }}
+                            {% if form.deadline.errors %}
+                                <div class="text-danger small mt-1">{{ form.deadline.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 03: Compensation & Budget Model -->
+                <div class="pf-budget-box">
+                    <div class="pf-section-tag">03 / Financial Parameters</div>
+                    <h5 class="pf-section-title" style="border-bottom-color: #BAE6FD;">Budget &amp; Compensation Model</h5>
+
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Compensation Type</label>
+                            {{ form.budget_type }}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Minimum Budget ($)</label>
+                            {{ form.budget_min }}
+                            {% if form.budget_min.errors %}
+                                <div class="text-danger small mt-1">{{ form.budget_min.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Maximum Budget ($)</label>
+                            {{ form.budget_max }}
+                            {% if form.budget_max.errors %}
+                                <div class="text-danger small mt-1">{{ form.budget_max.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 04: Deliverables & Attachments -->
+                <div class="mb-4">
+                    <div class="pf-section-tag">04 / Deliverables &amp; Assets</div>
+                    <h5 class="pf-section-title">Milestone Specifications &amp; Files</h5>
+
+                    <div class="mb-3">
+                        <label class="form-label">Key Deliverables &amp; Milestones Checklist</label>
+                        {{ form.deliverables }}
+                        <div class="form-text small">Detail specific features or phases expected upon project delivery.</div>
+                        {% if form.deliverables.errors %}
+                            <div class="text-danger small mt-1">{{ form.deliverables.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Project Specification Document / Attachment (Optional)</label>
+                        {{ form.attachment }}
+                        {% if form.attachment.errors %}
+                            <div class="text-danger small mt-1">{{ form.attachment.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Form Submit Footer -->
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top">
+                    <a href="{% url 'client_projects' %}" class="btn-pf-outline">
+                        Cancel
+                    </a>
+                    <button type="submit" class="btn-pf-primary">
+                        {% if is_edit %}Save Changes{% else %}Publish Project Now{% endif %} &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

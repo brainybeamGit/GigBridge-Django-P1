@@ -1,0 +1,1326 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Create your GigBridge account - Join as a Freelancer or Client on the premier freelance ecosystem.">
+    <title>Create Your Account | GigBridge</title>
+
+    <!-- Global Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <style>
+        /* ==========================================================================
+           Modern Clean + Luminous Shining Blue Design System (.auth-luxe)
+           ========================================================================== */
+        .auth-luxe {
+            --bg-form: #FFFFFF;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --text-sub: #475569;
+            --border-light: #E2E8F0;
+            --border-focus: #0284C7;
+            --primary: #0284C7;
+            --primary-hover: #0369A1;
+            --primary-navy: #0F172A;
+            --primary-navy-hover: #1E293B;
+            --sky-shine-1: #F0F9FF;
+            --sky-shine-2: #E0F2FE;
+            --sky-shine-3: #BAE6FD;
+            --sky-shine-4: #7DD3FC;
+
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-form);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .auth-luxe *,
+        .auth-luxe *::before,
+        .auth-luxe *::after {
+            box-sizing: border-box;
+        }
+
+        /* Screen Wrapper */
+        .auth-luxe .auth-luxe-screen {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ─── LEFT PANEL: LUMINOUS SHINING LIGHT BLUE ONBOARDING SHOWCASE ─── */
+        .auth-luxe .auth-luxe-showcase-side {
+            flex: 0 0 46%;
+            background:
+                radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.5) 30%, transparent 60%),
+                radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.4) 0%, transparent 55%),
+                linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(28px, 4.5vh, 48px) clamp(36px, 4.5vw, 60px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.5);
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .auth-luxe-showcase-side::before {
+            content: '';
+            position: absolute;
+            top: -12%;
+            right: -8%;
+            width: 420px;
+            height: 420px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.85) 0%, rgba(186, 230, 253, 0.3) 60%, transparent 80%);
+            filter: blur(40px);
+            pointer-events: none;
+            animation: orbFloat 10s ease-in-out infinite alternate;
+        }
+
+        .auth-luxe-showcase-side::after {
+            content: '';
+            position: absolute;
+            bottom: -15%;
+            left: -10%;
+            width: 380px;
+            height: 380px;
+            background: radial-gradient(circle, rgba(14, 165, 233, 0.3) 0%, rgba(125, 211, 252, 0.15) 60%, transparent 80%);
+            filter: blur(35px);
+            pointer-events: none;
+        }
+
+        @keyframes orbFloat {
+            0% { transform: translateY(0) scale(1); }
+            100% { transform: translateY(20px) scale(1.06); }
+        }
+
+        .auth-luxe .auth-luxe-wordmark {
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            color: var(--text-dark);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            line-height: 1;
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-luxe .auth-luxe-wordmark-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px rgba(2, 132, 199, 0.6);
+        }
+
+        .auth-luxe .auth-luxe-showcase-content {
+            max-width: 500px;
+            margin: auto 0;
+            padding: 16px 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        .auth-luxe .auth-luxe-kicker-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: #0369A1;
+            background: rgba(255, 255, 255, 0.75);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(8px);
+            padding: 6px 14px;
+            border-radius: 20px;
+            margin-bottom: 18px;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+        }
+
+        .auth-luxe .auth-luxe-kicker-spark {
+            color: #0284C7;
+            font-size: 0.85rem;
+        }
+
+        .auth-luxe .auth-luxe-headline {
+            font-size: clamp(2rem, 2.6vw, 2.4rem);
+            font-weight: 800;
+            line-height: 1.2;
+            color: var(--text-dark);
+            margin: 0 0 24px 0;
+            letter-spacing: -0.025em;
+        }
+
+        .auth-luxe .auth-luxe-benefits-list {
+            margin: 0 0 24px 0;
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .auth-luxe .auth-luxe-benefit-card {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 18px;
+            background: rgba(255, 255, 255, 0.76);
+            border: 1px solid rgba(255, 255, 255, 0.92);
+            border-radius: 12px;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+
+        .auth-luxe .auth-luxe-benefit-card:hover {
+            transform: translateX(3px);
+            background: rgba(255, 255, 255, 0.92);
+        }
+
+        .auth-luxe .auth-luxe-benefit-badge {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            color: #FFFFFF;
+            font-size: 0.75rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.3);
+        }
+
+        .auth-luxe .auth-luxe-benefit-text {
+            font-size: 0.88rem;
+            color: #1E293B;
+            line-height: 1.45;
+        }
+
+        .auth-luxe .auth-luxe-benefit-text strong {
+            display: block;
+            color: #0F172A;
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+
+        .auth-luxe .auth-luxe-statement-card {
+            background: rgba(255, 255, 255, 0.82);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-left: 3px solid #0284C7;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+            padding: 14px 18px;
+            font-style: italic;
+            font-size: 0.925rem;
+            color: #334155;
+            line-height: 1.55;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.06);
+            margin: 0;
+        }
+
+        .auth-luxe .auth-luxe-copyright {
+            font-size: 0.75rem;
+            color: #475569;
+            font-weight: 500;
+            margin: 0;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* ─── RIGHT PANEL: PURE WHITE FORM SIDE ─── */
+        .auth-luxe .auth-luxe-form-side {
+            flex: 0 0 54%;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            padding: clamp(24px, 4vh, 48px) clamp(24px, 4.5vw, 64px);
+            position: relative;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        .auth-luxe .auth-luxe-form-wrap {
+            width: 100%;
+            max-width: 520px;
+            margin: auto 0;
+            padding: 12px 0 32px 0;
+        }
+
+        .auth-luxe .auth-luxe-back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 20px;
+            transition: color 0.15s ease;
+        }
+
+        .auth-luxe .auth-luxe-back-link:hover,
+        .auth-luxe .auth-luxe-back-link:focus {
+            color: var(--primary);
+            outline: none;
+        }
+
+        .auth-luxe .auth-luxe-title {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--text-dark);
+            margin: 0 0 8px 0;
+            letter-spacing: -0.02em;
+        }
+
+        .auth-luxe .auth-luxe-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0 0 20px 0;
+            font-weight: 400;
+            line-height: 1.5;
+        }
+
+        /* Role Switcher Tabs */
+        .auth-luxe-role-switcher {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            background-color: #F1F5F9;
+            padding: 5px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-light);
+        }
+
+        .auth-luxe-role-btn {
+            border: none;
+            background: transparent;
+            padding: 11px 16px;
+            border-radius: 9px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.86rem;
+            font-weight: 700;
+            color: #64748B;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .auth-luxe-role-btn.active {
+            background-color: #FFFFFF;
+            color: var(--primary-navy);
+            box-shadow: 0 3px 10px rgba(15, 23, 42, 0.08);
+        }
+
+        .auth-luxe-role-btn:hover:not(.active) {
+            color: var(--primary-navy);
+        }
+
+        /* Client Verification Notice */
+        .auth-luxe-client-alert {
+            background-color: #FEF3C7;
+            border: 1px solid #FDE68A;
+            border-left: 3px solid #D97706;
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 0.8rem;
+            color: #92400E;
+            margin-bottom: 18px;
+            display: none;
+            align-items: flex-start;
+            gap: 10px;
+            line-height: 1.45;
+        }
+
+        .auth-luxe-client-alert i {
+            font-size: 1.05rem;
+            color: #D97706;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* Non-Field Form Error Box */
+        .auth-luxe-form-error-box {
+            background-color: #FEF2F2;
+            border: 1px solid #FECACA;
+            border-left: 3px solid #DC2626;
+            border-radius: 8px;
+            padding: 11px 14px;
+            font-size: 0.84rem;
+            color: #991B1B;
+            margin-bottom: 18px;
+            line-height: 1.45;
+            font-weight: 500;
+        }
+
+        /* Form Inputs & Inline Field Errors */
+        .auth-luxe .auth-luxe-group {
+            margin-bottom: 15px;
+        }
+
+        .auth-luxe-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .auth-luxe .auth-luxe-label {
+            display: block;
+            font-size: 0.74rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .auth-luxe .auth-luxe-label .req-star {
+            color: #DC2626;
+        }
+
+        .auth-luxe .auth-luxe-input {
+            width: 100%;
+            height: 46px;
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-light);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.925rem;
+            padding: 8px 14px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+        }
+
+        .auth-luxe select.auth-luxe-input {
+            cursor: pointer;
+        }
+
+        .auth-luxe .auth-luxe-input:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+        }
+
+        .auth-luxe .auth-luxe-input::placeholder {
+            color: #94A3B8;
+            font-weight: 400;
+        }
+
+        /* Error state on input */
+        .auth-luxe .auth-luxe-input.auth-luxe-input-error {
+            border-color: #DC2626 !important;
+            background-color: #FFF5F5 !important;
+        }
+
+        .auth-luxe .auth-luxe-input.auth-luxe-input-error:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.14) !important;
+        }
+
+        /* Specific Inline Error directly below the field */
+        .auth-luxe .auth-luxe-field-error {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            color: #DC2626;
+            font-weight: 600;
+            margin-top: 5px;
+            line-height: 1.35;
+        }
+
+        .auth-luxe .auth-luxe-field-error i {
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
+
+        .auth-luxe .auth-luxe-password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .auth-luxe .auth-luxe-password-wrap .auth-luxe-input {
+            padding-right: 44px;
+        }
+
+        .auth-luxe .auth-luxe-eye-btn {
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0;
+            transition: color 0.15s ease;
+        }
+
+        .auth-luxe .auth-luxe-eye-btn:hover,
+        .auth-luxe .auth-luxe-eye-btn:focus {
+            color: var(--text-dark);
+            outline: none;
+        }
+
+        .auth-luxe .auth-luxe-hint {
+            font-size: 0.74rem;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        /* Terms Checkbox */
+        .auth-luxe .auth-luxe-terms-wrap {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin: 18px 0 6px 0;
+        }
+
+        .auth-luxe .auth-luxe-checkbox {
+            width: 17px;
+            height: 17px;
+            accent-color: var(--primary);
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .auth-luxe .auth-luxe-checkbox.auth-luxe-input-error {
+            outline: 2px solid #DC2626;
+            outline-offset: 1px;
+        }
+
+        .auth-luxe .auth-luxe-terms-label {
+            font-size: 0.825rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+            cursor: pointer;
+            margin: 0;
+        }
+
+        .auth-luxe .auth-luxe-terms-label a {
+            color: var(--primary);
+            text-decoration: underline;
+            text-underline-offset: 2px;
+            font-weight: 600;
+        }
+
+        /* Submit Button */
+        .auth-luxe .auth-luxe-btn-submit {
+            width: 100%;
+            height: 48px;
+            background-color: var(--primary-navy);
+            color: #FFFFFF;
+            border: 1px solid var(--primary-navy);
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            margin-top: 16px;
+        }
+
+        .auth-luxe .auth-luxe-btn-submit:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #FFFFFF;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.25);
+        }
+
+        .auth-luxe .auth-luxe-btn-submit:focus {
+            outline: 3px solid rgba(2, 132, 199, 0.25);
+            outline-offset: 1px;
+        }
+
+        .auth-luxe .auth-luxe-btn-submit:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Divider & Footer */
+        .auth-luxe .auth-luxe-divider {
+            border: 0;
+            border-top: 1px solid var(--border-light);
+            margin: 22px 0 16px 0;
+        }
+
+        .auth-luxe .auth-luxe-footer-meta {
+            text-align: center;
+        }
+
+        .auth-luxe .auth-luxe-register-text {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        .auth-luxe .auth-luxe-register-link {
+            color: var(--primary);
+            text-decoration: underline;
+            text-underline-offset: 3px;
+            font-weight: 600;
+            transition: color 0.15s ease;
+        }
+
+        .auth-luxe .auth-luxe-register-link:hover {
+            color: var(--primary-hover);
+        }
+
+        /* ─── TOAST NOTIFICATION CONTAINER ─── */
+        .auth-luxe-toast-container {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            z-index: 99999;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            max-width: 380px;
+            width: calc(100% - 48px);
+            pointer-events: none;
+        }
+
+        .auth-luxe-toast {
+            pointer-events: auto;
+            background-color: #FFFFFF;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+            border-left: 4px solid var(--primary);
+            border-radius: 8px;
+            box-shadow: 0 10px 25px rgba(15, 23, 42, 0.1);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            position: relative;
+            overflow: hidden;
+            animation: toastSlideIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+            transition: opacity 0.25s ease, transform 0.25s ease;
+        }
+
+        .auth-luxe-toast.toast-error,
+        .auth-luxe-toast.toast-danger {
+            border-left-color: #DC2626;
+        }
+
+        .auth-luxe-toast.toast-success {
+            border-left-color: #16A34A;
+        }
+
+        .auth-luxe-toast.toast-warning {
+            border-left-color: #D97706;
+        }
+
+        .auth-luxe-toast-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 9px 14px;
+            border-bottom: 1px solid var(--border-light);
+            background-color: #F8FAFC;
+        }
+
+        .auth-luxe-toast-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .auth-luxe-toast-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            display: inline-block;
+        }
+
+        .toast-error .auth-luxe-toast-dot,
+        .toast-danger .auth-luxe-toast-dot {
+            background-color: #DC2626;
+        }
+
+        .toast-success .auth-luxe-toast-dot {
+            background-color: #16A34A;
+        }
+
+        .auth-luxe-toast-tag {
+            font-size: 0.7rem;
+            letter-spacing: 0.08em;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-dark);
+        }
+
+        .auth-luxe-toast-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .auth-luxe-toast-time {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .auth-luxe-toast-close {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            line-height: 1;
+            padding: 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 18px;
+            transition: color 0.15s ease, transform 0.15s ease;
+        }
+
+        .auth-luxe-toast-close:hover {
+            color: var(--text-dark);
+            transform: scale(1.15);
+        }
+
+        .auth-luxe-toast-close:focus {
+            outline: none;
+        }
+
+        .auth-luxe-toast-body {
+            padding: 10px 14px 12px 14px;
+            font-size: 0.86rem;
+            line-height: 1.45;
+            color: var(--text-dark);
+            font-weight: 500;
+        }
+
+        .auth-luxe-toast-progress {
+            height: 2px;
+            width: 100%;
+            background-color: rgba(226, 232, 240, 0.8);
+        }
+
+        .auth-luxe-toast-progress-bar {
+            height: 100%;
+            width: 100%;
+            background-color: var(--primary);
+            animation: toastProgress 6s linear forwards;
+        }
+
+        .toast-error .auth-luxe-toast-progress-bar,
+        .toast-danger .auth-luxe-toast-progress-bar {
+            background-color: #DC2626;
+        }
+
+        .toast-success .auth-luxe-toast-progress-bar {
+            background-color: #16A34A;
+        }
+
+        @keyframes toastSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-12px) translateX(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) translateX(0);
+            }
+        }
+
+        @keyframes toastProgress {
+            from { width: 100%; }
+            to { width: 0%; }
+        }
+
+        /* Responsive Layout */
+        @media (max-width: 991.98px) {
+            .auth-luxe .auth-luxe-screen {
+                flex-direction: column;
+                height: auto;
+                min-height: 100vh;
+                overflow: auto;
+            }
+            .auth-luxe .auth-luxe-showcase-side {
+                flex: 0 0 auto;
+                padding: 20px 24px;
+                text-align: center;
+                border-right: none;
+                border-bottom: 1px solid var(--border-light);
+            }
+            .auth-luxe .auth-luxe-wordmark {
+                font-size: 1.5rem;
+                justify-content: center;
+            }
+            .auth-luxe .auth-luxe-showcase-content,
+            .auth-luxe .auth-luxe-copyright {
+                display: none;
+            }
+            .auth-luxe .auth-luxe-form-side {
+                flex: 1 1 auto;
+                padding: 32px 20px 40px 20px;
+                overflow-y: visible;
+                max-height: none;
+            }
+            .auth-luxe-row-2 {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body class="auth-luxe">
+
+    <!-- Toast Notification Container (With Time and 'X') -->
+    {% if messages %}
+        <div class="auth-luxe-toast-container" id="toastContainer" aria-live="polite" aria-atomic="true">
+            {% for message in messages %}
+                <div class="auth-luxe-toast toast-{{ message.tags|default:'info' }}" role="alert">
+                    <div class="auth-luxe-toast-header">
+                        <div class="auth-luxe-toast-label">
+                            <span class="auth-luxe-toast-dot"></span>
+                            <span class="auth-luxe-toast-tag">
+                                {% if message.tags == 'success' %}SUCCESS{% elif message.tags == 'error' or message.tags == 'danger' %}NOTICE{% elif message.tags == 'warning' %}WARNING{% else %}INFO{% endif %}
+                            </span>
+                        </div>
+                        <div class="auth-luxe-toast-meta">
+                            <span class="auth-luxe-toast-time">just now</span>
+                            <button type="button" class="auth-luxe-toast-close" onclick="closeToast(this.closest('.auth-luxe-toast'))" aria-label="Close">&times;</button>
+                        </div>
+                    </div>
+                    <div class="auth-luxe-toast-body">
+                        {{ message }}
+                    </div>
+                    <div class="auth-luxe-toast-progress">
+                        <div class="auth-luxe-toast-progress-bar"></div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <div class="auth-luxe-screen">
+
+        <!-- ═══════════════════════════════════════════
+             LEFT PANEL: ONBOARDING SHOWCASE (TAILORED FOR SIGNUP)
+             ═══════════════════════════════════════════ -->
+        <aside class="auth-luxe-showcase-side">
+            <!-- Brand Wordmark -->
+            <div>
+                <a href="{% url 'home' %}" class="auth-luxe-wordmark">
+                    GigBridge
+                    <span class="auth-luxe-wordmark-dot"></span>
+                </a>
+            </div>
+
+            <!-- Central Content: Distinct Onboarding Value Props -->
+            <div class="auth-luxe-showcase-content">
+                <div class="auth-luxe-kicker-badge">
+                    <span class="auth-luxe-kicker-spark">✦</span> Welcome to GigBridge
+                </div>
+
+                <h2 class="auth-luxe-headline">
+                    Join a global network of ambitious builders, visionaries, and elite technical talent.
+                </h2>
+
+                <ul class="auth-luxe-benefits-list">
+                    <li class="auth-luxe-benefit-card">
+                        <span class="auth-luxe-benefit-badge">01</span>
+                        <div class="auth-luxe-benefit-text">
+                            <strong>Swift &amp; Free Account Setup</strong>
+                            Create your profile in minutes with zero upfront fees or hidden charges.
+                        </div>
+                    </li>
+                    <li class="auth-luxe-benefit-card">
+                        <span class="auth-luxe-benefit-badge">02</span>
+                        <div class="auth-luxe-benefit-text">
+                            <strong>Direct High-Value Opportunities</strong>
+                            Connect directly with vetted enterprise clients, verified proposals, and high-budget contracts.
+                        </div>
+                    </li>
+                    <li class="auth-luxe-benefit-card">
+                        <span class="auth-luxe-benefit-badge">03</span>
+                        <div class="auth-luxe-benefit-text">
+                            <strong>Milestone Escrow Guarantee</strong>
+                            Work and hire with total certainty backed by automated deliverable inspection and safe payouts.
+                        </div>
+                    </li>
+                </ul>
+
+                <p class="auth-luxe-statement-card">
+                    “GigBridge provides an uncompromised ecosystem where ambitious founders hire with certainty and top talent thrives with autonomy.”
+                </p>
+            </div>
+
+            <!-- Copyright Line -->
+            <p class="auth-luxe-copyright">
+                &copy; 2026 GigBridge. All rights reserved.
+            </p>
+        </aside>
+
+        <!-- ═══════════════════════════════════════════
+             RIGHT PANEL: PURE WHITE REGISTRATION FORM SIDE
+             ═══════════════════════════════════════════ -->
+        <main class="auth-luxe-form-side">
+            <div class="auth-luxe-form-wrap">
+
+                <!-- Top Navigation Link -->
+                <div>
+                    <a href="{% url 'home' %}" class="auth-luxe-back-link">
+                        <i class="bi bi-arrow-left"></i> Back to home
+                    </a>
+                </div>
+
+                <!-- Headline -->
+                <h1 class="auth-luxe-title">Create your account</h1>
+                <p class="auth-luxe-subtitle">
+                    Select your account role to get started with the right workspace.
+                </p>
+
+                <!-- Role Switcher Segmented Tabs -->
+                <div class="auth-luxe-role-switcher" role="tablist">
+                    <button type="button" class="auth-luxe-role-btn active" id="tabFreelancer" onclick="selectRole('freelancer')">
+                        <i class="bi bi-laptop"></i> Join as Freelancer
+                    </button>
+                    <button type="button" class="auth-luxe-role-btn" id="tabClient" onclick="selectRole('client')">
+                        <i class="bi bi-building"></i> Join as Client
+                    </button>
+                </div>
+
+                <!-- Client Pending Approval Notice -->
+                <div class="auth-luxe-client-alert" id="clientVerificationAlert">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>
+                        <strong>Client Verification Notice:</strong> Client accounts require administrator approval before posting projects. You will be able to log in right after registration.
+                    </div>
+                </div>
+
+                <!-- Non-Field Form Errors Only (No generic bullet lists!) -->
+                {% if form.non_field_errors %}
+                    <div class="auth-luxe-form-error-box">
+                        {% for error in form.non_field_errors %}
+                            <div><i class="bi bi-exclamation-circle-fill me-1"></i> {{ error }}</div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+
+                <!-- Main Registration Form -->
+                <form method="POST" action="{% url 'register' %}" id="registerForm" novalidate>
+                    {% csrf_token %}
+
+                    <!-- Hidden Role Input -->
+                    <input type="hidden" name="role" id="id_role_input" value="{{ role_param|default:'freelancer' }}">
+
+                    <!-- Row 1: First Name & Last Name -->
+                    <div class="auth-luxe-row-2 auth-luxe-group">
+                        <div>
+                            <label class="auth-luxe-label" for="id_first_name">
+                                First Name <span class="req-star">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="id_first_name"
+                                name="first_name"
+                                class="auth-luxe-input {% if form.first_name.errors %}auth-luxe-input-error{% endif %}"
+                                placeholder="First name"
+                                value="{{ form.first_name.value|default:'' }}"
+                                autofocus
+                            >
+                            {% if form.first_name.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.first_name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="auth-luxe-label" for="id_last_name">
+                                Last Name <span class="req-star">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="id_last_name"
+                                name="last_name"
+                                class="auth-luxe-input {% if form.last_name.errors %}auth-luxe-input-error{% endif %}"
+                                placeholder="Last name"
+                                value="{{ form.last_name.value|default:'' }}"
+                            >
+                            {% if form.last_name.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.last_name.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Username & Email -->
+                    <div class="auth-luxe-row-2 auth-luxe-group">
+                        <div>
+                            <label class="auth-luxe-label" for="id_username">
+                                Username <span class="req-star">*</span>
+                            </label>
+                            <input
+                                type="text"
+                                id="id_username"
+                                name="username"
+                                class="auth-luxe-input {% if form.username.errors %}auth-luxe-input-error{% endif %}"
+                                placeholder="Choose username"
+                                value="{{ form.username.value|default:'' }}"
+                            >
+                            {% if form.username.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.username.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="auth-luxe-label" for="id_email">
+                                Email Address <span class="req-star">*</span>
+                            </label>
+                            <input
+                                type="email"
+                                id="id_email"
+                                name="email"
+                                class="auth-luxe-input {% if form.email.errors %}auth-luxe-input-error{% endif %}"
+                                placeholder="name@example.com"
+                                value="{{ form.email.value|default:'' }}"
+                            >
+                            {% if form.email.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.email.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Phone Number & Specialization/Category -->
+                    <div class="auth-luxe-row-2 auth-luxe-group">
+                        <div>
+                            <label class="auth-luxe-label" for="id_phone">
+                                Phone Number <span class="req-star">*</span>
+                            </label>
+                            <input
+                                type="tel"
+                                id="id_phone"
+                                name="phone"
+                                class="auth-luxe-input {% if form.phone.errors %}auth-luxe-input-error{% endif %}"
+                                placeholder="e.g. +1 (555) 000-0000"
+                                value="{{ form.phone.value|default:'' }}"
+                            >
+                            {% if form.phone.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.phone.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="auth-luxe-label" for="id_title" id="labelCategory">
+                                Professional Specialization
+                            </label>
+                            <select name="title" id="id_title" class="auth-luxe-input {% if form.title.errors %}auth-luxe-input-error{% endif %}">
+                                <option value="">Select Specialization / Category</option>
+                                {% for cat in categories %}
+                                    <option value="{{ cat.name }}" {% if form.title.value == cat.name %}selected{% endif %}>
+                                        {{ cat.name }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                            {% if form.title.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.title.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Client Specific Field: Company Name -->
+                    <div class="auth-luxe-group" id="clientCompanyGroup" style="display: none;">
+                        <label class="auth-luxe-label" for="id_company_name">
+                            Company / Business Name
+                        </label>
+                        <input
+                            type="text"
+                            id="id_company_name"
+                            name="company_name"
+                            class="auth-luxe-input {% if form.company_name.errors %}auth-luxe-input-error{% endif %}"
+                            placeholder="e.g. Apex Technologies Inc."
+                            value="{{ form.company_name.value|default:'' }}"
+                        >
+                        {% if form.company_name.errors %}
+                            <div class="auth-luxe-field-error">
+                                <i class="bi bi-exclamation-circle-fill"></i> {{ form.company_name.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Freelancer Specific Field: Skills -->
+                    <div class="auth-luxe-group" id="freelancerSkillsGroup">
+                        <label class="auth-luxe-label" for="id_skills">
+                            Key Skills (Comma Separated)
+                        </label>
+                        <input
+                            type="text"
+                            id="id_skills"
+                            name="skills"
+                            class="auth-luxe-input {% if form.skills.errors %}auth-luxe-input-error{% endif %}"
+                            placeholder="e.g. Python, Django, React, REST API, Machine Learning"
+                            value="{{ form.skills.value|default:'' }}"
+                        >
+                        {% if form.skills.errors %}
+                            <div class="auth-luxe-field-error">
+                                <i class="bi bi-exclamation-circle-fill"></i> {{ form.skills.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Row 4: Password & Confirm Password with Eye Toggles -->
+                    <div class="auth-luxe-row-2 auth-luxe-group">
+                        <div>
+                            <label class="auth-luxe-label" for="id_password1">
+                                Password <span class="req-star">*</span>
+                            </label>
+                            <div class="auth-luxe-password-wrap">
+                                <input
+                                    type="password"
+                                    id="id_password1"
+                                    name="password1"
+                                    class="auth-luxe-input {% if form.password1.errors %}auth-luxe-input-error{% endif %}"
+                                    placeholder="Create password"
+                                    minlength="8"
+                                >
+                                <button
+                                    type="button"
+                                    class="auth-luxe-eye-btn"
+                                    onclick="togglePasswordVisibility('id_password1', 'eyeIcon1')"
+                                    aria-label="Toggle password visibility"
+                                >
+                                    <i class="bi bi-eye" id="eyeIcon1"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.password1.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="auth-luxe-label" for="id_password2">
+                                Confirm Password <span class="req-star">*</span>
+                            </label>
+                            <div class="auth-luxe-password-wrap">
+                                <input
+                                    type="password"
+                                    id="id_password2"
+                                    name="password2"
+                                    class="auth-luxe-input {% if form.password2.errors %}auth-luxe-input-error{% endif %}"
+                                    placeholder="Confirm password"
+                                    minlength="8"
+                                >
+                                <button
+                                    type="button"
+                                    class="auth-luxe-eye-btn"
+                                    onclick="togglePasswordVisibility('id_password2', 'eyeIcon2')"
+                                    aria-label="Toggle password visibility"
+                                >
+                                    <i class="bi bi-eye" id="eyeIcon2"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.password2.errors.0 }}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="auth-luxe-hint" style="margin-top:-6px; margin-bottom:12px;">
+                        Must be at least 8 characters long.
+                    </div>
+
+                    <!-- Terms of Service Checkbox -->
+                    <div>
+                        <div class="auth-luxe-terms-wrap">
+                            <input
+                                type="checkbox"
+                                id="id_terms"
+                                name="terms"
+                                class="auth-luxe-checkbox {% if form.terms.errors %}auth-luxe-input-error{% endif %}"
+                                {% if form.terms.value %}checked{% endif %}
+                            >
+                            <label class="auth-luxe-terms-label" for="id_terms">
+                                I agree to the <a href="{% url 'about' %}" target="_blank">Terms of Service</a> and acknowledge the <a href="{% url 'about' %}" target="_blank">Privacy Policy</a>.
+                            </label>
+                        </div>
+                        {% if form.terms.errors %}
+                            <div class="auth-luxe-field-error" style="margin-top: 2px;">
+                                <i class="bi bi-exclamation-circle-fill"></i> {{ form.terms.errors.0 }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="auth-luxe-btn-submit" id="registerSubmitBtn">
+                        Create Freelancer Account
+                    </button>
+                </form>
+
+                <!-- Thin Divider & Contextual Links -->
+                <hr class="auth-luxe-divider">
+
+                <div class="auth-luxe-footer-meta">
+                    <p class="auth-luxe-register-text">
+                        Already have a GigBridge account?
+                        <a href="{% url 'login' %}" class="auth-luxe-register-link">Sign in</a>
+                    </p>
+                </div>
+
+            </div>
+        </main>
+
+    </div>
+
+    <script>
+        // Role Switcher Logic
+        function selectRole(role) {
+            const roleInput = document.getElementById('id_role_input');
+            const tabFreelancer = document.getElementById('tabFreelancer');
+            const tabClient = document.getElementById('tabClient');
+            const clientAlert = document.getElementById('clientVerificationAlert');
+            const clientCompanyGroup = document.getElementById('clientCompanyGroup');
+            const freelancerSkills = document.getElementById('freelancerSkillsGroup');
+            const labelCategory = document.getElementById('labelCategory');
+            const submitBtn = document.getElementById('registerSubmitBtn');
+
+            if (roleInput) {
+                roleInput.value = role;
+            }
+
+            if (role === 'client') {
+                tabClient.classList.add('active');
+                tabFreelancer.classList.remove('active');
+                if (clientAlert) clientAlert.style.display = 'flex';
+                if (clientCompanyGroup) clientCompanyGroup.style.display = 'block';
+                if (freelancerSkills) freelancerSkills.style.display = 'none';
+                if (labelCategory) labelCategory.textContent = 'Project Industry / Domain';
+                if (submitBtn) submitBtn.textContent = 'Create Client Account';
+            } else {
+                tabFreelancer.classList.add('active');
+                tabClient.classList.remove('active');
+                if (clientAlert) clientAlert.style.display = 'none';
+                if (clientCompanyGroup) clientCompanyGroup.style.display = 'none';
+                if (freelancerSkills) freelancerSkills.style.display = 'block';
+                if (labelCategory) labelCategory.textContent = 'Professional Specialization';
+                if (submitBtn) submitBtn.textContent = 'Create Freelancer Account';
+            }
+        }
+
+        // Initialize role from URL query param or server context
+        document.addEventListener('DOMContentLoaded', function() {
+            const initialRole = "{{ role_param|default:'freelancer' }}";
+            selectRole(initialRole);
+            initToasts();
+        });
+
+        // Password Visibility Toggle
+        function togglePasswordVisibility(fieldId, iconId) {
+            const passwordInput = document.getElementById(fieldId);
+            const toggleIcon = document.getElementById(iconId);
+            if (!passwordInput || !toggleIcon) return;
+
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('bi-eye');
+                toggleIcon.classList.add('bi-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('bi-eye-slash');
+                toggleIcon.classList.add('bi-eye');
+            }
+        }
+
+        // Toast Notification System
+        function closeToast(toastEl) {
+            if (!toastEl) return;
+            toastEl.style.opacity = '0';
+            toastEl.style.transform = 'translateY(-10px)';
+            setTimeout(() => {
+                const container = toastEl.parentElement;
+                toastEl.remove();
+                if (container && container.children.length === 0) {
+                    container.remove();
+                }
+            }, 260);
+        }
+
+        function initToasts() {
+            const toasts = document.querySelectorAll('.auth-luxe-toast');
+            toasts.forEach(toast => {
+                const timeEl = toast.querySelector('.auth-luxe-toast-time');
+                if (timeEl) {
+                    const now = new Date();
+                    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                    timeEl.textContent = `just now • ${timeStr}`;
+                }
+
+                let timer = setTimeout(() => closeToast(toast), 6000);
+                toast.addEventListener('mouseenter', () => clearTimeout(timer));
+                toast.addEventListener('mouseleave', () => {
+                    timer = setTimeout(() => closeToast(toast), 3000);
+                });
+            });
+        }
+
+        // Double Submit Prevention
+        const registerForm = document.getElementById('registerForm');
+        if (registerForm) {
+            registerForm.addEventListener('submit', function() {
+                const submitBtn = document.getElementById('registerSubmitBtn');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = 'Creating account...';
+                }
+            });
+        }
+    </script>
+</body>
+</html>

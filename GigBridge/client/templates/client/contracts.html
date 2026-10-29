@@ -1,0 +1,504 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Hired &amp; Contracts{% endblock %}
+{% block dashboard_title %}Hired Freelancers &amp; Contracts{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Contracts Dashboard - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .con-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .con-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .con-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .con-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .con-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 660px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. EDITORIAL NUMBERED METRIC CARDS ─── */
+    .con-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .con-metric-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.1);
+    }
+
+    .con-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #0284C7;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .con-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .con-metric-index {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .con-metric-num {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .con-metric-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .con-metric-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+
+    /* ─── 3. FILTER & TOOLBAR STRIP ─── */
+    .con-filter-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .con-filter-tab {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .con-filter-tab.active {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border-color: #0284C7;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .con-filter-tab:not(.active) {
+        background: #F8FAFC;
+        color: #475569;
+        border-color: #E2E8F0;
+    }
+
+    .con-filter-tab:not(.active):hover {
+        background: #E0F2FE;
+        color: #0284C7;
+        border-color: #BAE6FD;
+    }
+
+    /* ─── 4. CONTRACT CARD DESIGN ─── */
+    .con-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        padding: 24px 26px;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+    }
+
+    .con-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 24px rgba(2, 132, 199, 0.08);
+    }
+
+    .con-user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1rem;
+        flex-shrink: 0;
+        letter-spacing: 0.04em;
+    }
+
+    /* Status Badges */
+    .badge-cd-open { background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; }
+    .badge-cd-in_progress { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .badge-cd-completed { background: #F3E8FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+    .badge-cd-draft { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+
+    /* Action Buttons */
+    .btn-con-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 8px 18px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-con-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .btn-con-outline {
+        background: #FFFFFF;
+        color: #475569 !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 8px 16px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-con-outline:hover {
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        background: #F0F9FF;
+    }
+
+    .con-empty-minimal {
+        text-align: center;
+        padding: 56px 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="con-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="con-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Contracts &amp; Talent Workroom</span>
+            </div>
+            <h2 class="con-hero-title">
+                Hired Specialists &amp; Contracts
+            </h2>
+            <p class="con-hero-sub">
+                Monitor active milestone execution, inspect deliverable submissions, track escrow funding, and manage direct talent communication in contract workrooms.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_milestones' %}" class="btn-con-outline fw-bold">
+                Milestones Escrow &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. FOUR EDITORIAL NUMBERED METRIC CARDS (ZERO NOISY ICONS)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Contracts -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="con-metric-card">
+            <div class="con-metric-index">01 / Lifetime Volume</div>
+            <div>
+                <div class="con-metric-num" style="color: #0F172A;">{{ total_count|default:0 }}</div>
+                <div class="con-metric-label">Total Contracts</div>
+                <div class="con-metric-sub">All hired talent engagements</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Active Contracts -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="con-metric-card">
+            <div class="con-metric-index">02 / Execution</div>
+            <div>
+                <div class="con-metric-num" style="color: #059669;">{{ active_count|default:0 }}</div>
+                <div class="con-metric-label">Active Contracts</div>
+                <div class="con-metric-sub">Hired specialists currently delivering work</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Awaiting Advance -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="con-metric-card">
+            <div class="con-metric-index">03 / Escrow Pending</div>
+            <div>
+                <div class="con-metric-num" style="color: #D97706;">{{ pending_advance_count|default:0 }}</div>
+                <div class="con-metric-label">Awaiting Advance</div>
+                <div class="con-metric-sub">Contracts awaiting milestone activation</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Completed -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="con-metric-card">
+            <div class="con-metric-index">04 / Delivered</div>
+            <div>
+                <div class="con-metric-num" style="color: #7C3AED;">{{ completed_count|default:0 }}</div>
+                <div class="con-metric-label">Completed &amp; Paid</div>
+                <div class="con-metric-sub">Successfully closed contracts</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. FILTER TABS STRIP
+     ========================================================================= -->
+<div class="con-filter-bar">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <div class="d-flex flex-wrap gap-2">
+            <a href="{% url 'client_contracts' %}?status=all" class="con-filter-tab {% if status_filter == 'all' or not status_filter %}active{% endif %}">
+                All Contracts ({{ total_count }})
+            </a>
+            <a href="{% url 'client_contracts' %}?status=active" class="con-filter-tab {% if status_filter == 'active' %}active{% endif %}">
+                Active Execution ({{ active_count }})
+            </a>
+            <a href="{% url 'client_contracts' %}?status=pending_advance" class="con-filter-tab {% if status_filter == 'pending_advance' %}active{% endif %}">
+                Awaiting Advance ({{ pending_advance_count }})
+            </a>
+            <a href="{% url 'client_contracts' %}?status=completed" class="con-filter-tab {% if status_filter == 'completed' %}active{% endif %}">
+                Completed ({{ completed_count }})
+            </a>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'client_messages' %}" class="btn-con-outline">
+                Messages
+            </a>
+            <a href="{% url 'client_proposals' %}" class="btn-con-outline">
+                Proposals
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. CONTRACTS LISTING
+     ========================================================================= -->
+{% for contract in contracts %}
+<div class="con-card">
+    <div class="row g-4 align-items-center">
+        <!-- Project & Status Info -->
+        <div class="col-lg-5 col-md-6">
+            <div class="d-flex align-items-center gap-2 mb-2">
+                <span class="badge" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.72rem;">
+                    Contract #{{ contract.id }}
+                </span>
+                <span class="badge {% if contract.status == 'active' %}badge-cd-in_progress{% elif contract.status == 'completed' %}badge-cd-completed{% else %}badge-cd-draft{% endif %}" style="font-size: 0.74rem;">
+                    {{ contract.get_status_display }}
+                </span>
+                {% if not contract.is_advance_paid %}
+                    <span class="badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; font-size: 0.72rem;">
+                        Advance Pending
+                    </span>
+                {% else %}
+                    <span class="badge" style="background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; font-size: 0.72rem;">
+                        Advance Funded
+                    </span>
+                {% endif %}
+            </div>
+
+            <h5 class="fw-bold mb-1" style="font-size: 1.05rem;">
+                <a href="{% url 'client_contract_detail' contract.id %}" class="text-decoration-none" style="color: #0F172A;">
+                    {{ contract.project.title }}
+                </a>
+            </h5>
+            <small class="text-muted" style="font-size: 0.76rem;">
+                Started {{ contract.start_date|date:"M d, Y" }} &bull; Category: {{ contract.project.category.name|default:"General" }}
+            </small>
+        </div>
+
+        <!-- Specialist Details -->
+        <div class="col-lg-3 col-md-6">
+            <div class="d-flex align-items-center gap-3">
+                <div class="con-user-avatar">
+                    {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":2"|upper }}
+                </div>
+                <div>
+                    <span class="fw-bold text-dark d-block" style="font-size: 0.88rem;">
+                        {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                    </span>
+                    <small class="text-muted d-block" style="font-size: 0.75rem;">
+                        Rating &bull; {{ contract.freelancer.profile.average_rating|default:"5.0" }} / 5.0
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget & Milestone Progress -->
+        <div class="col-lg-2 col-md-6">
+            <span class="small text-muted d-block" style="font-size: 0.72rem;">Agreed Value</span>
+            <div class="fw-bold" style="color: #0284C7; font-size: 1.15rem;">${{ contract.total_amount|floatformat:0 }}</div>
+            <div class="d-flex align-items-center justify-content-between text-muted mt-1" style="font-size: 0.72rem;">
+                <span>Progress</span>
+                <span class="fw-bold text-dark">{{ contract.progress_percentage }}%</span>
+            </div>
+            <div class="progress mt-1" style="height: 5px; border-radius: 999px; background: #E2E8F0;">
+                <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: #0284C7;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="col-lg-2 col-md-6 text-lg-end">
+            <a href="{% url 'client_contract_detail' contract.id %}" class="btn-con-primary w-100 text-center">
+                Manage Workroom &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="con-empty-minimal">
+    <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.05rem;">No Contracts Found</div>
+    <p class="text-muted small mb-3">
+        {% if status_filter and status_filter != 'all' %}
+            No contracts match your selected status filter.
+        {% else %}
+            You haven't hired any specialists yet. Accept a proposal from a freelancer to start an active contract.
+        {% endif %}
+    </p>
+    <a href="{% url 'client_proposals' %}" class="btn-con-primary py-2 px-3">
+        Review Received Proposals &rarr;
+    </a>
+</div>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+    <div class="p-3 px-4 bg-white border rounded-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <small class="text-muted" style="font-size: 0.8rem;">
+            Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </small>
+        <nav aria-label="Contracts pagination">
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.previous_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">&larr; Previous</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" style="{% if page_obj.number == num %}background:#0284C7;border-color:#0284C7;color:#FFFFFF;{% else %}color:#0284C7;{% endif %} border-radius: 6px; margin: 0 2px;" href="?page={{ num }}{% if status_filter %}&status={{ status_filter }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.next_page_number }}{% if status_filter %}&status={{ status_filter }}{% endif %}">Next &rarr;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endif %}
+{% endblock %}

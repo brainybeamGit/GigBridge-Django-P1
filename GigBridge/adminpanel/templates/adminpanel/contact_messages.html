@@ -1,0 +1,311 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Contact & Support Messages{% endblock %}
+{% block page_title %}Contact &amp; Support Inquiries{% endblock %}
+{% block page_subtitle %}Review incoming user questions, contact form inquiries, toggle resolution status, and send replies.{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            SUPPORT &bull; USER COMMUNICATIONS
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">Contact &amp; Support Inquiries</h2>
+        <p class="text-secondary small mb-0">Oversee incoming user inquiries, provide timely resolution, toggle status, and dispatch direct email correspondence.</p>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Inquiries</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_messages }}</div>
+            <p class="adm-kpi-caption">All incoming submissions</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Pending Attention</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ pending_count }}</div>
+            <p class="adm-kpi-caption">Awaiting administration reply</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Resolved Messages</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ resolved_count }}</div>
+            <p class="adm-kpi-caption">Closed and satisfied</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Resolution Rate</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ resolution_rate }}%</div>
+            <p class="adm-kpi-caption">Operational response rate</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_messages' %}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by sender name, email, subject, or message content...">
+        </div>
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">All Inquiry Statuses</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending Only</option>
+                <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved Only</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or status_filter %}
+                <a href="{% url 'adminpanel_messages' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Messages Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Inquiry Messages ({{ contact_msgs.count }})</span>
+        <span class="text-muted small">Submitted via public support channel</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Sender</th>
+                    <th>Email</th>
+                    <th>Subject</th>
+                    <th>Message Snippet</th>
+                    <th>Status</th>
+                    <th>Received</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for msg in contact_msgs %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;font-size:0.75rem;padding:4px 8px;">
+                                {{ msg.name|slice:":2"|upper }}
+                            </span>
+                            <span class="fw-bold text-dark small">{{ msg.name }}</span>
+                        </div>
+                    </td>
+                    <td>
+                        <a href="mailto:{{ msg.email }}" class="text-decoration-none text-secondary small fw-medium">
+                            {{ msg.email }}
+                        </a>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark small">{{ msg.subject|truncatechars:35 }}</span>
+                    </td>
+                    <td>
+                        <span class="text-muted small">{{ msg.message|truncatechars:45 }}</span>
+                    </td>
+                    <td>
+                        {% if msg.is_resolved %}
+                            <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:600;padding:5px 9px;">Resolved</span>
+                        {% else %}
+                            <span class="badge" style="background:#FEF3C7;color:#92400E;font-weight:600;padding:5px 9px;">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ msg.created_at|date:"M d, Y H:i" }}</td>
+                    <td class="text-end pe-4">
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-action-dropdown dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                                <li>
+                                    <button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#viewMsgModal{{ msg.id }}">
+                                        View Full Inquiry
+                                    </button>
+                                </li>
+                                <li>
+                                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|urlencode }}" class="dropdown-item">
+                                        Send Email Reply
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{% url 'adminpanel_message_toggle' msg.id %}" class="m-0">
+                                        {% csrf_token %}
+                                        {% if msg.is_resolved %}
+                                            <button type="submit" class="dropdown-item text-warning">
+                                                Reopen as Pending
+                                            </button>
+                                        {% else %}
+                                            <button type="submit" class="dropdown-item text-success">
+                                                Mark as Resolved
+                                            </button>
+                                        {% endif %}
+                                    </form>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button type="button" class="dropdown-item text-danger" data-bs-toggle="modal" data-bs-target="#deleteMsgModal{{ msg.id }}">
+                                        Delete Inquiry
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No contact inquiries found matching criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for msg in contact_msgs %}
+<!-- View Full Message Modal -->
+<div class="modal fade" id="viewMsgModal{{ msg.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header p-4" style="background:#F0F9FF;border-bottom:1px solid #BAE6FD;">
+                <div>
+                    <span class="badge mb-2" style="{% if msg.is_resolved %}background:#DCFCE7;color:#166534;{% else %}background:#FEF3C7;color:#92400E;{% endif %}font-weight:700;">
+                        {% if msg.is_resolved %}RESOLVED INQUIRY{% else %}PENDING ATTENTION{% endif %}
+                    </span>
+                    <h5 class="modal-title fw-bold mb-0 text-dark">{{ msg.subject }}</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-light">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Sender Name</span>
+                            <strong class="text-dark">{{ msg.name }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Email Address</span>
+                            <strong class="text-dark">{{ msg.email }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Received Timestamp</span>
+                            <span class="text-dark small">{{ msg.created_at|date:"F d, Y - H:i:s" }}</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Current Status</span>
+                            {% if msg.is_resolved %}
+                                <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:600;">Resolved</span>
+                            {% else %}
+                                <span class="badge" style="background:#FEF3C7;color:#92400E;font-weight:600;">Pending Resolution</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-white rounded-3 border">
+                    <span class="text-muted small d-block mb-2 fw-semibold">Message Body</span>
+                    <p class="mb-0 text-dark small" style="white-space:pre-line;">{{ msg.message }}</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-white p-3 d-flex justify-content-between">
+                <form method="POST" action="{% url 'adminpanel_message_toggle' msg.id %}">
+                    {% csrf_token %}
+                    {% if msg.is_resolved %}
+                        <button type="submit" class="btn btn-outline-warning rounded-3 px-3">
+                            Reopen as Pending
+                        </button>
+                    {% else %}
+                        <button type="submit" class="btn btn-outline-success rounded-3 px-3">
+                            Mark as Resolved
+                        </button>
+                    {% endif %}
+                </form>
+
+                <div class="d-flex gap-2">
+                    <a href="mailto:{{ msg.email }}?subject=Re: {{ msg.subject|urlencode }}" class="btn btn-primary rounded-3 px-4 fw-bold" style="background:#0284C7;border-color:#0284C7;">
+                        Email Reply
+                    </a>
+                    <button type="button" class="btn btn-light rounded-3 px-3" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Message Modal -->
+<div class="modal fade" id="deleteMsgModal{{ msg.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header p-3" style="background:#FEF2F2;border-bottom:1px solid #FECACA;">
+                <h6 class="modal-title fw-bold mb-0 text-danger">Delete Inquiry</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <span class="badge mb-3" style="background:#FEE2E2;color:#991B1B;font-size:0.85rem;padding:6px 12px;font-weight:700;">
+                    PERMANENT REMOVAL
+                </span>
+                <h5 class="fw-bold text-dark">Delete inquiry from "{{ msg.name }}"?</h5>
+                <p class="text-muted small mb-0">This contact message will be permanently purged from the administrative registry.</p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_message_delete' msg.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-3 px-4 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

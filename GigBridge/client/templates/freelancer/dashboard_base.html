@@ -1,0 +1,502 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Freelancer Dashboard | GigBridge{% endblock %}
+
+{% block navbar %}{% endblock %}
+{% block footer %}{% endblock %}
+
+{% block content %}
+<style>
+    /* ==========================================================================
+       Freelancer Dashboard - Luxury Light Blue Shining Sidebar Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    .dashboard-sidebar {
+        background: #F0F9FF !important;
+        border-right: 1.5px solid #BAE6FD !important;
+        box-shadow: 4px 0 24px rgba(2, 132, 199, 0.06) !important;
+        width: 265px;
+        min-width: 265px;
+        overflow-y: auto;
+    }
+
+    .dashboard-sidebar-brand {
+        padding: 18px 20px;
+        background: #E0F2FE !important;
+        border-bottom: 1px solid #BAE6FD !important;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .dashboard-sidebar-brand a {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .sidebar-brand-icon {
+        width: 38px;
+        height: 38px;
+        border-radius: 11px;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.05rem;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
+    }
+
+    .sidebar-brand-title {
+        font-size: 1.2rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        line-height: 1;
+    }
+
+    /* Navigation Items */
+    .dashboard-sidebar .dashboard-nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin: 2px 10px !important;
+        padding: 9px 14px !important;
+        color: #0F172A !important;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.88rem;
+        border-radius: 10px !important;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+        cursor: pointer;
+        background: none;
+    }
+
+    .dashboard-sidebar .dashboard-nav-item i {
+        font-size: 1.05rem;
+        color: #0284C7 !important;
+        transition: all 0.15s ease;
+        flex-shrink: 0;
+    }
+
+    .dashboard-sidebar .dashboard-nav-item:hover {
+        color: #0284C7 !important;
+        background: #FFFFFF !important;
+        border-color: #BAE6FD !important;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12) !important;
+        transform: translateX(3px);
+    }
+
+    .dashboard-sidebar .dashboard-nav-item:hover i {
+        color: #0369A1 !important;
+    }
+
+    .dashboard-sidebar .dashboard-nav-item.active {
+        color: #FFFFFF !important;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+        font-weight: 700 !important;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+        border-color: #0284C7 !important;
+    }
+
+    .dashboard-sidebar .dashboard-nav-item.active i {
+        color: #FFFFFF !important;
+    }
+
+    /* Footer actions */
+    .sidebar-footer-links {
+        margin-top: auto;
+        padding-top: 10px;
+        border-top: 1px solid #BAE6FD;
+        margin-left: 10px;
+        margin-right: 10px;
+        padding-bottom: 8px;
+    }
+
+    .sidebar-footer-links .dashboard-nav-item {
+        margin: 2px 0 !important;
+        color: #334155 !important;
+        font-size: 0.82rem;
+    }
+
+    .sidebar-footer-links .dashboard-nav-item:hover {
+        color: #0284C7 !important;
+        background: #FFFFFF !important;
+    }
+
+    .sidebar-logout-btn {
+        width: 100%;
+        background: transparent;
+        border: 1px solid transparent;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 14px;
+        margin: 2px 0;
+        border-radius: 10px;
+        color: #DC2626 !important;
+        font-weight: 600;
+        font-size: 0.82rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .sidebar-logout-btn:hover {
+        background: #FEF2F2 !important;
+        border-color: #FECACA !important;
+        color: #B91C1C !important;
+    }
+
+    /* Topbar styling */
+    .dashboard-topbar {
+        background: #FFFFFF;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 14px 28px;
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .dashboard-topbar .btn-primary,
+    .btn-client-blue {
+        background-color: #0284C7 !important;
+        border-color: #0284C7 !important;
+        color: #FFFFFF !important;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25) !important;
+    }
+    .dashboard-topbar .btn-primary:hover,
+    .btn-client-blue:hover {
+        background-color: #0369A1 !important;
+        border-color: #0369A1 !important;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.35) !important;
+    }
+
+    .dropdown-menu.show {
+        display: block !important;
+        opacity: 1 !important;
+        visibility: visible !important;
+        pointer-events: auto !important;
+    }
+</style>
+
+<div class="dashboard-wrapper">
+    <!-- Sidebar Navigation -->
+    <aside class="dashboard-sidebar">
+        <!-- 1. Brand Logo Header in Sidebar -->
+        <div class="dashboard-sidebar-brand">
+            <a href="{% url 'home' %}">
+                <span class="sidebar-brand-icon">
+                    <i class="bi bi-briefcase-fill"></i>
+                </span>
+                <div>
+                    <span class="sidebar-brand-title">GigBridge</span>
+                    <span class="badge d-block text-start px-2 py-0 mt-1" style="background:#FFFFFF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.64rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">
+                        Freelancer Workspace
+                    </span>
+                </div>
+            </a>
+        </div>
+
+        <!-- 2. Sidebar Navigation Links -->
+        <nav class="d-flex flex-column flex-grow-1 pt-2">
+            <a href="{% url 'freelancer_dashboard' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Overview</span>
+            </a>
+
+            <a href="{% url 'project_list' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'project_list' or request.resolver_match.url_name == 'project_detail' %}active{% endif %}">
+                <i class="bi bi-search"></i>
+                <span>Find Work</span>
+            </a>
+
+            <a href="{% url 'freelancer_proposals' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_proposals' %}active{% endif %}">
+                <i class="bi bi-envelope-paper"></i>
+                <span>My Proposals</span>
+            </a>
+
+            <a href="{% url 'freelancer_contracts' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_contracts' or request.resolver_match.url_name == 'freelancer_contract_detail' or request.resolver_match.url_name == 'freelancer_submit_delivery' %}active{% endif %}">
+                <i class="bi bi-file-earmark-check"></i>
+                <span>Active Contracts</span>
+            </a>
+
+            <a href="{% url 'freelancer_earnings' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_earnings' %}active{% endif %}">
+                <i class="bi bi-wallet2"></i>
+                <span>Earnings &amp; Payouts</span>
+            </a>
+
+            <a href="{% url 'freelancer_messages' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_messages' or request.resolver_match.url_name == 'freelancer_conversation_detail' %}active{% endif %}">
+                <i class="bi bi-chat-dots"></i>
+                <span>Client Messages</span>
+            </a>
+
+            <a href="{% url 'freelancer_profile' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_profile' %}active{% endif %}">
+                <i class="bi bi-person-gear"></i>
+                <span>Profile &amp; Settings</span>
+            </a>
+
+            <div class="sidebar-footer-links">
+                <a href="{% url 'home' %}" class="dashboard-nav-item">
+                    <i class="bi bi-house"></i>
+                    <span>Back to Website</span>
+                </a>
+                <a href="{% url 'project_list' %}" class="dashboard-nav-item">
+                    <i class="bi bi-search"></i>
+                    <span>Browse Marketplace</span>
+                </a>
+                <form method="POST" action="{% url 'logout' %}" class="mt-1">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-logout-btn">
+                        <i class="bi bi-box-arrow-right"></i>
+                        <span>Log Out</span>
+                    </button>
+                </form>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- Main Content Panel -->
+    <main class="dashboard-main">
+        <!-- Dashboard Topbar (App Header) -->
+        <div class="dashboard-topbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-outline-secondary btn-sm d-lg-none rounded-3" type="button" id="sidebarToggleBtn" aria-label="Toggle Navigation Sidebar">
+                    <i class="bi bi-list fs-5"></i>
+                </button>
+                <div>
+                    <nav aria-label="breadcrumb">
+                        <ol class="breadcrumb mb-1 small">
+                            <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none">GigBridge</a></li>
+                            <li class="breadcrumb-item"><a href="{% url 'freelancer_dashboard' %}" class="text-decoration-none">Freelancer</a></li>
+                            <li class="breadcrumb-item active" aria-current="page">{% block breadcrumb_current %}Dashboard{% endblock %}</li>
+                        </ol>
+                    </nav>
+                    <h4 class="fw-bold text-navy mb-0">{% block dashboard_title %}Freelancer Workspace{% endblock %}</h4>
+                </div>
+            </div>
+            
+            <div class="d-flex align-items-center">
+                <!-- User Profile Dropdown Menu -->
+                <div class="dropdown position-relative">
+                    <button type="button" class="gb-user-menu dropdown-toggle border-0" id="dashboardUserMenuDropdown" aria-expanded="false" style="outline: none;">
+                        <div class="gb-avatar-circle" style="width:36px;height:36px;font-size:0.9rem;background:linear-gradient(135deg, #0284C7, #0369A1);color:#FFFFFF;display:flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;">
+                            {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                        </div>
+                        <div class="d-none d-md-flex flex-column text-start" style="line-height: 1.15;">
+                            <span class="fw-bold text-dark small">{{ request.user.first_name|default:request.user.username }}</span>
+                            <span class="text-muted" style="font-size: 0.68rem;">Freelancer</span>
+                        </div>
+                        <i class="bi bi-chevron-down gb-user-menu-chevron ms-1"></i>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2" id="dashboardUserMenuList" style="min-width: 240px; z-index: 1060;" aria-labelledby="dashboardUserMenuDropdown">
+                        <li class="px-3 py-2 border-bottom mb-1 bg-light rounded-3">
+                            <div class="fw-bold text-dark">{{ request.user.get_full_name|default:request.user.username }}</div>
+                            <div class="text-muted small text-truncate">{{ request.user.email }}</div>
+                            <span class="badge bg-success-subtle text-success small mt-1"><i class="bi bi-patch-check-fill me-1"></i> Verified Freelancer</span>
+                        </li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_dashboard' %}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Overview</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'project_list' %}"><i class="bi bi-search me-2 text-primary"></i> Find Work</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_proposals' %}"><i class="bi bi-envelope-paper me-2 text-primary"></i> My Proposals</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_contracts' %}"><i class="bi bi-file-earmark-check me-2 text-primary"></i> Active Contracts</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_earnings' %}"><i class="bi bi-wallet2 me-2 text-primary"></i> Earnings &amp; Payouts</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_messages' %}"><i class="bi bi-chat-dots me-2 text-primary"></i> Messages</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_profile' %}"><i class="bi bi-person-gear me-2 text-primary"></i> Profile Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'home' %}"><i class="bi bi-house me-2 text-secondary"></i> Main Website</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="POST" action="{% url 'logout' %}">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger py-2 rounded-2 d-flex align-items-center border-0 bg-transparent w-100">
+                                    <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Content Area -->
+        <div class="dashboard-content-area">
+            <!-- Flash Messages -->
+            {% if messages %}
+                <div class="mb-4">
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show rounded-3 p-3 small d-flex align-items-center gap-2" role="alert">
+                            {% if message.tags == 'success' %}
+                                <i class="bi bi-check-circle-fill text-success fs-5"></i>
+                            {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                <i class="bi bi-exclamation-triangle-fill text-danger fs-5"></i>
+                            {% else %}
+                                <i class="bi bi-info-circle-fill text-primary fs-5"></i>
+                            {% endif %}
+                            <div>{{ message }}</div>
+                            <button type="button" class="btn-close ms-auto" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% block dashboard_content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 1. Mobile Sidebar Toggle
+        const toggleBtn = document.getElementById('sidebarToggleBtn');
+        const sidebar = document.querySelector('.dashboard-sidebar');
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                sidebar.classList.toggle('show');
+            });
+            document.addEventListener('click', function(e) {
+                if (window.innerWidth < 992 && sidebar.classList.contains('show') && !sidebar.contains(e.target) && e.target !== toggleBtn) {
+                    sidebar.classList.remove('show');
+                }
+            });
+        }
+
+        // 2. Infallible User Profile Dropdown Toggle
+        const userMenuBtn = document.getElementById('dashboardUserMenuDropdown');
+        const userMenuList = document.getElementById('dashboardUserMenuList');
+        if (userMenuBtn && userMenuList) {
+            userMenuBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                const isOpen = userMenuList.classList.contains('show');
+                if (isOpen) {
+                    userMenuList.classList.remove('show');
+                    userMenuBtn.setAttribute('aria-expanded', 'false');
+                } else {
+                    userMenuList.classList.add('show');
+                    userMenuBtn.setAttribute('aria-expanded', 'true');
+                }
+            });
+
+            document.addEventListener('click', function(e) {
+                if (userMenuList.classList.contains('show')) {
+                    if (!userMenuBtn.contains(e.target) && !userMenuList.contains(e.target)) {
+                        userMenuList.classList.remove('show');
+                        userMenuBtn.setAttribute('aria-expanded', 'false');
+                    }
+                }
+            });
+        }
+
+        // 3. Sidebar Scroll Preservation:
+        // Remember the sidebar's own scroll position so it never resets when clicking
+        if (sidebar) {
+            const savedSidebarScroll = sessionStorage.getItem('gb_sidebar_scroll_top');
+            if (savedSidebarScroll) {
+                sidebar.scrollTop = parseInt(savedSidebarScroll, 10);
+            }
+            sidebar.addEventListener('scroll', function() {
+                sessionStorage.setItem('gb_sidebar_scroll_top', sidebar.scrollTop);
+            });
+        }
+
+        // 4. Sidebar Navigation Click Handler:
+        // When clicking ANY link in the sidebar or topbar, the target page MUST ALWAYS open at the very TOP (0, 0)!
+        const sidebarAndTopLinks = document.querySelectorAll('.dashboard-sidebar a, .dashboard-sidebar button, .dashboard-topbar a');
+        sidebarAndTopLinks.forEach(function(el) {
+            el.addEventListener('click', function() {
+                try {
+                    sessionStorage.setItem('gb_nav_via_sidebar', 'true');
+                    sessionStorage.removeItem('gb_inpage_scroll');
+                    sessionStorage.removeItem('gb_inpage_path');
+                    // Clear all legacy scroll keys
+                    Object.keys(sessionStorage).forEach(function(k) {
+                        if (k.startsWith('gb_scroll_')) {
+                            sessionStorage.removeItem(k);
+                        }
+                    });
+                } catch(e) {}
+            });
+        });
+
+        // 5. Scroll position restoration logic for in-page actions only
+        try {
+            const navViaSidebar = sessionStorage.getItem('gb_nav_via_sidebar');
+            const inPageScroll = sessionStorage.getItem('gb_inpage_scroll');
+            const inPagePath = sessionStorage.getItem('gb_inpage_path');
+
+            // If navigating from sidebar, ALWAYS start at top (0, 0)
+            if (navViaSidebar === 'true') {
+                sessionStorage.removeItem('gb_nav_via_sidebar');
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                }
+                window.scrollTo(0, 0);
+            } else if (inPageScroll && inPagePath === window.location.pathname) {
+                // Restore ONLY when clicking in-page actions on the exact same page
+                const targetY = parseInt(inPageScroll, 10);
+                sessionStorage.removeItem('gb_inpage_scroll');
+                sessionStorage.removeItem('gb_inpage_path');
+
+                if (!isNaN(targetY) && targetY > 50) {
+                    if ('scrollRestoration' in history) {
+                        history.scrollRestoration = 'manual';
+                    }
+                    window.scrollTo({ top: targetY, behavior: 'instant' });
+                    requestAnimationFrame(function() {
+                        window.scrollTo({ top: targetY, behavior: 'instant' });
+                    });
+                    setTimeout(function() {
+                        window.scrollTo({ top: targetY, behavior: 'instant' });
+                    }, 50);
+                    setTimeout(function() {
+                        window.scrollTo({ top: targetY, behavior: 'instant' });
+                    }, 160);
+                }
+            } else {
+                if ('scrollRestoration' in history) {
+                    history.scrollRestoration = 'manual';
+                }
+                window.scrollTo(0, 0);
+            }
+        } catch(err) {}
+
+        // 6. Save scroll ONLY on in-page interactions inside .dashboard-content-area
+        // (Filter tabs, search buttons, pagination, form submissions)
+        document.addEventListener('click', function(e) {
+            const target = e.target.closest('a, button, input[type="submit"]');
+            if (!target) return;
+
+            // If inside sidebar or topbar, do NOT save in-page scroll
+            if (target.closest('.dashboard-sidebar') || target.closest('.dashboard-topbar')) {
+                return;
+            }
+
+            // Only capture if clicking inside .dashboard-content-area
+            if (target.closest('.dashboard-content-area')) {
+                const href = target.getAttribute('href');
+                // If it's navigating away to another section, ignore
+                if (href && !href.startsWith('?') && !href.startsWith('#') && !href.includes(window.location.pathname)) {
+                    return;
+                }
+                try {
+                    sessionStorage.setItem('gb_inpage_scroll', window.scrollY);
+                    sessionStorage.setItem('gb_inpage_path', window.location.pathname);
+                } catch(e) {}
+            }
+        });
+
+        // Save scroll on form submit inside content area
+        document.addEventListener('submit', function(e) {
+            if (e.target.closest('.dashboard-content-area')) {
+                try {
+                    sessionStorage.setItem('gb_inpage_scroll', window.scrollY);
+                    sessionStorage.setItem('gb_inpage_path', window.location.pathname);
+                } catch(e) {}
+            }
+        });
+    });
+</script>
+{% endblock %}

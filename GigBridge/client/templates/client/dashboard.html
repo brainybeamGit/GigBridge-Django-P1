@@ -1,0 +1,1184 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Overview{% endblock %}
+{% block dashboard_title %}Client Workspace{% endblock %}
+
+{% block extra_css %}
+<!-- Minimalist Typography-First Client Dashboard -->
+{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Minimalist Typography-First Dashboard System (Icon-Free Alternative)
+       Clean, Editorial, High-End Luxury SaaS Aesthetic
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-navy-subtle: #1E293B;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-card-bg: #FFFFFF;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. LUMINOUS SHINING HERO BANNER (CLEAN & TYPOGRAPHY-FIRST) ─── */
+    .cd-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 32px 36px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 26px;
+    }
+
+    .cd-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 12px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .cd-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .cd-hero-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 8px;
+        line-height: 1.2;
+    }
+
+    .cd-hero-sub {
+        font-size: 0.94rem;
+        color: #334155;
+        max-width: 640px;
+        line-height: 1.55;
+        margin-bottom: 0;
+    }
+
+    /* Primary & Glass Buttons */
+    .btn-cd-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        padding: 10px 22px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-cd-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-cd-glass {
+        background: rgba(255, 255, 255, 0.9);
+        color: #0F172A !important;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 10px 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-cd-glass:hover {
+        background: #FFFFFF;
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.15);
+    }
+
+    /* ─── 2. ACTION REQUIRED NOTICES (TYPOGRAPHIC STYLE) ─── */
+    .cd-alert-clean {
+        background: #FFFFFF;
+        border: 1px solid #BAE6FD;
+        border-left: 4px solid #0284C7;
+        border-radius: 12px;
+        padding: 18px 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 2px 14px rgba(2, 132, 199, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .cd-alert-tag {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0284C7;
+        margin-bottom: 4px;
+    }
+
+    /* ─── 3. ICON-FREE EDITORIAL METRIC CARDS ─── */
+    .cd-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--cd-radius);
+        padding: 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cd-metric-card:hover {
+        transform: translateY(-3px);
+        border-color: #BAE6FD;
+        box-shadow: 0 8px 25px rgba(2, 132, 199, 0.12);
+    }
+
+    .cd-metric-top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+    }
+
+    .cd-metric-index {
+        font-family: 'Plus Jakarta Sans', monospace, sans-serif;
+        font-size: 0.76rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+    }
+
+    .cd-metric-pill {
+        font-size: 0.7rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .cd-metric-num {
+        font-size: 2.15rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 6px;
+    }
+
+    .cd-metric-label {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 3px;
+    }
+
+    .cd-metric-sub {
+        font-size: 0.77rem;
+        color: #64748B;
+        line-height: 1.45;
+    }
+
+    /* Subtle bottom accent line on hover */
+    .cd-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #0284C7;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .cd-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    /* ─── 4. ANALYTICS & CHARTS SECTION ─── */
+    .cd-chart-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--cd-radius);
+        padding: 24px;
+        height: 100%;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .cd-card-header-clean {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .cd-card-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #0F172A;
+        margin: 0;
+    }
+
+    .cd-card-subtitle {
+        font-size: 0.78rem;
+        color: #64748B;
+        margin-top: 3px;
+    }
+
+    .cd-kpi-pill {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 6px 12px;
+        display: inline-flex;
+        flex-direction: column;
+        line-height: 1.2;
+    }
+
+    .cd-kpi-pill-val {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #0284C7;
+    }
+
+    .cd-kpi-pill-lbl {
+        font-size: 0.68rem;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+    }
+
+    /* ─── 5. CLEAN WORKFLOW HELPER STRIP (ICON-FREE) ─── */
+    .cd-action-tile {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease;
+        height: 100%;
+    }
+
+    .cd-action-tile:hover {
+        border-color: #BAE6FD;
+        background: #F0F9FF;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+        color: inherit;
+    }
+
+    .cd-action-tile-num {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #0284C7;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+
+    .cd-action-tile-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .cd-action-tile-desc {
+        font-size: 0.74rem;
+        color: #64748B;
+        margin: 0;
+    }
+
+    /* ─── 6. DATA TABLES & CONTRACT LISTS ─── */
+    .cd-table-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--cd-radius);
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .cd-table {
+        margin-bottom: 0;
+    }
+
+    .cd-table th {
+        background: #F8FAFC;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        color: #64748B;
+        padding: 14px 18px;
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    .cd-table td {
+        padding: 15px 18px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 0.85rem;
+        vertical-align: middle;
+    }
+
+    .cd-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .cd-table tr:hover td {
+        background: #F8FAFC;
+    }
+
+    .cd-user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 0.88rem;
+        flex-shrink: 0;
+        letter-spacing: 0.04em;
+    }
+
+    /* Editorial Text Badges */
+    .badge-cd-open { background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; }
+    .badge-cd-in_progress { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .badge-cd-completed { background: #F3E8FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+    .badge-cd-draft { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+    .badge-cd-closed { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+
+    /* Contract Card Mini */
+    .cd-contract-box {
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 14px;
+        background: #FFFFFF;
+        transition: all 0.2s ease;
+    }
+
+    .cd-contract-box:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+    }
+
+    .cd-contract-box:last-child {
+        margin-bottom: 0;
+    }
+
+    /* Minimalist Action Buttons */
+    .btn-act-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-act-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .btn-act-outline {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-act-outline:hover {
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        background: #F0F9FF;
+    }
+
+    /* Empty State Minimalist */
+    .cd-empty-minimal {
+        text-align: center;
+        padding: 48px 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        margin: 16px;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     A. CLIENT VERIFICATION PENDING NOTICE (TYPOGRAPHIC STYLE)
+     ========================================================================= -->
+{% if not request.user.profile.is_approved %}
+<div class="card border-0 rounded-3 shadow-sm mb-4" style="background: #FFFBEB; border-left: 4px solid #D97706 !important;">
+    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <div class="small fw-bold text-uppercase" style="letter-spacing: 0.08em; color: #B45309;">Verification Pending</div>
+            <h5 class="fw-bold mb-1" style="color: #92400E;">Client Account Awaiting Administrator Review</h5>
+            <p class="mb-0 small" style="color: #78350F; max-width: 680px;">
+                Your client profile has been registered. Once verified by the platform admin, you will be authorized to publish project postings, inspect deliverables, and hire talent.
+            </p>
+        </div>
+        <span class="badge px-3 py-2 fw-bold" style="background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; font-size: 0.78rem;">
+            Awaiting Admin Approval
+        </span>
+    </div>
+</div>
+{% endif %}
+
+<!-- =========================================================================
+     B. ACTION REQUIRED: DELIVERABLES SUBMITTED FOR INSPECTION
+     ========================================================================= -->
+{% if pending_reviews_count > 0 %}
+<div class="cd-alert-clean">
+    <div>
+        <div class="cd-alert-tag">Action Required &bull; Milestone Inspection</div>
+        <h6 class="fw-bold mb-1" style="color: #0F172A;">
+            {{ pending_reviews_count }} Milestone Deliverable{{ pending_reviews_count|pluralize }} Ready for Inspection
+        </h6>
+        <p class="text-muted small mb-0">
+            Freelancers have submitted deliverables for your active projects. Review repositories or files to approve and release escrow payments.
+        </p>
+    </div>
+    <div>
+        <a href="{% url 'client_milestones' %}" class="btn-cd-primary py-2 px-3">
+            Inspect Deliverables &rarr;
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="cd-hero-banner">
+    <div class="row align-items-center g-4">
+        <div class="col-xl-7 col-lg-6">
+            <div class="cd-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Client Command Hub</span>
+            </div>
+            <h2 class="cd-hero-title">
+                Welcome back, {{ request.user.first_name|default:request.user.username }}
+            </h2>
+            <p class="cd-hero-sub">
+                Oversee job postings, evaluate incoming talent proposals, monitor escrow-backed milestones, and review verified deliverables.
+            </p>
+        </div>
+        <div class="col-xl-5 col-lg-6">
+            <div class="d-flex flex-wrap gap-2 justify-content-lg-end">
+                {% if request.user.profile.is_approved %}
+                <a href="{% url 'client_project_create' %}" class="btn-cd-primary">
+                    + Post New Project
+                </a>
+                {% else %}
+                <button type="button" class="btn-cd-primary" style="opacity:0.75;cursor:not-allowed;" title="Pending Admin Approval" onclick="alert('Your client account is pending administrator approval before you can post new projects.');">
+                    Post Project (Pending)
+                </button>
+                {% endif %}
+
+                <a href="{% url 'client_proposals' %}" class="btn-cd-glass">
+                    Proposals
+                    <span class="badge rounded-pill ms-1" style="background:#0284C7; color:#FFFFFF; font-size: 0.72rem;">{{ pending_proposals }}</span>
+                </a>
+
+                <a href="{% url 'client_messages' %}" class="btn-cd-glass">
+                    Messages
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. SIX EDITORIAL METRIC CARDS (NUMBERED, NO NOISY ICONS)
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Card 1: Open for Bidding -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">01 / Postings</span>
+                <span class="cd-metric-pill" style="background: #F0F9FF; color: #0284C7; border: 1px solid #BAE6FD;">
+                    Live Market
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #0284C7;">{{ open_projects }}</div>
+                <div class="cd-metric-label">Open for Bidding</div>
+                <div class="cd-metric-sub">Active project postings currently accepting freelancer bids</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Active Contracts -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">02 / Execution</span>
+                <span class="cd-metric-pill" style="background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0;">
+                    In Progress
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #059669;">{{ active_contracts }}</div>
+                <div class="cd-metric-label">Active Contracts</div>
+                <div class="cd-metric-sub">Hired specialists actively executing milestone deliverables</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Pending Proposals -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">03 / Proposals</span>
+                <span class="cd-metric-pill" style="{% if pending_proposals > 0 %}background: #FEF3C7; color: #B45309; border: 1px solid #FDE68A;{% else %}background: #F8FAFC; color: #64748B; border: 1px solid #E2E8F0;{% endif %}">
+                    {% if pending_proposals > 0 %}Action Required{% else %}All Caught Up{% endif %}
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #D97706;">{{ pending_proposals }}</div>
+                <div class="cd-metric-label">Pending Proposals</div>
+                <div class="cd-metric-sub">Incoming talent bids awaiting your review and hiring decision</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Total Volume Paid Out -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">04 / Capital</span>
+                <span class="cd-metric-pill" style="background: #F0F9FF; color: #0369A1; border: 1px solid #BAE6FD;">
+                    Verified
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #0F172A;">${{ total_spent|floatformat:0 }}</div>
+                <div class="cd-metric-label">Total Volume Spent</div>
+                <div class="cd-metric-sub">Verified milestone payouts successfully released to talent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 5: Active Escrow Commitments -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">05 / Escrow</span>
+                <span class="cd-metric-pill" style="background: #EEF2FF; color: #4338CA; border: 1px solid #C7D2FE;">
+                    Protected
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #4F46E5;">${{ active_contracts_value|floatformat:0 }}</div>
+                <div class="cd-metric-label">Active Contract Value</div>
+                <div class="cd-metric-sub">Total committed value across {{ active_contracts }} running contracts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 6: Completed Projects -->
+    <div class="col-xl-4 col-md-6">
+        <div class="cd-metric-card">
+            <div class="cd-metric-top-bar">
+                <span class="cd-metric-index">06 / Delivered</span>
+                <span class="cd-metric-pill" style="background: #F5F3FF; color: #7C3AED; border: 1px solid #DDD6FE;">
+                    100% Closed
+                </span>
+            </div>
+            <div>
+                <div class="cd-metric-num" style="color: #7C3AED;">{{ completed_projects }}</div>
+                <div class="cd-metric-label">Completed Projects</div>
+                <div class="cd-metric-sub">Successfully closed contracts and approved final deliverables</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. VISUAL ANALYTICS CHARTS (CLEAN HEADERS, ZERO NOISY ICONS)
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Chart 1: Expenditure & Milestone Trends (Area/Line Chart, 8 cols) -->
+    <div class="col-lg-8">
+        <div class="cd-chart-card">
+            <div class="cd-card-header-clean">
+                <div>
+                    <h5 class="cd-card-title">Expenditure &amp; Payout Trends</h5>
+                    <div class="cd-card-subtitle">Verified monthly payouts released over the past 6 months</div>
+                </div>
+                <div class="d-flex gap-2 align-items-center">
+                    <div class="cd-kpi-pill">
+                        <span class="cd-kpi-pill-val">${{ total_spent|floatformat:0 }}</span>
+                        <span class="cd-kpi-pill-lbl">Lifetime Spend</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="position: relative; height: 280px; width: 100%;">
+                <canvas id="clientSpendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Project Lifecycle Breakdown (Donut Chart, 4 cols) -->
+    <div class="col-lg-4">
+        <div class="cd-chart-card">
+            <div class="cd-card-header-clean">
+                <div>
+                    <h5 class="cd-card-title">Project Portfolio</h5>
+                    <div class="cd-card-subtitle">Status distribution across {{ total_projects }} postings</div>
+                </div>
+            </div>
+
+            <div style="position: relative; height: 210px; width: 100%;">
+                <canvas id="clientProjectStatusChart"></canvas>
+            </div>
+
+            <!-- Custom Legend Breakdown -->
+            <div class="mt-3 pt-3 border-top">
+                <div class="row g-2 text-center" style="font-size: 0.78rem;">
+                    <div class="col-4">
+                        <div class="fw-bold" style="color: #0284C7;">{{ open_projects }}</div>
+                        <div class="text-muted small">Open</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold" style="color: #10B981;">{{ in_progress_projects }}</div>
+                        <div class="text-muted small">In Progress</div>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold" style="color: #8B5CF6;">{{ completed_projects }}</div>
+                        <div class="text-muted small">Completed</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. QUICK WORKFLOW TILES (TYPOGRAPHY & NUMBERED ACTIONS)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'client_project_create' %}" class="cd-action-tile">
+            <div>
+                <div class="cd-action-tile-num">Action &bull; 01</div>
+                <div class="cd-action-tile-title">Post a Project</div>
+                <p class="cd-action-tile-desc">Publish specs to hire vetted specialists</p>
+            </div>
+            <div class="mt-3 small fw-bold" style="color: #0284C7;">Create Listing &rarr;</div>
+        </a>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'client_proposals' %}" class="cd-action-tile">
+            <div>
+                <div class="cd-action-tile-num">Action &bull; 02</div>
+                <div class="cd-action-tile-title">Evaluate Proposals</div>
+                <p class="cd-action-tile-desc">{{ pending_proposals }} bids awaiting client decision</p>
+            </div>
+            <div class="mt-3 small fw-bold" style="color: #0284C7;">Review Bids &rarr;</div>
+        </a>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'client_milestones' %}" class="cd-action-tile">
+            <div>
+                <div class="cd-action-tile-num">Action &bull; 03</div>
+                <div class="cd-action-tile-title">Milestone Escrow</div>
+                <p class="cd-action-tile-desc">Inspect code, deliverables &amp; release funds</p>
+            </div>
+            <div class="mt-3 small fw-bold" style="color: #0284C7;">Manage Escrow &rarr;</div>
+        </a>
+    </div>
+
+    <div class="col-md-3 col-sm-6">
+        <a href="{% url 'client_messages' %}" class="cd-action-tile">
+            <div>
+                <div class="cd-action-tile-num">Action &bull; 04</div>
+                <div class="cd-action-tile-title">Direct Messages</div>
+                <p class="cd-action-tile-desc">Real-time collaboration with talent</p>
+            </div>
+            <div class="mt-3 small fw-bold" style="color: #0284C7;">Open Chat &rarr;</div>
+        </a>
+    </div>
+</div>
+
+<!-- =========================================================================
+     5. RECENT PROPOSALS & ACTIVE CONTRACTS
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Left Column: Recent Received Proposals (7 cols) -->
+    <div class="col-lg-7">
+        <div class="cd-table-card h-100">
+            <div class="p-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="cd-card-title">
+                        Recent Received Proposals
+                        <span class="badge ms-2" style="background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; font-size: 0.72rem;">
+                            {{ pending_proposals }} pending
+                        </span>
+                    </h5>
+                </div>
+                <a href="{% url 'client_proposals' %}" class="small text-decoration-none fw-bold" style="color: #0284C7;">
+                    View All &rarr;
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table cd-table align-middle">
+                    <thead>
+                        <tr>
+                            <th>Freelancer</th>
+                            <th>Project</th>
+                            <th>Bid &amp; Time</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prop in recent_proposals %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="cd-user-avatar">
+                                            {{ prop.freelancer.first_name|default:prop.freelancer.username|slice:":2"|upper }}
+                                        </div>
+                                        <div>
+                                            <span class="fw-bold text-dark d-block" style="font-size: 0.85rem;">
+                                                {{ prop.freelancer.get_full_name|default:prop.freelancer.username }}
+                                            </span>
+                                            <div class="text-muted small" style="font-size: 0.72rem;">
+                                                Rating &bull; {{ prop.freelancer.profile.average_rating|default:"5.0" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <a href="{% url 'project_detail' prop.project.id %}" class="text-decoration-none fw-semibold d-inline-block text-truncate" style="max-width: 170px; color: #0F172A;" title="{{ prop.project.title }}">
+                                        {{ prop.project.title }}
+                                    </a>
+                                    <div class="text-muted" style="font-size: 0.72rem;">
+                                        {{ prop.project.category.name|default:"General" }}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="fw-bold d-block" style="color: #0F172A;">${{ prop.bid_amount|floatformat:0 }}</span>
+                                    <span class="text-muted" style="font-size: 0.72rem;">
+                                        {{ prop.delivery_days }} days delivery
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    {% if prop.status == 'pending' %}
+                                        <div class="d-inline-flex gap-1">
+                                            <form method="POST" action="{% url 'client_proposal_accept' prop.id %}" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" class="btn-act-primary">
+                                                    Accept
+                                                </button>
+                                            </form>
+                                            <a href="{% url 'client_proposals' %}" class="btn-act-outline" title="Review Proposal">
+                                                Details
+                                            </a>
+                                        </div>
+                                    {% else %}
+                                        <span class="badge {% if prop.status == 'accepted' %}badge-cd-in_progress{% else %}badge-cd-draft{% endif %}" style="font-size: 0.75rem;">
+                                            {{ prop.status|title }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="p-0">
+                                    <div class="cd-empty-minimal">
+                                        <div class="fw-bold mb-1" style="color: #0F172A;">No Pending Proposals</div>
+                                        <p class="text-muted small mb-3">All talent bids have been reviewed. New proposals will appear here as specialists apply.</p>
+                                        <a href="{% url 'client_project_create' %}" class="btn-act-primary py-2 px-3">
+                                            Post a New Project
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Active Contracts & Execution Progress (5 cols) -->
+    <div class="col-lg-5">
+        <div class="cd-table-card h-100 p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <h5 class="cd-card-title">
+                    Active Contracts
+                    <span class="badge ms-2" style="background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; font-size: 0.72rem;">
+                        {{ active_contracts }} active
+                    </span>
+                </h5>
+                <a href="{% url 'client_contracts' %}" class="small text-decoration-none fw-bold" style="color: #0284C7;">
+                    View All &rarr;
+                </a>
+            </div>
+
+            {% for contract in recent_contracts %}
+                <div class="cd-contract-box">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="overflow-hidden pe-2">
+                            <h6 class="fw-bold mb-0 text-truncate" style="font-size: 0.9rem;">
+                                <a href="{% url 'client_contract_detail' contract.id %}" class="text-decoration-none" style="color: #0F172A;">
+                                    {{ contract.project.title }}
+                                </a>
+                            </h6>
+                            <small class="text-muted d-block text-truncate" style="font-size: 0.75rem;">
+                                Talent &bull; {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                            </small>
+                        </div>
+                        <span class="fw-bold" style="color: #0284C7; font-size: 0.95rem;">${{ contract.total_amount|floatformat:0 }}</span>
+                    </div>
+
+                    <!-- Milestone Progress Bar -->
+                    <div class="d-flex align-items-center justify-content-between text-muted mb-1 mt-2">
+                        <span style="font-size: 0.73rem;">Execution Progress</span>
+                        <span class="fw-bold" style="font-size: 0.73rem; color: #0F172A;">{{ contract.progress_percentage }}%</span>
+                    </div>
+                    <div class="progress mb-3" style="height: 5px; border-radius: 999px; background: #E2E8F0;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: #0284C7;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center pt-2 border-top">
+                        <span class="badge" style="background: #ECFDF5; color: #059669; font-size: 0.72rem;">
+                            Active
+                        </span>
+                        <a href="{% url 'client_contract_detail' contract.id %}" class="btn-act-outline">
+                            Workroom &rarr;
+                        </a>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="cd-empty-minimal m-0">
+                    <div class="fw-bold mb-1" style="color: #0F172A;">No Active Contracts</div>
+                    <p class="text-muted small mb-0">Active contracts and milestone progress will show here when you accept a proposal.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     6. BOTTOM SECTION: RECENT PROJECT POSTINGS STRIP
+     ========================================================================= -->
+<div class="cd-table-card">
+    <div class="p-3 px-4 border-bottom d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <h5 class="cd-card-title">
+            Your Project Postings
+            <span class="badge ms-2" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.72rem;">
+                {{ recent_projects|length }} of {{ total_projects }}
+            </span>
+        </h5>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'client_project_create' %}" class="btn-act-primary">
+                + Post New Project
+            </a>
+            <a href="{% url 'client_projects' %}" class="btn-act-outline">
+                Manage All
+            </a>
+        </div>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table cd-table align-middle">
+            <thead>
+                <tr>
+                    <th>Project Title</th>
+                    <th>Category</th>
+                    <th>Budget Range</th>
+                    <th>Proposals</th>
+                    <th>Status</th>
+                    <th>Posted Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proj in recent_projects %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'project_detail' proj.id %}" class="fw-bold text-decoration-none" style="color: #0F172A;" title="{{ proj.title }}">
+                                {{ proj.title }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0;">
+                                {{ proj.category.name|default:"General" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="fw-semibold" style="color: #0F172A;">
+                                ${{ proj.budget_min|floatformat:0 }} &ndash; ${{ proj.budget_max|floatformat:0 }}
+                            </span>
+                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ proj.get_budget_type_display }}</small>
+                        </td>
+                        <td>
+                            <a href="{% url 'client_proposals' %}" class="badge text-decoration-none px-2 py-1" style="background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD;">
+                                {{ proj.num_proposals|default:proj.proposals_count }} bids
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge badge-cd-{{ proj.status }}" style="font-size: 0.75rem;">
+                                {{ proj.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ proj.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'project_detail' proj.id %}" class="btn-act-outline" title="View Public Listing">
+                                    View
+                                </a>
+                                <a href="{% url 'client_project_edit' proj.id %}" class="btn-act-outline" title="Edit Project">
+                                    Edit
+                                </a>
+                                <a href="{% url 'client_proposals' %}" class="btn-act-outline" title="View Bids">
+                                    Bids
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-0">
+                            <div class="cd-empty-minimal">
+                                <div class="fw-bold mb-1" style="color: #0F172A;">No Projects Posted Yet</div>
+                                <p class="text-muted small mb-3">Create your first job posting to start receiving proposals from verified specialists.</p>
+                                <a href="{% url 'client_project_create' %}" class="btn-act-primary py-2 px-3">
+                                    Post Your First Project
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- =========================================================================
+     7. CHART.JS SCRIPT INITIALIZATION (CDN & RENDERING)
+     ========================================================================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const spendLabels = {{ spend_chart_labels_json|safe }};
+        const spendData = {{ spend_chart_data_json|safe }};
+        const donutLabels = {{ project_donut_labels_json|safe }};
+        const donutData = {{ project_donut_data_json|safe }};
+
+        // 1. Area & Line Chart: Expenditure Trends
+        const spendCanvas = document.getElementById('clientSpendChart');
+        if (spendCanvas) {
+            const ctx = spendCanvas.getContext('2d');
+            
+            // Create luminous light blue shining gradient
+            const gradientFill = ctx.createLinearGradient(0, 0, 0, 260);
+            gradientFill.addColorStop(0, 'rgba(2, 132, 199, 0.28)');
+            gradientFill.addColorStop(0.5, 'rgba(56, 189, 248, 0.12)');
+            gradientFill.addColorStop(1, 'rgba(240, 249, 255, 0.01)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: spendLabels,
+                    datasets: [{
+                        label: 'Monthly Payouts ($)',
+                        data: spendData,
+                        borderColor: '#0284C7',
+                        borderWidth: 3,
+                        backgroundColor: gradientFill,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#0284C7',
+                        pointBorderWidth: 2.5,
+                        pointRadius: 4.5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#0284C7',
+                        pointHoverBorderColor: '#FFFFFF',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#F8FAFC',
+                            bodyColor: '#38BDF8',
+                            titleFont: { size: 12, weight: '700', family: 'Plus Jakarta Sans' },
+                            bodyFont: { size: 13, weight: '600', family: 'Plus Jakarta Sans' },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Payout: $' + Number(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans' },
+                                color: '#64748B'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { dash: [4, 4] },
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans' },
+                                color: '#64748B',
+                                callback: function(value) {
+                                    return '$' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Doughnut Chart: Project Status Distribution
+        const donutCanvas = document.getElementById('clientProjectStatusChart');
+        if (donutCanvas) {
+            const donutCtx = donutCanvas.getContext('2d');
+            
+            const sumValues = donutData.reduce((a, b) => a + b, 0);
+            const chartData = sumValues > 0 ? donutData : [1];
+            const chartLabels = sumValues > 0 ? donutLabels : ['No Projects Yet'];
+            const chartColors = sumValues > 0 
+                ? ['#0284C7', '#10B981', '#8B5CF6', '#94A3B8', '#CBD5E1']
+                : ['#E2E8F0'];
+
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 2,
+                        borderColor: '#FFFFFF',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '72%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#38BDF8',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans' },
+                            bodyFont: { size: 12, weight: '700', family: 'Plus Jakarta Sans' },
+                            padding: 8,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (sumValues === 0) return ' No projects posted';
+                                    return ' ' + context.label + ': ' + context.parsed + ' projects';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,343 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Contracts & Escrow{% endblock %}
+{% block page_title %}Contracts &amp; Escrow Management{% endblock %}
+{% block page_subtitle %}Monitor active legal agreements, milestone disbursements, delivery progress, and completion states.{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            ESCROW AUDIT &bull; LEGAL CONTRACTS
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">Contracts &amp; Escrow Governance</h2>
+        <p class="text-secondary small mb-0">Track active client-specialist agreements, milestone delivery completion, advance disbursements, and status overrides.</p>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Contracts</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_contracts }}</div>
+            <p class="adm-kpi-caption">Created service agreements</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Active In-Progress</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ active_count }}</div>
+            <p class="adm-kpi-caption">Under active development</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Completed</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ completed_count }}</div>
+            <p class="adm-kpi-caption">Delivered and settled</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Contract Book</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-dark">&#8377;{{ total_val|floatformat:0 }}</div>
+            <p class="adm-kpi-caption">{{ cancelled_count }} cancelled / closed</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_contracts' %}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by project, client, or freelancer username...">
+        </div>
+        <div class="col-md-4">
+            <select name="status" class="form-select">
+                <option value="">All Contract Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or status_filter %}
+                <a href="{% url 'adminpanel_contracts' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Contracts Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Contracts Directory ({{ contracts|length }})</span>
+        <span class="text-muted small">Agreements between clients and talent</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Project</th>
+                    <th>Employer Client</th>
+                    <th>Freelancer</th>
+                    <th>Contract Valuation</th>
+                    <th>Delivery Progress</th>
+                    <th>Status</th>
+                    <th>Started</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for c in contracts %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-dark">
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#viewContractModal{{ c.id }}" class="text-dark text-decoration-none hover-primary">
+                                {{ c.project.title|truncatechars:34 }}
+                            </a>
+                        </div>
+                        <span class="text-muted small">ID: #{{ c.id }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ c.client.username }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ c.freelancer.username }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-bold text-dark fs-6">&#8377;{{ c.total_amount|floatformat:2 }}</span>
+                    </td>
+                    <td>
+                        <div class="d-flex align-items-center gap-2" style="min-width:110px;">
+                            <div class="progress flex-grow-1" style="height: 6px; background-color: #E2E8F0; border-radius: 999px;">
+                                <div class="progress-bar" role="progressbar" style="width: {{ c.progress_percentage }}%; background: linear-gradient(90deg, #0284C7, #38BDF8); border-radius: 999px;"></div>
+                            </div>
+                            <small class="fw-bold text-dark">{{ c.progress_percentage }}%</small>
+                        </div>
+                        <span class="text-muted small" style="font-size:0.72rem;">{{ c.milestones.count }} milestone(s)</span>
+                    </td>
+                    <td>
+                        {% if c.status == 'active' %}
+                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Active</span>
+                        {% elif c.status == 'completed' %}
+                            <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">Completed</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary px-2 py-1 rounded-pill">{{ c.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ c.start_date|date:"M d, Y" }}</td>
+                    <td class="text-end pe-4">
+                        <!-- Converted multi-button into Actions Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewContractModal{{ c.id }}">
+                                        View Contract &amp; Milestones
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#statusContractModal{{ c.id }}">
+                                        Update Status
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteContractModal{{ c.id }}">
+                                        Delete Agreement
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        No contracts found matching the query.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for c in contracts %}
+<!-- View Contract Modal -->
+<div class="modal fade" id="viewContractModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-4">
+                <div>
+                    <span class="badge bg-light text-dark border px-2 py-1 small mb-1">
+                        Contract #{{ c.id }} &bull; {{ c.get_status_display }}
+                    </span>
+                    <h5 class="modal-title fw-bold mb-0 text-dark">{{ c.project.title }}</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Client Employer</span>
+                            <strong class="text-dark">{{ c.client.get_full_name|default:c.client.username }} (@{{ c.client.username }})</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Freelancer Specialist</span>
+                            <strong class="text-dark">{{ c.freelancer.get_full_name|default:c.freelancer.username }} (@{{ c.freelancer.username }})</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Total Contract Value</span>
+                            <strong class="text-primary fs-5">&#8377;{{ c.total_amount|floatformat:2 }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Timeframe</span>
+                            <span class="text-dark small">{{ c.start_date|date:"M d, Y" }} – {{ c.end_date|date:"M d, Y"|default:"Present" }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestones Section -->
+                <div class="p-3 bg-light rounded-3 border">
+                    <h6 class="fw-bold text-dark mb-3">Milestone Stages ({{ c.milestones.count }})</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle mb-0 small bg-white rounded-3">
+                            <thead>
+                                <tr>
+                                    <th>Milestone Title</th>
+                                    <th>Amount</th>
+                                    <th>Target Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in c.milestones.all %}
+                                <tr>
+                                    <td class="fw-semibold text-dark">{{ m.title }}</td>
+                                    <td class="text-dark fw-bold">&#8377;{{ m.amount|floatformat:2 }}</td>
+                                    <td class="text-muted">{{ m.due_date|date:"M d, Y"|default:"—" }}</td>
+                                    <td>
+                                        <span class="badge {% if m.status == 'approved' or m.status == 'paid' %}bg-success-subtle text-success{% elif m.status == 'submitted' %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %}">
+                                            {{ m.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-muted py-2 text-center">No milestones created yet.</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Status Modal -->
+<div class="modal fade" id="statusContractModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <h6 class="modal-title fw-bold mb-0 text-dark">Update Contract Status</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel_contract_status' c.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 bg-white">
+                    <p class="small text-muted mb-3">Update agreement status for <strong>"{{ c.project.title|truncatechars:40 }}"</strong>:</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Select New Status</label>
+                        <select name="status" class="form-select">
+                            <option value="active" {% if c.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="completed" {% if c.status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="cancelled" {% if c.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background:#0284C7;border-color:#0284C7;">Save Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Contract Modal -->
+<div class="modal fade" id="deleteContractModal{{ c.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3">
+                <h6 class="modal-title fw-bold mb-0">Confirm Delete Contract</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h5 class="fw-bold text-dark">Delete contract for {{ c.project.title }}?</h5>
+                <p class="text-muted small mb-0">Milestones and disbursements will be permanently removed.</p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_contract_delete' c.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-4 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

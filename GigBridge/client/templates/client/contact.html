@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us | GigBridge Support &amp; Inquiries{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════
+     HERO BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-contact-hero">
+    <div class="container position-relative text-center" style="z-index: 2;">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Contact Us</li>
+            </ol>
+        </nav>
+
+        <div class="gb-hero-pill-badge mx-auto">
+            <i class="bi bi-chat-dots-fill"></i> Specialized Support &amp; Partnerships
+        </div>
+
+        <h1 class="gb-contact-hero-title">Get in Touch with the GigBridge Team</h1>
+        <p class="gb-contact-hero-subtitle mx-auto">
+            Have questions about client hiring, freelancer payments, milestone escrow, or platform partnerships? Reach out to our specialized support team.
+        </p>
+
+        <!-- Response Badges -->
+        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap text-white-50 small mt-3">
+            <span class="d-inline-flex align-items-center gap-1 text-white">
+                <i class="bi bi-lightning-charge-fill text-warning"></i> Avg Response &lt; 4 Hours
+            </span>
+            <span>&bull;</span>
+            <span class="d-inline-flex align-items-center gap-1 text-white">
+                <i class="bi bi-shield-check text-success"></i> 24/7 Escrow Assistance
+            </span>
+            <span>&bull;</span>
+            <span class="d-inline-flex align-items-center gap-1 text-white">
+                <i class="bi bi-patch-check-fill text-info"></i> Direct Enterprise Support
+            </span>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CONTACT FORM & INFORMATION SIDEBAR
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="row g-5">
+            <!-- ──────────────────────────────────────────
+                 LEFT COLUMN: Interactive Contact Form
+                 ────────────────────────────────────────── -->
+            <div class="col-lg-7">
+                <div class="gb-contact-card">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <i class="bi bi-envelope-paper-heart-fill text-primary fs-4"></i>
+                        <h2 class="fw-bold text-navy mb-0 fs-4">Send Us a Message</h2>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Fill out the form below and our team will get back to you promptly. Select a topic shortcut for faster routing.
+                    </p>
+
+                    <!-- Quick Topic Shortcuts -->
+                    <div class="mb-3">
+                        <span class="text-muted small fw-semibold d-block mb-1">Select a topic:</span>
+                        <div class="gb-topic-pills-wrap">
+                            <span class="gb-topic-pill" onclick="setSubject('Hiring & Post a Project Inquiry')">
+                                <i class="bi bi-briefcase me-1"></i> Hiring &amp; Jobs
+                            </span>
+                            <span class="gb-topic-pill" onclick="setSubject('Freelancer Bidding & Profile Help')">
+                                <i class="bi bi-person-workspace me-1"></i> Freelancer Help
+                            </span>
+                            <span class="gb-topic-pill" onclick="setSubject('Milestone Escrow & Payment Issue')">
+                                <i class="bi bi-shield-lock me-1"></i> Payments &amp; Escrow
+                            </span>
+                            <span class="gb-topic-pill" onclick="setSubject('Partnership & Enterprise Inquiry')">
+                                <i class="bi bi-buildings me-1"></i> Enterprise
+                            </span>
+                            <span class="gb-topic-pill" onclick="setSubject('Technical Bug / Website Feedback')">
+                                <i class="bi bi-bug me-1"></i> Bug / Feedback
+                            </span>
+                        </div>
+                    </div>
+
+                    <form method="POST" action="{% url 'contact' %}">
+                        {% csrf_token %}
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-navy">
+                                    Your Full Name <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
+                                    {{ form.name }}
+                                </div>
+                                {% if form.name.errors %}
+                                    <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6">
+                                <label class="form-label small fw-bold text-navy">
+                                    Email Address <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
+                                    {{ form.email }}
+                                </div>
+                                {% if form.email.errors %}
+                                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-navy">
+                                Subject <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light text-muted"><i class="bi bi-chat-left-quote"></i></span>
+                                {{ form.subject }}
+                            </div>
+                            {% if form.subject.errors %}
+                                <div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label small fw-bold text-navy">
+                                Message <span class="text-danger">*</span>
+                            </label>
+                            {{ form.message }}
+                            {% if form.message.errors %}
+                                <div class="text-danger small mt-1">{{ form.message.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                            <div class="text-muted small d-flex align-items-center gap-2">
+                                <i class="bi bi-shield-check text-success fs-5"></i>
+                                <span>Protected by 256-bit SSL encryption</span>
+                            </div>
+                            <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4 py-2 shadow-sm">
+                                <i class="bi bi-send-fill me-1"></i> Send Message
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ──────────────────────────────────────────
+                 RIGHT COLUMN: Contact Channels & Support
+                 ────────────────────────────────────────── -->
+            <div class="col-lg-5">
+                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-4 bg-white mb-4">
+                    <h3 class="fw-bold text-navy mb-4 fs-5">Contact Information</h3>
+
+                    <!-- Channel 1: Headquarters -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box bg-primary-subtle text-primary">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Global Headquarters</h4>
+                            <p class="text-muted small mb-0">100 Market Street, Suite 400<br>San Francisco, CA 94105</p>
+                        </div>
+                    </div>
+
+                    <!-- Channel 2: Support Email -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box bg-success-subtle text-success">
+                            <i class="bi bi-envelope-fill"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Support &amp; Inquiries</h4>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-navy small fw-semibold">support@gigbridge.com</span>
+                                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" onclick="copyEmail('support@gigbridge.com')" title="Copy email">
+                                    <i class="bi bi-clipboard"></i>
+                                </button>
+                            </div>
+                            <small class="text-muted d-block mt-1">partnerships@gigbridge.com</small>
+                        </div>
+                    </div>
+
+                    <!-- Channel 3: Direct Phone Support -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box bg-warning-subtle text-warning">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Direct Phone Support</h4>
+                            <span class="text-navy small fw-semibold">+1 (800) 444-2743</span>
+                            <small class="text-muted d-block">Mon – Fri: 8:00 AM – 6:00 PM PST</small>
+                        </div>
+                    </div>
+
+                    <!-- Channel 4: Security & Escrow -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box bg-info-subtle text-info">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Milestone Escrow Desk</h4>
+                            <p class="text-muted small mb-0">Razorpay verified checkout and dispute resolution team on standby.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Help / FAQ Callout -->
+                <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #0b132b 0%, #1e3a8a 100%);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="gb-stat-icon-circle bg-white text-primary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">
+                            <i class="bi bi-question-circle-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-white mb-0 fs-6">Need Immediate Answers?</h4>
+                            <small class="text-white-50">Browse our detailed marketplace guide</small>
+                        </div>
+                    </div>
+                    <p class="text-white-50 small mb-3">
+                        Check our step-by-step workflow for clients and freelancers, payment escrow explanations, and frequent questions.
+                    </p>
+                    <a href="{% url 'how_it_works' %}" class="btn btn-light rounded-pill px-4 btn-sm fw-bold text-navy">
+                        Explore How It Works &amp; FAQ <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Toast notification for copy email -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    <div id="copyToast" class="toast align-items-center text-white bg-dark border-0 rounded-4 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-clipboard-check text-success fs-5"></i> Email copied to clipboard!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function setSubject(subjectText) {
+        const subjectInput = document.querySelector('input[name="subject"]');
+        if (subjectInput) {
+            subjectInput.value = subjectText;
+            subjectInput.focus();
+        }
+    }
+
+    function copyEmail(email) {
+        navigator.clipboard.writeText(email).then(function() {
+            const toastEl = document.getElementById('copyToast');
+            if (toastEl) {
+                const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+                toast.show();
+            }
+        }).catch(function() {
+            alert('Email: ' + email);
+        });
+    }
+</script>
+{% endblock %}

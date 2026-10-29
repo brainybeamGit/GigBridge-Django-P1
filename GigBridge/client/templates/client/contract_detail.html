@@ -1,0 +1,859 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
+{% block dashboard_title %}Contract #{{ contract.id }}: {{ contract.project.title }}{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Contract Detail - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .cd-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .cd-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .cd-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .cd-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+
+    .cd-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 720px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. EDITORIAL CARDS ─── */
+    .cd-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 26px 30px;
+        box-shadow: 0 2px 14px rgba(15, 23, 42, 0.03);
+        margin-bottom: 24px;
+    }
+
+    .cd-section-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ─── 3. AGREEMENT 25% / 50% / 25% STEPPER ─── */
+    .cd-step-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        margin-bottom: 20px;
+    }
+
+    @media (max-width: 768px) {
+        .cd-step-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .cd-step-box {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 18px 20px;
+        position: relative;
+        transition: all 0.2s ease;
+    }
+
+    .cd-step-box.step-active {
+        background: #F0F9FF;
+        border-color: #0284C7;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+    }
+
+    .cd-step-box.step-completed {
+        background: #F0FDF4;
+        border-color: #86EFAC;
+    }
+
+    .cd-step-kicker {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .cd-step-title {
+        font-size: 0.96rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin-bottom: 4px;
+    }
+
+    .cd-step-amount {
+        font-size: 1.15rem;
+        font-weight: 800;
+        color: #0284C7;
+        margin-bottom: 4px;
+    }
+
+    .cd-step-desc {
+        font-size: 0.78rem;
+        color: #64748B;
+        line-height: 1.45;
+        margin: 0;
+    }
+
+    /* ─── 4. MILESTONE ITEM CARDS ─── */
+    .cd-milestone-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 22px 26px;
+        margin-bottom: 18px;
+        transition: all 0.2s ease;
+    }
+
+    .cd-milestone-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.08);
+    }
+
+    .cd-milestone-card.ms-paid {
+        border-left: 4px solid #10B981;
+    }
+
+    .cd-milestone-card.ms-in-progress {
+        border-left: 4px solid #0284C7;
+    }
+
+    .cd-milestone-card.ms-submitted {
+        border-left: 4px solid #F59E0B;
+        background: #FFFEFA;
+    }
+
+    /* Action Buttons */
+    .btn-cd-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 9px 20px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-cd-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-cd-outline {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        padding: 8px 18px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .btn-cd-outline:hover {
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        background: #F0F9FF;
+    }
+
+    .btn-cd-success {
+        background: #10B981;
+        color: #FFFFFF !important;
+        border: 1px solid #10B981;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 9px 20px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-cd-success:hover {
+        background: #059669;
+        border-color: #059669;
+        transform: translateY(-1px);
+    }
+
+    .btn-cd-warning {
+        background: #F59E0B;
+        color: #FFFFFF !important;
+        border: 1px solid #F59E0B;
+        border-radius: 8px;
+        font-size: 0.84rem;
+        font-weight: 700;
+        padding: 8px 18px;
+        display: inline-flex;
+        align-items: center;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-cd-warning:hover {
+        background: #D97706;
+        border-color: #D97706;
+    }
+
+    /* Badges */
+    .badge-cd-active {
+        background: #E0F2FE;
+        color: #0284C7;
+        border: 1px solid #BAE6FD;
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 999px;
+    }
+
+    .badge-cd-success {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 999px;
+    }
+
+    .badge-cd-warning {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 999px;
+    }
+
+    .badge-cd-muted {
+        background: #F1F5F9;
+        color: #475569;
+        border: 1px solid #E2E8F0;
+        font-weight: 700;
+        font-size: 0.74rem;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 999px;
+    }
+
+    /* Financial Metrics Box */
+    .cd-metric-card {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 20px;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="cd-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-8 col-lg-7">
+            <div class="cd-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Verified Escrow Agreement &bull; Contract #{{ contract.id }}</span>
+            </div>
+            <h2 class="cd-hero-title">
+                {{ contract.project.title }}
+            </h2>
+            <p class="cd-hero-sub">
+                Agreed contract pipeline for project deliverables, 25% / 50% milestone releases, and verified source code approval.
+            </p>
+        </div>
+        <div class="col-xl-4 col-lg-5 text-lg-end">
+            <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
+                <span class="{% if contract.status == 'completed' %}badge-cd-success{% elif contract.status == 'active' %}badge-cd-active{% else %}badge-cd-muted{% endif %}">
+                    Status: {{ contract.get_status_display }}
+                </span>
+                <a href="{% url 'client_contracts' %}" class="btn-cd-outline">
+                    &larr; All Contracts
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. 25%, 50%, 25% AGREEMENT CONTRACT STRUCTURE CARD
+     ========================================================================= -->
+<div class="cd-card">
+    <div class="cd-section-title">
+        <span>Agreed Contract Milestone Structure (25% &bull; 50% &bull; 25%)</span>
+        <span class="badge bg-light text-secondary border small">Escrow Agreement Terms</span>
+    </div>
+
+    <p class="text-secondary small mb-3">
+        This contract is executed under the <strong>25% Advance Kickoff, 50% Progress Milestone, and 25% Final Delivery</strong> escrow model. Funds are safely held in escrow and released per verified deliverables.
+    </p>
+
+    <!-- 3-Phase Stepper -->
+    <div class="cd-step-grid">
+        <!-- Phase 1: 25% Advance Kickoff -->
+        <div class="cd-step-box {% if contract.is_advance_paid %}step-completed{% else %}step-active{% endif %}">
+            <div class="cd-step-kicker">
+                <span style="color: {% if contract.is_advance_paid %}#166534{% else %}#0284C7{% endif %};">Phase 1 &bull; 25% Kickoff</span>
+                <span class="badge {% if contract.is_advance_paid %}bg-success-subtle text-success{% else %}bg-primary-subtle text-primary{% endif %} rounded-pill small">
+                    {% if contract.is_advance_paid %}Verified &amp; Paid{% else %}Action Required{% endif %}
+                </span>
+            </div>
+            <div class="cd-step-title">Advance Initiation</div>
+            <div class="cd-step-amount">&#8377;{{ contract.advance_amount|floatformat:2 }}</div>
+            <p class="cd-step-desc">
+                25% initial escrow deposit to authorize the freelancer to begin architecture, database modeling, and setup.
+            </p>
+        </div>
+
+        <!-- Phase 2: 50% Progress Milestone -->
+        <div class="cd-step-box {% if contract.progress_percentage >= 50 %}step-completed{% elif contract.is_advance_paid %}step-active{% endif %}">
+            <div class="cd-step-kicker">
+                <span style="color: {% if contract.progress_percentage >= 50 %}#166534{% else %}#0284C7{% endif %};">Phase 2 &bull; 50% Development</span>
+                <span class="badge {% if contract.progress_percentage >= 50 %}bg-success-subtle text-success{% elif contract.is_advance_paid %}bg-info-subtle text-info{% else %}bg-light text-muted{% endif %} rounded-pill small">
+                    {% if contract.progress_percentage >= 50 %}Completed{% elif contract.is_advance_paid %}In Progress{% else %}Locked{% endif %}
+                </span>
+            </div>
+            <div class="cd-step-title">Core Implementation</div>
+            <div class="cd-step-amount">&#8377;{% widthratio contract.total_amount 1 0.5 as fifty_pct %}{{ fifty_pct|default:"9.00" }}</div>
+            <p class="cd-step-desc">
+                50% mid-project milestone for complete API routes, database schema, functional logic, and initial test demo.
+            </p>
+        </div>
+
+        <!-- Phase 3: 25% Final Completion -->
+        <div class="cd-step-box {% if contract.status == 'completed' %}step-completed{% endif %}">
+            <div class="cd-step-kicker">
+                <span style="color: {% if contract.status == 'completed' %}#166534{% else %}#64748B{% endif %};">Phase 3 &bull; 25% Completion</span>
+                <span class="badge {% if contract.status == 'completed' %}bg-success-subtle text-success{% else %}bg-light text-muted{% endif %} rounded-pill small">
+                    {% if contract.status == 'completed' %}Verified &amp; Released{% else %}Final Handover{% endif %}
+                </span>
+            </div>
+            <div class="cd-step-title">Final Delivery &amp; Source Code</div>
+            <div class="cd-step-amount">&#8377;{{ contract.final_amount|floatformat:2 }}</div>
+            <p class="cd-step-desc">
+                25% final balance released after full review of documentation, postman collection, bugfixes, and code repository handover.
+            </p>
+        </div>
+    </div>
+
+    <!-- Financial & Progress Overview Grid -->
+    <div class="row g-3">
+        <div class="col-sm-6 col-md-3">
+            <div class="cd-metric-card text-center">
+                <small class="text-muted fw-bold d-block mb-1">TOTAL PROJECT BUDGET</small>
+                <div class="fw-bold fs-4 text-dark">&#8377;{{ contract.total_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="cd-metric-card text-center">
+                <small class="text-muted fw-bold d-block mb-1">PAID TO DATE</small>
+                <div class="fw-bold fs-4 text-success">&#8377;{{ contract.paid_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="cd-metric-card text-center">
+                <small class="text-muted fw-bold d-block mb-1">REMAINING BALANCE</small>
+                <div class="fw-bold fs-4 text-primary">&#8377;{{ contract.remaining_amount|floatformat:2 }}</div>
+            </div>
+        </div>
+        <div class="col-sm-6 col-md-3">
+            <div class="cd-metric-card text-center">
+                <small class="text-muted fw-bold d-block mb-1">CONTRACT FULFILLMENT</small>
+                <div class="fw-bold fs-4 text-dark">{{ contract.progress_percentage }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress mt-3" style="height: 8px; border-radius: 999px; background: #E2E8F0;">
+        <div class="progress-bar bg-success" role="progressbar" style="width: {{ contract.progress_percentage }}%;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. FREELANCER DETAILS & AGREED DELIVERABLES
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Freelancer Card -->
+    <div class="col-lg-6">
+        <div class="cd-card h-100 mb-0">
+            <div class="cd-section-title">
+                <span>Hired Freelance Professional</span>
+                <a href="{% url 'start_conversation' %}?user_id={{ contract.freelancer.id }}&project_id={{ contract.project.id }}" class="btn-cd-outline py-1 px-3 small">
+                    Private Chat &rarr;
+                </a>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                <div class="user-avatar-sm" style="width: 58px; height: 58px; font-size: 1.4rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800;">
+                    {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
+                </div>
+                <div>
+                    <h5 class="fw-bold text-navy mb-0">{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h5>
+                    <small class="text-muted d-block">{{ contract.freelancer.profile.title|default:"Full-Stack Independent Developer" }}</small>
+                    <div class="d-flex align-items-center gap-2 mt-1">
+                        <span class="badge bg-light text-dark border small">Rating: {{ contract.freelancer.profile.average_rating|default:"5.0" }} / 5.0</span>
+                        <span class="text-muted small">&bull; {{ contract.freelancer.profile.location|default:"Remote" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agreed Scope & Deliverables Card -->
+    <div class="col-lg-6">
+        <div class="cd-card h-100 mb-0">
+            <div class="cd-section-title">
+                <span>Agreed Deliverables &amp; Timeline</span>
+                <span class="badge bg-light text-secondary border small">Milestone Scope</span>
+            </div>
+
+            <div class="small text-secondary mb-2">
+                <strong class="text-dark">Target Deadline:</strong>
+                {% if contract.end_date %}{{ contract.end_date|date:"F d, Y" }}{% else %}Flexible Delivery Schedule{% endif %}
+            </div>
+            <div class="p-3 bg-light rounded-3 border small text-dark" style="max-height: 90px; overflow-y: auto;">
+                {{ contract.deliverables|default:"Complete REST API endpoints, serializers, models, authentication, documentation, and clean git repository handover." }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. MILESTONES & PAYMENTS PIPELINE
+     ========================================================================= -->
+<div class="cd-card">
+    <div class="cd-section-title">
+        <span>Payment Schedule &amp; Milestone Deliverables</span>
+        <span class="badge bg-light text-secondary border small">Escrow Pipeline</span>
+    </div>
+
+    <div class="milestone-list">
+        {% for ms in milestones %}
+            <div class="cd-milestone-card {% if ms.status == 'paid' %}ms-paid{% elif ms.status == 'submitted' %}ms-submitted{% elif ms.status == 'in_progress' %}ms-in-progress{% endif %}">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                            <span class="badge {% if ms.status == 'paid' %}bg-success{% elif ms.status == 'approved' %}bg-primary{% elif ms.status == 'submitted' %}bg-warning text-dark{% elif ms.status == 'revision_requested' %}bg-danger text-white{% elif ms.status == 'in_progress' %}bg-info text-white{% else %}bg-secondary{% endif %} px-3 py-1 rounded-pill small">
+                                {{ ms.get_status_display }}
+                            </span>
+                            {% if ms.milestone_type == 'advance' %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">
+                                    Phase 1: 25% Advance Kickoff
+                                </span>
+                            {% elif ms.milestone_type == 'regular' %}
+                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill small">
+                                    Phase 2: 50% Development Progress
+                                </span>
+                            {% elif ms.milestone_type == 'final' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
+                                    Phase 3: 25% Final Completion
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <h5 class="fw-bold text-navy mb-1">{{ ms.title }}</h5>
+                        {% if ms.due_date %}
+                            <small class="text-muted d-block">Target Due Date: {{ ms.due_date|date:"M d, Y" }}</small>
+                        {% endif %}
+                    </div>
+
+                    <div class="text-end">
+                        <span class="fw-bold text-navy fs-4">&#8377;{{ ms.amount|floatformat:2 }}</span>
+                        <small class="text-muted d-block">INR Escrow</small>
+                    </div>
+                </div>
+
+                {% if ms.description %}
+                    <p class="text-secondary small mb-3" style="white-space: pre-line;">{{ ms.description }}</p>
+                {% endif %}
+
+                <!-- Submission Deliverables Preview -->
+                {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
+                    <div class="p-3 rounded-3 bg-light border mb-3">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="fw-bold text-navy small">
+                                Freelancer Submission &amp; Deliverables:
+                            </span>
+                            {% if ms.submitted_at %}
+                                <span class="text-muted small" style="font-size: 0.75rem;">Submitted on {{ ms.submitted_at|date:"M d, Y H:i" }}</span>
+                            {% endif %}
+                        </div>
+                        {% if ms.submission_notes %}
+                            <div class="p-3 bg-white rounded-2 border mb-2 small text-secondary" style="white-space: pre-line;">
+                                {{ ms.submission_notes }}
+                            </div>
+                        {% endif %}
+                        <div class="d-flex gap-2 flex-wrap">
+                            {% if ms.deliverable_link %}
+                                <a href="{{ ms.deliverable_link }}" target="_blank" class="btn btn-outline-primary btn-sm py-1 px-3">
+                                    View Live Demo / Git Repository &rarr;
+                                </a>
+                            {% endif %}
+                            {% if ms.submission_file %}
+                                <a href="{{ ms.submission_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-3">
+                                    Download Deliverables Package &rarr;
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Revision Notes if present -->
+                {% if ms.revision_notes %}
+                    <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle text-warning-emphasis small mb-3">
+                        <strong class="d-block mb-1">Revision Requested by You:</strong>
+                        <p class="mb-0">{{ ms.revision_notes }}</p>
+                    </div>
+                {% endif %}
+
+                <!-- Action Controls for Milestone -->
+                <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top flex-wrap">
+                    <!-- Case 1: Advance payment pending -->
+                    {% if ms.milestone_type == 'advance' and ms.status == 'pending' %}
+                        <button type="button" class="btn-cd-primary" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
+                            Pay 25% Advance (&#8377;{{ ms.amount|floatformat:2 }}) &rarr;
+                        </button>
+
+                    <!-- Case 2: Work Submitted for Review -->
+                    {% elif ms.status == 'submitted' %}
+                        <button type="button" class="btn-cd-warning" data-bs-toggle="modal" data-bs-target="#revisionModal{{ ms.id }}">
+                            Request Revision
+                        </button>
+                        <form method="POST" action="{% url 'client_milestone_approve' ms.id %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn-cd-success" onclick="return confirm('Approve these deliverables? You will then be able to release the escrow payment.');">
+                                Approve Deliverables &rarr;
+                            </button>
+                        </form>
+
+                    <!-- Case 3: Approved Deliverable, ready for release payment -->
+                    {% elif ms.status == 'approved' %}
+                        <button type="button" class="btn-cd-success" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
+                            Release Escrow Payment (&#8377;{{ ms.amount|floatformat:2 }}) &rarr;
+                        </button>
+
+                    <!-- Case 4: Milestone Paid -->
+                    {% elif ms.status == 'paid' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 small fw-bold">
+                            Payment Verified &amp; Released
+                        </span>
+
+                    <!-- Case 5: Waiting for Freelancer Submission -->
+                    {% elif not contract.is_advance_paid and ms.milestone_type != 'advance' %}
+                        <span class="text-muted small">
+                            Locked: Release Phase 1 Advance Payment to authorize work initiation.
+                        </span>
+                    {% elif ms.status == 'revision_requested' %}
+                        <span class="text-warning fw-semibold small">
+                            Awaiting revised submission from freelancer...
+                        </span>
+                    {% else %}
+                        <span class="text-muted small">
+                            Freelancer is currently developing project deliverables...
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Modal: Request Revision -->
+            <div class="modal fade" id="revisionModal{{ ms.id }}" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header bg-navy text-white p-4">
+                            <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for {{ ms.title }}</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <form method="POST" action="{% url 'client_milestone_revision' ms.id %}">
+                            {% csrf_token %}
+                            <div class="modal-body p-4">
+                                <label class="form-label small fw-bold text-navy mb-2">What adjustments or fixes are required?</label>
+                                <textarea name="revision_notes" class="form-control" rows="4" placeholder="Detail any API discrepancies, missing unit tests, or UI corrections..." required></textarea>
+                            </div>
+                            <div class="modal-footer border-0 p-3 bg-light">
+                                <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn btn-warning btn-sm fw-bold px-3">Submit Revision Request</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-4 text-muted">
+                No milestones defined for this contract yet.
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- =========================================================================
+     5. PAYMENT & ESCROW TRANSACTION RECORDS
+     ========================================================================= -->
+<div class="cd-card">
+    <div class="cd-section-title">
+        <span>Payment &amp; Escrow Transaction Records</span>
+        <span class="badge bg-light text-secondary border small">Verified Invoices</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle table-hover mb-0">
+            <thead class="table-light small">
+                <tr>
+                    <th>Invoice #</th>
+                    <th>Payment Type</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Transaction Reference</th>
+                    <th>Status</th>
+                    <th>Date Paid</th>
+                    <th class="text-end">Invoice</th>
+                </tr>
+            </thead>
+            <tbody class="small">
+                {% for p in payments %}
+                    <tr>
+                        <td class="fw-bold text-navy font-monospace">{{ p.invoice_number }}</td>
+                        <td>
+                            <span class="badge bg-light text-dark border">
+                                {{ p.get_payment_type_display|default:p.milestone.title }}
+                            </span>
+                        </td>
+                        <td class="fw-bold text-success">&#8377;{{ p.amount|floatformat:2 }}</td>
+                        <td><span class="badge bg-light text-secondary border">{{ p.payment_method }}</span></td>
+                        <td><span class="font-monospace text-muted" style="font-size: 0.75rem;">{{ p.razorpay_payment_id|default:"pay_verified" }}</span></td>
+                        <td><span class="badge bg-success-subtle text-success">Completed &amp; Verified</span></td>
+                        <td>{{ p.created_at|date:"M d, Y H:i" }}</td>
+                        <td class="text-end">
+                            <a href="{% url 'client_invoice' p.id %}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                                View Invoice &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-muted">No payments released for this contract yet.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Razorpay Official Checkout SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+async function initiateRazorpayPayment(milestoneId, amount, title) {
+    const btn = document.getElementById('payBtn' + milestoneId);
+    let originalHtml = '';
+    if (btn) {
+        originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Opening Razorpay...';
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append('milestone_id', milestoneId);
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+        const orderRes = await fetch("{% url 'client_payment_create_order' %}", {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: formData
+        });
+
+        const orderData = await orderRes.json();
+        if (orderData.status !== 'ok') {
+            alert('Payment Notice: ' + (orderData.message || 'Unable to initialize Razorpay order.'));
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+            return;
+        }
+
+        const options = {
+            "key": orderData.key_id,
+            "amount": orderData.amount,
+            "currency": orderData.currency,
+            "name": "GigBridge Escrow",
+            "description": orderData.milestone_title || "Escrow Milestone Payment",
+            "image": "https://cdn-icons-png.flaticon.com/512/3135/3135715.png",
+            "order_id": orderData.order_id,
+            "handler": async function (response) {
+                if (btn) {
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Verifying Escrow Payment...';
+                }
+
+                const verifyData = new URLSearchParams();
+                verifyData.append('milestone_id', orderData.milestone_id);
+                verifyData.append('contract_id', orderData.contract_id);
+                verifyData.append('razorpay_order_id', response.razorpay_order_id || '');
+                verifyData.append('razorpay_payment_id', response.razorpay_payment_id || '');
+                verifyData.append('razorpay_signature', response.razorpay_signature || '');
+                verifyData.append('payment_method', 'Razorpay Online');
+                verifyData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                try {
+                    const verifyRes = await fetch("{% url 'client_payment_verify' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                            'X-CSRFToken': '{{ csrf_token }}',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: verifyData
+                    });
+
+                    const result = await verifyRes.json();
+                    if (result.status === 'ok') {
+                        window.location.reload();
+                    } else {
+                        alert('Verification Notice: ' + (result.message || 'Payment verification failed.'));
+                        window.location.reload();
+                    }
+                } catch(e) {
+                    window.location.reload();
+                }
+            },
+            "prefill": {
+                "name": orderData.client_name,
+                "email": orderData.client_email,
+                "contact": orderData.client_contact,
+            },
+            "notes": {
+                "contract_id": orderData.contract_id,
+                "milestone_id": orderData.milestone_id,
+                "project": orderData.project_title,
+            },
+            "theme": {
+                "color": "#0284C7"
+            },
+            "modal": {
+                "ondismiss": function() {
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = originalHtml;
+                    }
+                }
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.on('payment.failed', function (response) {
+            alert('Payment cancelled or failed: ' + (response.error.description || 'Transaction incomplete'));
+            if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        });
+        rzp.open();
+
+    } catch(err) {
+        alert('Payment service connection error: ' + err.message);
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,228 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us | GigBridge Freelance Marketplace{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════
+     HERO BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-about-hero">
+    <div class="container position-relative text-center" style="z-index: 2;">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">About Us</li>
+            </ol>
+        </nav>
+
+        <div class="gb-hero-pill-badge mx-auto">
+            <i class="bi bi-buildings"></i> The GigBridge Mission
+        </div>
+
+        <h1 class="gb-about-hero-title">Connecting Ambition with World-Class Expertise</h1>
+        <p class="gb-about-hero-subtitle mx-auto">
+            GigBridge was created to eliminate the friction, uncertainty, and risk in freelance hiring. We provide a transparent, milestone-protected ecosystem where verified talent and visionary companies build together.
+        </p>
+
+        <!-- Hero Actions -->
+        <div class="d-flex justify-content-center gap-3 mt-4 flex-wrap">
+            <a href="{% url 'project_list' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                <i class="bi bi-search me-1"></i> Browse Open Gigs
+            </a>
+            <a href="{% url 'client_project_create' %}" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold">
+                <i class="bi bi-plus-circle me-1"></i> Post a Project
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MISSION & LIVE PLATFORM STATISTICS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white">
+    <div class="container py-3">
+        <div class="row g-5 align-items-center">
+            <!-- Left: Purpose Story & Feature Highlights -->
+            <div class="col-lg-6">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Our Core Purpose</span>
+                <h2 class="fw-bold text-navy mb-4">Empowering the Future of Remote Work &amp; Technical Execution</h2>
+                <p class="text-secondary mb-3" style="line-height: 1.8;">
+                    Modern businesses move fast, and finding dependable, top-tier technical and design professionals shouldn't take weeks of guesswork. GigBridge bridges this gap by combining authentic portfolio verification, client testimonials, and milestone-based financial protection.
+                </p>
+                <p class="text-secondary mb-4" style="line-height: 1.8;">
+                    Whether you are an early-stage founder building an MVP or an established enterprise scaling capacity, GigBridge ensures you discover the right talent on fair, transparent terms.
+                </p>
+
+                <!-- Feature Highlight Tiles -->
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="gb-feature-highlight-tile">
+                            <h5 class="fw-bold text-navy mb-2 fs-6">
+                                <i class="bi bi-shield-check text-success me-1"></i> Milestone Security
+                            </h5>
+                            <p class="text-muted small mb-0">Funds are held in secure platform escrow and only released after client approval.</p>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="gb-feature-highlight-tile" style="border-left-color: #0284c7;">
+                            <h5 class="fw-bold text-navy mb-2 fs-6">
+                                <i class="bi bi-patch-check-fill text-primary me-1"></i> Verified Expertise
+                            </h5>
+                            <p class="text-muted small mb-0">Authentic project track records with real ratings and completed contracts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: 4 Live Platform Metric Cards -->
+            <div class="col-lg-6">
+                <div class="row g-3">
+                    <!-- Stat 1: Projects Published -->
+                    <div class="col-6">
+                        <div class="gb-stat-box-modern">
+                            <div class="gb-stat-icon-circle bg-primary-subtle text-primary mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                                <i class="bi bi-briefcase-fill"></i>
+                            </div>
+                            <div class="gb-stat-number-lg text-primary">{{ stats.projects_count|default:total_projects }}</div>
+                            <div class="gb-stat-label-lg">Projects Published</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 2: Verified Freelancers -->
+                    <div class="col-6">
+                        <div class="gb-stat-box-modern">
+                            <div class="gb-stat-icon-circle bg-success-subtle text-success mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                                <i class="bi bi-person-check-fill"></i>
+                            </div>
+                            <div class="gb-stat-number-lg text-success">{{ stats.freelancers_count|default:total_freelancers }}</div>
+                            <div class="gb-stat-label-lg">Verified Freelancers</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 3: Registered Clients -->
+                    <div class="col-6">
+                        <div class="gb-stat-box-modern">
+                            <div class="gb-stat-icon-circle bg-warning-subtle text-warning mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                                <i class="bi bi-building-fill"></i>
+                            </div>
+                            <div class="gb-stat-number-lg text-warning">{{ stats.clients_count|default:total_clients }}</div>
+                            <div class="gb-stat-label-lg">Registered Clients</div>
+                        </div>
+                    </div>
+
+                    <!-- Stat 4: Completed Milestones -->
+                    <div class="col-6">
+                        <div class="gb-stat-box-modern">
+                            <div class="gb-stat-icon-circle bg-info-subtle text-info mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                                <i class="bi bi-check-circle-fill"></i>
+                            </div>
+                            <div class="gb-stat-number-lg text-info">{{ stats.completed_projects|default:completed_projects }}</div>
+                            <div class="gb-stat-label-lg">Completed Milestones</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     OUR GUIDING VALUES
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">What Guides Us</span>
+            <h2 class="fw-bold text-navy">Our Core Guiding Values</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                The foundational principles behind our platform architecture, user trust, and community standards.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Value 1 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="gb-value-card-v2">
+                    <div class="gb-value-icon-box" style="background: #eff6ff; color: #2563eb;">
+                        <i class="bi bi-transparency"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy fs-5 mb-2">Radical Transparency</h4>
+                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        Clear project scopes, honest pricing, and genuine client reviews. No hidden deductions or inflated claims.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Value 2 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="gb-value-card-v2">
+                    <div class="gb-value-icon-box" style="background: #ecfdf5; color: #059669;">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy fs-5 mb-2">Milestone Security</h4>
+                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        Clients inspect real deliverables before payment release; freelancers enjoy guaranteed compensation on approved milestones.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Value 3 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="gb-value-card-v2">
+                    <div class="gb-value-icon-box" style="background: #fff7ed; color: #ea580c;">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy fs-5 mb-2">Speed &amp; Quality</h4>
+                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        Connect with qualified professionals within hours, backed by real-time messaging, file sharing, and live status updates.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Value 4 -->
+            <div class="col-lg-3 col-md-6">
+                <div class="gb-value-card-v2">
+                    <div class="gb-value-icon-box" style="background: #f5f3ff; color: #7c3aed;">
+                        <i class="bi bi-award-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy fs-5 mb-2">Fair Ownership</h4>
+                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                        Full intellectual property transfer upon milestone payment. Complete autonomy and ownership for clients and freelancers.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CALL TO ACTION (CTA)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white border-top">
+    <div class="container text-center py-4">
+        <div class="card border-0 rounded-4 p-5 text-white shadow-lg mx-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); max-width: 900px;">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8 text-lg-start">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-2 px-3 py-2 fw-semibold">Join GigBridge Today</span>
+                    <h3 class="fw-bold mb-2 text-white">Ready to Shape the Future of Work?</h3>
+                    <p class="text-white-50 mb-0">Join thousands of visionary businesses and top freelancers collaborating with confidence.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end d-flex gap-2 justify-content-lg-end flex-wrap">
+                    <a href="{% url 'register' %}?role=client" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap">
+                        Hire Talent
+                    </a>
+                    <a href="{% url 'register' %}?role=freelancer" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold text-nowrap">
+                        Find Work
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

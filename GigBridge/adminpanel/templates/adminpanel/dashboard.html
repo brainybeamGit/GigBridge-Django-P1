@@ -1,0 +1,1176 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard &amp; Real-Time Analytics{% endblock %}
+{% block page_title %}Platform Overview &amp; Live Telemetry{% endblock %}
+{% block page_subtitle %}Real-time operational metrics, interactive analytical charts, escrow volume, and registry directory.{% endblock %}
+
+{% block content %}
+<style>
+    /* ═══════════════════════════════════════════════════════════════
+       LUXURY HERO & KPI CARDS
+       ═══════════════════════════════════════════════════════════════ */
+    .adm-dash-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 24px 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 22px;
+    }
+
+    .adm-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .adm-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .adm-kpi-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 20px 22px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+        display: block;
+        text-decoration: none;
+        height: 100%;
+    }
+
+    .adm-kpi-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.12);
+    }
+
+    .adm-kpi-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748B;
+    }
+
+    .adm-kpi-index {
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-family: monospace;
+        letter-spacing: 0.05em;
+        color: #94A3B8;
+    }
+
+    .adm-kpi-value {
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: #0F172A;
+        margin-top: 6px;
+        margin-bottom: 4px;
+    }
+
+    .adm-kpi-caption {
+        font-size: 0.75rem;
+        color: #64748B;
+        margin: 0;
+    }
+
+    /* ═══════════════════════════════════════════════════════════════
+       REAL-TIME TELEMETRY & ANALYTICS STYLING
+       ═══════════════════════════════════════════════════════════════ */
+    .telemetry-control-bar {
+        background: #FFFFFF;
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 16px 22px;
+        box-shadow: 0 4px 20px -2px rgba(2, 132, 199, 0.06);
+        margin-bottom: 22px;
+    }
+
+    .live-beacon-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #10B981;
+        display: inline-block;
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+        animation: beaconPing 1.8s infinite;
+    }
+
+    @keyframes beaconPing {
+        0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+        70% { box-shadow: 0 0 0 7px rgba(16, 185, 129, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    .telemetry-range-pill {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #64748B;
+        font-size: 0.75rem;
+        font-weight: 700;
+        padding: 5px 14px;
+        border-radius: 999px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        user-select: none;
+    }
+
+    .telemetry-range-pill:hover {
+        border-color: #BAE6FD;
+        color: #0284C7;
+        background: #F0F9FF;
+    }
+
+    .telemetry-range-pill.active {
+        background: #0284C7;
+        border-color: #0284C7;
+        color: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-sync-telemetry {
+        background: #FFFFFF;
+        border: 1px solid #BAE6FD;
+        color: #0369A1;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 6px 14px;
+        border-radius: 999px;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    .btn-sync-telemetry:hover {
+        background: #F0F9FF;
+        border-color: #0284C7;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12);
+    }
+
+    .analytics-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 18px;
+        padding: 22px 24px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        height: 100%;
+        position: relative;
+    }
+
+    .analytics-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 10px 30px -4px rgba(2, 132, 199, 0.12);
+    }
+
+    .kpi-chip-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        color: #475569;
+    }
+
+    .kpi-chip-pill strong {
+        color: #0F172A;
+        font-weight: 700;
+    }
+
+    .kpi-chip-pill.chip-success {
+        background: #ECFDF5;
+        border-color: #A7F3D0;
+        color: #065F46;
+    }
+
+    .kpi-chip-pill.chip-sky {
+        background: #F0F9FF;
+        border-color: #BAE6FD;
+        color: #0369A1;
+    }
+
+    .chart-stream-toggle {
+        background: #F1F5F9;
+        border-radius: 8px;
+        padding: 3px;
+        display: inline-flex;
+        gap: 2px;
+    }
+
+    .chart-stream-btn {
+        background: transparent;
+        border: none;
+        color: #64748B;
+        font-size: 0.72rem;
+        font-weight: 700;
+        padding: 4px 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .chart-stream-btn.active {
+        background: #FFFFFF;
+        color: #0F172A;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    }
+
+    .health-micro-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 14px 18px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        height: 100%;
+        transition: border-color 0.2s ease;
+    }
+
+    .health-micro-card:hover {
+        border-color: #BAE6FD;
+    }
+
+    .spinning-icon {
+        animation: spinAnim 0.75s linear infinite;
+    }
+
+    @keyframes spinAnim {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+</style>
+
+<!-- Luminous Hero Banner -->
+<div class="adm-dash-hero">
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <div class="adm-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>SYSTEM COMMAND &bull; PLATFORM AUDIT</span>
+            </div>
+            <h1 class="fw-bold text-dark mb-1" style="font-size: 1.7rem; letter-spacing: -0.02em;">GigBridge Operations Console</h1>
+            <p class="text-secondary small mb-0" style="max-width: 640px;">
+                Overseeing verified marketplace employers, specialized freelancers, live escrow contracts, and financial settlements.
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background:#0284C7;border-color:#0284C7;" data-bs-toggle="modal" data-bs-target="#createClientModal">
+                + Provision Client
+            </button>
+            <a href="{% url 'adminpanel_payments' %}" class="btn btn-outline-secondary bg-white fw-bold px-3 py-2 rounded-3 border">
+                Financial Ledger &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 6 Editorial KPI Cards (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_clients' %}" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Clients</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value">{{ total_clients }}</div>
+            <p class="adm-kpi-caption">Provisioned employers</p>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_freelancers' %}" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Freelancers</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-success">{{ total_freelancers }}</div>
+            <p class="adm-kpi-caption">Active specialists</p>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_projects' %}" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Projects</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value">{{ total_projects }}</div>
+            <p class="adm-kpi-caption">Total marketplace jobs</p>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_projects' %}?status=open" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Open Bidding</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-primary">{{ open_projects }}</div>
+            <p class="adm-kpi-caption">Accepting proposals</p>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_contracts' %}" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Contracts</span>
+                <span class="adm-kpi-index">05</span>
+            </div>
+            <div class="adm-kpi-value">{{ active_contracts }}</div>
+            <p class="adm-kpi-caption">Active engagements</p>
+        </a>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel_payments' %}" class="adm-kpi-card">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label">Volume (INR)</span>
+                <span class="adm-kpi-index">06</span>
+            </div>
+            <div class="adm-kpi-value" id="kpiVolumeTop">&#8377;{{ total_revenue|floatformat:0 }}</div>
+            <p class="adm-kpi-caption">Cleared escrow volume</p>
+        </a>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     REAL-TIME TELEMETRY & EXECUTIVE ANALYTICS SECTION
+     ═══════════════════════════════════════════════════════════════════ -->
+
+<!-- Telemetry Control Bar -->
+<div class="telemetry-control-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex align-items-center gap-3">
+        <div class="d-flex align-items-center gap-2">
+            <span class="live-beacon-dot"></span>
+            <span class="fw-bold text-dark small text-uppercase" style="letter-spacing:0.06em;">Real-Time Telemetry Stream</span>
+        </div>
+        <span class="text-muted d-none d-md-inline" style="font-size:0.8rem;">&bull;</span>
+        <span class="text-secondary small d-none d-md-inline">
+            Auto-refresh in <strong id="telemetryCountdown" class="text-dark">30s</strong>
+        </span>
+        <span class="text-muted d-none d-md-inline" style="font-size:0.8rem;">&bull;</span>
+        <span class="text-muted small d-none d-md-inline">
+            Last sync: <span id="telemetryLastSync" class="fw-semibold text-dark">{{ initial_analytics.last_sync }}</span>
+        </span>
+    </div>
+
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Range Switcher Pills -->
+        <div class="d-flex align-items-center gap-1" id="telemetryRangeGroup">
+            <button type="button" class="telemetry-range-pill" data-range="7d">7D</button>
+            <button type="button" class="telemetry-range-pill active" data-range="30d">30D</button>
+            <button type="button" class="telemetry-range-pill" data-range="6m">6M</button>
+            <button type="button" class="telemetry-range-pill" data-range="1y">1Y</button>
+        </div>
+
+        <!-- Manual Instant Sync Trigger -->
+        <button type="button" class="btn-sync-telemetry ms-md-2" id="btnManualSync" title="Force instant data poll">
+            <span id="syncIconSymbol">&orarr;</span>
+            <span id="syncBtnLabel">Sync Telemetry</span>
+        </button>
+    </div>
+</div>
+
+<!-- Primary Analytical Row: Financial Volume & Pipeline Lifecycle -->
+<div class="row g-4 mb-4">
+    <!-- Col-lg-8: Gross Financial Volume & Escrow Flow Trend -->
+    <div class="col-lg-8">
+        <div class="analytics-card">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                <div>
+                    <div class="adm-kpi-label mb-1">Financial Intelligence</div>
+                    <h5 class="fw-bold text-dark mb-0">Escrow Flow &amp; Settled Revenue (INR)</h5>
+                </div>
+
+                <!-- Dual View Stream Toggles -->
+                <div class="d-flex align-items-center gap-2">
+                    <div class="chart-stream-toggle">
+                        <button type="button" class="chart-stream-btn active" data-stream="both">Dual Stream</button>
+                        <button type="button" class="chart-stream-btn" data-stream="revenue">Settled Only</button>
+                        <button type="button" class="chart-stream-btn" data-stream="escrow">Escrow Only</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- KPI Metric Chips Strip -->
+            <div class="d-flex flex-wrap gap-2 mb-3">
+                <span class="kpi-chip-pill chip-sky">
+                    Settled Revenue: <strong id="chipSettledRev">&#8377;{{ initial_analytics.kpi.total_revenue|floatformat:0 }}</strong>
+                </span>
+                <span class="kpi-chip-pill">
+                    Active Escrow: <strong id="chipActiveEscrow">&#8377;{{ initial_analytics.kpi.total_escrow|floatformat:0 }}</strong>
+                </span>
+                <span class="kpi-chip-pill chip-success">
+                    Period Velocity: <strong id="chipGrowthRate">{{ initial_analytics.kpi.growth_rate }} &uarr;</strong>
+                </span>
+            </div>
+
+            <!-- Line/Area Canvas Container -->
+            <div style="position:relative; width:100%; height:290px;">
+                <canvas id="financialFlowChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Col-lg-4: Engagement Pipeline Lifecycle (Doughnut Chart) -->
+    <div class="col-lg-4">
+        <div class="analytics-card d-flex flex-column justify-content-between">
+            <div>
+                <div class="adm-kpi-label mb-1">Pipeline Distribution</div>
+                <h5 class="fw-bold text-dark mb-0">Engagement Lifecycle</h5>
+                <p class="text-secondary small mb-3">Contract execution &amp; marketplace bid distribution.</p>
+            </div>
+
+            <!-- Donut Canvas Container -->
+            <div style="position:relative; width:100%; height:220px;" class="my-auto">
+                <canvas id="pipelineDonutChart"></canvas>
+            </div>
+
+            <!-- Custom Legend Pills -->
+            <div class="row g-2 mt-2 pt-2 border-top">
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:3px;background:#0284C7;display:inline-block;"></span>
+                        <span class="small text-muted">Open Bidding:</span>
+                        <strong class="small text-dark ms-auto" id="legendOpenBids">{{ open_projects }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:3px;background:#10B981;display:inline-block;"></span>
+                        <span class="small text-muted">Active Work:</span>
+                        <strong class="small text-dark ms-auto" id="legendActiveWork">{{ active_contracts }}</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:3px;background:#6366F1;display:inline-block;"></span>
+                        <span class="small text-muted">Completed:</span>
+                        <strong class="small text-dark ms-auto" id="legendCompleted">4</strong>
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:10px;height:10px;border-radius:3px;background:#F59E0B;display:inline-block;"></span>
+                        <span class="small text-muted">Pitch Bids:</span>
+                        <strong class="small text-dark ms-auto" id="legendSubmitted">3</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Secondary Analytical Row: Marketplace Velocity & Category Demand -->
+<div class="row g-4 mb-4">
+    <!-- Marketplace Velocity: Proposals vs Projects (Bar Chart) -->
+    <div class="col-lg-6">
+        <div class="analytics-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <div class="adm-kpi-label mb-1">Marketplace Dynamics</div>
+                    <h5 class="fw-bold text-dark mb-0">Specialist Bids vs Project Posts</h5>
+                </div>
+                <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+                    VELOCITY AUDIT
+                </span>
+            </div>
+
+            <!-- Bar Canvas Container -->
+            <div style="position:relative; width:100%; height:250px;">
+                <canvas id="activityBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Category Demand Distribution (Horizontal Bar Chart) -->
+    <div class="col-lg-6">
+        <div class="analytics-card">
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <div class="adm-kpi-label mb-1">Market Sector Allocation</div>
+                    <h5 class="fw-bold text-dark mb-0">Domain Capital &amp; Job Share</h5>
+                </div>
+                <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;">
+                    DOMAINS
+                </span>
+            </div>
+
+            <!-- Horizontal Bar Canvas Container -->
+            <div style="position:relative; width:100%; height:250px;">
+                <canvas id="categoryBarChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Analytical Performance Telemetry Micro-Pills -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="health-micro-card">
+            <span class="adm-kpi-label d-block mb-1">Escrow Clearance Velocity</span>
+            <div class="d-flex align-items-baseline gap-2">
+                <h4 class="fw-bold text-dark mb-0" id="gaugeClearance">99.8%</h4>
+                <small class="text-success fw-semibold">&lt; 24h average</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="health-micro-card">
+            <span class="adm-kpi-label d-block mb-1">Average Contract Value</span>
+            <div class="d-flex align-items-baseline gap-2">
+                <h4 class="fw-bold text-dark mb-0" id="gaugeAvgContract">&#8377;{{ initial_analytics.kpi.avg_contract|floatformat:0 }}</h4>
+                <small class="text-muted">Per active agreement</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="health-micro-card">
+            <span class="adm-kpi-label d-block mb-1">Proposal Acceptance Rate</span>
+            <div class="d-flex align-items-baseline gap-2">
+                <h4 class="fw-bold text-dark mb-0">42.5%</h4>
+                <small class="text-primary fw-semibold">Specialist hire rate</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-sm-6">
+        <div class="health-micro-card">
+            <span class="adm-kpi-label d-block mb-1">Platform Dispute Escalation</span>
+            <div class="d-flex align-items-baseline gap-2">
+                <h4 class="fw-bold text-dark mb-0">0.00%</h4>
+                <small class="text-success fw-semibold">Zero open arbitrations</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Two-Column Section: Clients Directory & Projects -->
+<div class="row g-4 mb-4">
+    <!-- Clients Directory (Managed by Admin) -->
+    <div class="col-lg-6">
+        <div class="admin-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Authorized Clients</h5>
+                    <small class="text-muted">Accounts provisioned and approved by Administrator</small>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'adminpanel_clients' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                        View All ({{ total_clients }}) &rarr;
+                    </a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Industry / Domain</th>
+                            <th>Projects</th>
+                            <th>Enrolled</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for client_user in clients_list %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ client_user.get_full_name|default:client_user.username }}</div>
+                                <span class="text-muted" style="font-size:0.74rem;">@{{ client_user.username }}</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-secondary border px-2 py-1">
+                                    {{ client_user.profile.title|default:"Enterprise Client" }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark">{{ client_user.proj_count }}</span>
+                            </td>
+                            <td class="text-muted">{{ client_user.date_joined|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No clients provisioned yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Marketplace Projects -->
+    <div class="col-lg-6">
+        <div class="admin-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Recent Project Listings</h5>
+                    <small class="text-muted">Jobs posted across marketplace categories</small>
+                </div>
+                <a href="{% url 'adminpanel_projects' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    View All ({{ total_projects }}) &rarr;
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Client</th>
+                            <th>Budget</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for project in recent_projects %}
+                        <tr>
+                            <td>
+                                <a href="{% url 'adminpanel_projects' %}?q={{ project.title|urlencode }}" class="text-decoration-none fw-bold text-dark">
+                                    {{ project.title|truncatechars:30 }}
+                                </a>
+                                <div class="text-muted" style="font-size:0.74rem;">{{ project.category.name|default:"General" }}</div>
+                            </td>
+                            <td>
+                                <span class="text-secondary">{{ project.client.get_full_name|default:project.client.username }}</span>
+                            </td>
+                            <td>
+                                <span class="fw-bold text-dark">&#8377;{{ project.budget_min }} - &#8377;{{ project.budget_max }}</span>
+                            </td>
+                            <td>
+                                {% if project.status == 'open' %}
+                                    <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;">Open</span>
+                                {% elif project.status == 'in_progress' %}
+                                    <span class="badge" style="background:#FEF3C7;color:#92400E;">In Progress</span>
+                                {% elif project.status == 'completed' %}
+                                    <span class="badge" style="background:#DCFCE7;color:#166534;">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-light text-muted border">{{ project.status|title }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No projects listed yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Two-Column Section: Freelancers & Inquiries -->
+<div class="row g-4">
+    <!-- Freelancers Registry -->
+    <div class="col-lg-6">
+        <div class="admin-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Registered Freelancers</h5>
+                    <small class="text-muted">Specialists and verified talent pool</small>
+                </div>
+                <a href="{% url 'adminpanel_freelancers' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    View All ({{ total_freelancers }}) &rarr;
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Freelancer</th>
+                            <th>Role / Title</th>
+                            <th>Location</th>
+                            <th>Joined</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for freelancer_user in freelancers_list|slice:":5" %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ freelancer_user.get_full_name|default:freelancer_user.username }}</div>
+                                <span class="text-muted" style="font-size:0.74rem;">@{{ freelancer_user.username }}</span>
+                            </td>
+                            <td>
+                                <span class="text-secondary small">{{ freelancer_user.profile.title|default:"Independent Specialist" }}</span>
+                            </td>
+                            <td class="text-muted">{{ freelancer_user.profile.location|default:"Remote" }}</td>
+                            <td class="text-muted">{{ freelancer_user.date_joined|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">No freelancers registered yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Contact Inquiries -->
+    <div class="col-lg-6">
+        <div class="admin-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Recent Support Inquiries</h5>
+                    <small class="text-muted">Incoming submissions via platform contact channel</small>
+                </div>
+                <a href="{% url 'adminpanel_messages' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    View All Inquiries &rarr;
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 small">
+                    <thead>
+                        <tr>
+                            <th>Sender</th>
+                            <th>Email</th>
+                            <th>Subject</th>
+                            <th>Status</th>
+                            <th>Received</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for msg in recent_contact_messages %}
+                        <tr>
+                            <td class="fw-bold text-dark">{{ msg.name }}</td>
+                            <td class="text-muted">{{ msg.email }}</td>
+                            <td>{{ msg.subject|truncatechars:35 }}</td>
+                            <td>
+                                {% if msg.is_resolved %}
+                                    <span class="badge" style="background:#DCFCE7;color:#166534;">Resolved</span>
+                                {% else %}
+                                    <span class="badge" style="background:#FEF3C7;color:#92400E;">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-muted">{{ msg.created_at|date:"M d, Y" }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">No contact inquiries recorded yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js 4.4 UMD CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+
+<script>
+    (function () {
+        // Initial payload injected from Django view
+        const initialAnalytics = {{ analytics_json|safe }};
+        let currentRange = '30d';
+        let currentStreamMode = 'both';
+        let countdownSec = 30;
+        let countdownTimer = null;
+
+        // Chart.js global typography styling
+        Chart.defaults.font.family = "'Plus Jakarta Sans', -apple-system, sans-serif";
+        Chart.defaults.color = '#64748B';
+
+        // ═══════════════════════════════════════════════════════════
+        // 1. FINANCIAL ESCROW & SETTLED REVENUE (AREA CHART)
+        // ═══════════════════════════════════════════════════════════
+        const flowCtx = document.getElementById('financialFlowChart').getContext('2d');
+        
+        // Gradient helper
+        function createFlowGradients(ctx) {
+            const gradRev = ctx.createLinearGradient(0, 0, 0, 260);
+            gradRev.addColorStop(0, 'rgba(2, 132, 199, 0.28)');
+            gradRev.addColorStop(1, 'rgba(2, 132, 199, 0.0)');
+
+            const gradEsc = ctx.createLinearGradient(0, 0, 0, 260);
+            gradEsc.addColorStop(0, 'rgba(56, 189, 248, 0.20)');
+            gradEsc.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+            return { gradRev, gradEsc };
+        }
+
+        const { gradRev, gradEsc } = createFlowGradients(flowCtx);
+
+        const financialFlowChart = new Chart(flowCtx, {
+            type: 'line',
+            data: {
+                labels: initialAnalytics.revenue_chart.labels,
+                datasets: [
+                    {
+                        label: 'Settled Revenue (₹)',
+                        data: initialAnalytics.revenue_chart.revenue,
+                        borderColor: '#0284C7',
+                        borderWidth: 2.8,
+                        backgroundColor: gradRev,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#0284C7',
+                        pointBorderWidth: 2,
+                        pointRadius: 3.5,
+                        pointHoverRadius: 6.5,
+                    },
+                    {
+                        label: 'Active Escrow (₹)',
+                        data: initialAnalytics.revenue_chart.escrow,
+                        borderColor: '#38BDF8',
+                        borderWidth: 2.2,
+                        borderDash: [5, 4],
+                        backgroundColor: gradEsc,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#38BDF8',
+                        pointBorderWidth: 2,
+                        pointRadius: 3.5,
+                        pointHoverRadius: 6.5,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                interaction: {
+                    mode: 'index',
+                    intersect: false
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        titleColor: '#F8FAFC',
+                        bodyColor: '#E2E8F0',
+                        borderColor: '#334155',
+                        borderWidth: 1,
+                        padding: 12,
+                        boxPadding: 6,
+                        usePointStyle: true,
+                        callbacks: {
+                            label: function (context) {
+                                return context.dataset.label + ': ₹' + Number(context.raw).toLocaleString();
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { color: '#F1F5F9' },
+                        ticks: {
+                            font: { size: 11 },
+                            callback: function (val) {
+                                return '₹' + val.toLocaleString();
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // 2. ENGAGEMENT PIPELINE LIFECYCLE (DOUGHNUT CHART)
+        // ═══════════════════════════════════════════════════════════
+        const donutCtx = document.getElementById('pipelineDonutChart').getContext('2d');
+        const pipelineDonutChart = new Chart(donutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: initialAnalytics.pipeline_chart.labels,
+                datasets: [{
+                    data: initialAnalytics.pipeline_chart.counts,
+                    backgroundColor: ['#0284C7', '#10B981', '#6366F1', '#F59E0B'],
+                    borderWidth: 3,
+                    borderColor: '#FFFFFF',
+                    hoverOffset: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '72%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10,
+                        usePointStyle: true
+                    }
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // 3. SPECIALIST BIDS VS PROJECT POSTS (BAR CHART)
+        // ═══════════════════════════════════════════════════════════
+        const barCtx = document.getElementById('activityBarChart').getContext('2d');
+        const activityBarChart = new Chart(barCtx, {
+            type: 'bar',
+            data: {
+                labels: initialAnalytics.activity_chart.labels,
+                datasets: [
+                    {
+                        label: 'Submitted Proposals',
+                        data: initialAnalytics.activity_chart.proposals,
+                        backgroundColor: '#0284C7',
+                        borderRadius: 6,
+                        barPercentage: 0.65,
+                    },
+                    {
+                        label: 'Projects Posted',
+                        data: initialAnalytics.activity_chart.projects,
+                        backgroundColor: '#10B981',
+                        borderRadius: 6,
+                        barPercentage: 0.65,
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                        labels: {
+                            boxWidth: 12,
+                            font: { size: 11, weight: '600' }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11 } }
+                    },
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#F1F5F9' },
+                        ticks: { stepSize: 1, font: { size: 11 } }
+                    }
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // 4. CATEGORY DOMAIN ALLOCATION (HORIZONTAL BAR)
+        // ═══════════════════════════════════════════════════════════
+        const catCtx = document.getElementById('categoryBarChart').getContext('2d');
+        const categoryBarChart = new Chart(catCtx, {
+            type: 'bar',
+            data: {
+                labels: initialAnalytics.category_chart.labels,
+                datasets: [{
+                    label: 'Marketplace Projects',
+                    data: initialAnalytics.category_chart.counts,
+                    backgroundColor: [
+                        '#0284C7', '#0EA5E9', '#38BDF8', '#7DD3FC', '#6366F1', '#10B981'
+                    ],
+                    borderRadius: 6,
+                    barPercentage: 0.7,
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: '#0F172A',
+                        padding: 10
+                    }
+                },
+                scales: {
+                    x: {
+                        beginAtZero: true,
+                        grid: { color: '#F1F5F9' },
+                        ticks: { stepSize: 1, font: { size: 11 } }
+                    },
+                    y: {
+                        grid: { display: false },
+                        ticks: { font: { size: 11, weight: '600' } }
+                    }
+                }
+            }
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // REAL-TIME AJAX SYNC & DATA MORPHING
+        // ═══════════════════════════════════════════════════════════
+        async function fetchAnalytics(timeframe, isManual = false) {
+            const btnSync = document.getElementById('btnManualSync');
+            const syncIcon = document.getElementById('syncIconSymbol');
+            if (isManual && syncIcon) {
+                syncIcon.classList.add('spinning-icon');
+            }
+
+            try {
+                const response = await fetch(`/adminpanel/api/analytics/?range=${timeframe}`);
+                if (!response.ok) throw new Error('Network error');
+                const data = await response.json();
+
+                // 1. Update Financial Flow Chart
+                financialFlowChart.data.labels = data.revenue_chart.labels;
+                financialFlowChart.data.datasets[0].data = data.revenue_chart.revenue;
+                financialFlowChart.data.datasets[1].data = data.revenue_chart.escrow;
+                financialFlowChart.update();
+
+                // 2. Update Pipeline Donut Chart
+                pipelineDonutChart.data.labels = data.pipeline_chart.labels;
+                pipelineDonutChart.data.datasets[0].data = data.pipeline_chart.counts;
+                pipelineDonutChart.update();
+
+                // 3. Update Activity Bar Chart
+                activityBarChart.data.labels = data.activity_chart.labels;
+                activityBarChart.data.datasets[0].data = data.activity_chart.proposals;
+                activityBarChart.data.datasets[1].data = data.activity_chart.projects;
+                activityBarChart.update();
+
+                // 4. Update Category Bar Chart
+                categoryBarChart.data.labels = data.category_chart.labels;
+                categoryBarChart.data.datasets[0].data = data.category_chart.counts;
+                categoryBarChart.update();
+
+                // 5. Update KPI Badges & Micro-Gauges
+                if (data.kpi) {
+                    const elSettled = document.getElementById('chipSettledRev');
+                    if (elSettled) elSettled.innerHTML = '&#8377;' + Math.round(data.kpi.total_revenue).toLocaleString();
+
+                    const elEscrow = document.getElementById('chipActiveEscrow');
+                    if (elEscrow) elEscrow.innerHTML = '&#8377;' + Math.round(data.kpi.total_escrow).toLocaleString();
+
+                    const elGrowth = document.getElementById('chipGrowthRate');
+                    if (elGrowth) elGrowth.innerHTML = data.kpi.growth_rate + ' &uarr;';
+
+                    const elAvg = document.getElementById('gaugeAvgContract');
+                    if (elAvg) elAvg.innerHTML = '&#8377;' + Math.round(data.kpi.avg_contract).toLocaleString();
+
+                    const elClear = document.getElementById('gaugeClearance');
+                    if (elClear) elClear.textContent = data.kpi.clearance_rate;
+                }
+
+                // Update Timestamp
+                const elSyncTime = document.getElementById('telemetryLastSync');
+                if (elSyncTime) elSyncTime.textContent = data.last_sync;
+
+                // Reset countdown
+                countdownSec = 30;
+            } catch (err) {
+                console.error('Failed to sync telemetry:', err);
+            } finally {
+                if (syncIcon) {
+                    setTimeout(() => syncIcon.classList.remove('spinning-icon'), 500);
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════
+        // EVENT HANDLERS: RANGE SWITCHER & DUAL VIEW TOGGLES
+        // ═══════════════════════════════════════════════════════════
+        const rangePills = document.querySelectorAll('.telemetry-range-pill');
+        rangePills.forEach(pill => {
+            pill.addEventListener('click', function () {
+                rangePills.forEach(p => p.classList.remove('active'));
+                this.classList.add('active');
+                currentRange = this.getAttribute('data-range');
+                fetchAnalytics(currentRange, true);
+            });
+        });
+
+        // Manual sync button
+        const btnManual = document.getElementById('btnManualSync');
+        if (btnManual) {
+            btnManual.addEventListener('click', function () {
+                fetchAnalytics(currentRange, true);
+            });
+        }
+
+        // Financial Chart View Mode (Dual / Revenue / Escrow)
+        const streamBtns = document.querySelectorAll('.chart-stream-btn');
+        streamBtns.forEach(btn => {
+            btn.addEventListener('click', function () {
+                streamBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                const mode = this.getAttribute('data-stream');
+                currentStreamMode = mode;
+
+                if (mode === 'revenue') {
+                    financialFlowChart.setDatasetVisibility(0, true);
+                    financialFlowChart.setDatasetVisibility(1, false);
+                } else if (mode === 'escrow') {
+                    financialFlowChart.setDatasetVisibility(0, false);
+                    financialFlowChart.setDatasetVisibility(1, true);
+                } else {
+                    financialFlowChart.setDatasetVisibility(0, true);
+                    financialFlowChart.setDatasetVisibility(1, true);
+                }
+                financialFlowChart.update();
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════
+        // COUNTDOWN AUTO-REFRESH TIMER (EVERY 30 SECONDS)
+        // ═══════════════════════════════════════════════════════════
+        const elCountdown = document.getElementById('telemetryCountdown');
+        countdownTimer = setInterval(() => {
+            countdownSec -= 1;
+            if (countdownSec <= 0) {
+                countdownSec = 30;
+                fetchAnalytics(currentRange, false);
+            }
+            if (elCountdown) {
+                elCountdown.textContent = countdownSec + 's';
+            }
+        }, 1000);
+    })();
+</script>
+{% endblock %}

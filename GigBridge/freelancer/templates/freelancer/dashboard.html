@@ -1,0 +1,1097 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Overview{% endblock %}
+{% block dashboard_title %}Freelancer Workspace{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Luxury Executive Freelancer Dashboard System
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --fd-primary: #0284C7;
+        --fd-primary-hover: #0369A1;
+        --fd-navy: #0F172A;
+        --fd-sky-50: #F0F9FF;
+        --fd-sky-100: #E0F2FE;
+        --fd-sky-200: #BAE6FD;
+        --fd-sky-300: #7DD3FC;
+        --fd-text-dark: #0F172A;
+        --fd-text-muted: #64748B;
+        --fd-border: #E2E8F0;
+        --fd-radius: 16px;
+    }
+
+    /* Ambient Luxury Content Backdrop */
+    .dashboard-content-area {
+        background: 
+            radial-gradient(circle at 10% 8%, rgba(224, 242, 254, 0.45) 0%, transparent 45%),
+            radial-gradient(circle at 92% 85%, rgba(240, 249, 255, 0.7) 0%, transparent 40%),
+            #F8FAFC !important;
+        min-height: calc(100vh - 70px);
+        padding: 28px 32px;
+    }
+
+    /* ─── 1. LUMINOUS EXECUTIVE HERO COMMAND BANNER ─── */
+    .fd-hero-banner {
+        background:
+            radial-gradient(circle at 88% 20%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.7) 28%, transparent 65%),
+            radial-gradient(circle at 6% 85%, rgba(56, 189, 248, 0.28) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 20px;
+        padding: 30px 36px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -4px rgba(2, 132, 199, 0.14), inset 0 0 60px rgba(255, 255, 255, 0.65);
+        margin-bottom: 24px;
+    }
+
+    .fd-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .fd-hero-badge .pulse-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+        display: inline-block;
+    }
+
+    .fd-hero-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .fd-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 620px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* Hero Buttons */
+    .btn-hero-primary {
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 10px 20px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.32);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-hero-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.45);
+        background: linear-gradient(135deg, #0369A1 0%, #075985 100%);
+    }
+
+    .btn-hero-glass {
+        background: rgba(255, 255, 255, 0.88);
+        backdrop-filter: blur(8px);
+        color: #0F172A !important;
+        border: 1px solid #BAE6FD;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 10px 18px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
+        transition: all 0.2s ease;
+        text-decoration: none;
+    }
+
+    .btn-hero-glass:hover {
+        background: #FFFFFF;
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.16);
+    }
+
+    /* ─── 2. ACTION REQUIRED NOTICES ─── */
+    .fd-alert-luxury {
+        background: #FFFFFF;
+        border: 1px solid #BAE6FD;
+        border-left: 4px solid #0284C7;
+        border-radius: 14px;
+        padding: 16px 22px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+    }
+
+    .fd-alert-tag {
+        font-size: 0.7rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #0284C7;
+        margin-bottom: 2px;
+    }
+
+    /* ─── 3. LUXURY 4-CARD HERO KPI GRID ─── */
+    .fd-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fd-radius);
+        padding: 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fd-metric-card:hover {
+        transform: translateY(-3px);
+        border-color: #BAE6FD;
+        box-shadow: 0 10px 28px rgba(2, 132, 199, 0.12);
+    }
+
+    .fd-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0284C7, #38BDF8);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .fd-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .fd-metric-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .fd-metric-tag {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+    }
+
+    .fd-metric-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .fd-metric-val {
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .fd-metric-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+
+    .fd-metric-footer {
+        font-size: 0.77rem;
+        color: #64748B;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ─── 4. EXECUTIVE ANALYTICS SECTION ─── */
+    .fd-chart-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fd-radius);
+        padding: 24px;
+        height: 100%;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .fd-card-header-clean {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        padding-bottom: 14px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .fd-card-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        letter-spacing: -0.01em;
+        color: #0F172A;
+        margin: 0;
+    }
+
+    .fd-card-subtitle {
+        font-size: 0.78rem;
+        color: #64748B;
+        margin-top: 2px;
+    }
+
+    .fd-kpi-pill {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-radius: 8px;
+        padding: 6px 14px;
+        display: inline-flex;
+        flex-direction: column;
+        line-height: 1.2;
+        text-align: right;
+    }
+
+    .fd-kpi-pill-val {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0284C7;
+    }
+
+    /* Doughnut Chart Center Overlay */
+    .donut-chart-wrapper {
+        position: relative;
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .donut-center-kpi {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .donut-center-num {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #0F172A;
+        line-height: 1;
+    }
+
+    .donut-center-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #64748B;
+        margin-top: 2px;
+    }
+
+    /* ─── 5. LUXURY CARDS FOR CONTRACTS & PROPOSALS ─── */
+    .fd-section-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fd-radius);
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .fd-section-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .fd-section-header h5 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 0;
+    }
+
+    /* Luxury Contract Floating Row Card */
+    .fd-contract-item {
+        padding: 18px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        transition: background 0.15s ease;
+    }
+
+    .fd-contract-item:last-child {
+        border-bottom: none;
+    }
+
+    .fd-contract-item:hover {
+        background: #F8FAFC;
+    }
+
+    .fd-client-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-act-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 7px 16px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+    }
+
+    .btn-act-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+    }
+
+    .btn-act-outline {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-act-outline:hover {
+        background: #F0F9FF;
+        border-color: #BAE6FD;
+        color: #0284C7 !important;
+    }
+
+    /* ─── 6. RIGHT SIDEBAR DOSSIER CARD ─── */
+    .fd-dossier-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fd-radius);
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .fd-dossier-banner {
+        height: 70px;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        position: relative;
+    }
+
+    .fd-dossier-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 16px;
+        background: #FFFFFF;
+        border: 3px solid #FFFFFF;
+        color: #0284C7;
+        font-size: 1.6rem;
+        font-weight: 800;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        position: absolute;
+        bottom: -32px;
+        left: 24px;
+    }
+
+    .fd-dossier-body {
+        padding: 42px 24px 24px;
+    }
+
+    .fd-stat-tile {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 10px 14px;
+    }
+
+    .fd-stat-tile-label {
+        font-size: 0.68rem;
+        font-weight: 700;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 2px;
+    }
+
+    .fd-stat-tile-val {
+        font-size: 0.95rem;
+        font-weight: 800;
+        color: #0F172A;
+    }
+
+    .fd-empty-clean {
+        text-align: center;
+        padding: 44px 20px;
+        color: #64748B;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS EXECUTIVE HERO COMMAND BANNER
+     ========================================================================= -->
+<div class="fd-hero-banner">
+    <div class="row align-items-center g-4">
+        <div class="col-xl-7 col-lg-6">
+            <div class="fd-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>FREELANCER WORKSPACE // PRO SPECIALIST</span>
+            </div>
+            <h1 class="fd-hero-title">
+                Welcome back, {{ request.user.first_name|default:request.user.username }}
+            </h1>
+            <p class="fd-hero-sub">
+                Track active client contracts, evaluate submitted proposals, manage milestone deliverables, and accelerate your earnings.
+            </p>
+        </div>
+        <div class="col-xl-5 col-lg-6">
+            <div class="d-flex flex-wrap align-items-center gap-2 justify-content-lg-end">
+                <a href="{% url 'project_list' %}" class="btn-hero-primary">
+                    <i class="bi bi-search"></i> Browse Jobs
+                </a>
+                <a href="{% url 'freelancer_proposals' %}" class="btn-hero-glass">
+                    <i class="bi bi-envelope-paper"></i> Proposals ({{ total_proposals }})
+                </a>
+                <a href="{% url 'freelancer_profile' %}" class="btn-hero-glass">
+                    <i class="bi bi-sliders"></i> Settings
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. ACTION REQUIRED NOTICES (DELIVERABLES / REVISIONS)
+     ========================================================================= -->
+{% if pending_deliverables %}
+    <div class="fd-alert-luxury">
+        <div class="d-flex align-items-center gap-3">
+            <div style="width: 10px; height: 10px; border-radius: 50%; background: #0284C7; box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.2);" class="flex-shrink-0"></div>
+            <div>
+                <div class="fd-alert-tag">ACTION REQUIRED // DELIVERABLES IN PROGRESS</div>
+                <div class="fw-bold text-dark" style="font-size: 0.95rem;">
+                    You have {{ pending_deliverables|length }} milestone deliverable{{ pending_deliverables|length|pluralize }} awaiting completion
+                </div>
+                <div class="text-muted small">
+                    Submit work deliverables for client review to trigger milestone verification and escrow disbursement.
+                </div>
+            </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <a href="{% url 'freelancer_contracts' %}" class="btn-hero-primary py-2 px-3" style="font-size: 0.82rem;">
+                Review Active Deliverables &rarr;
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- =========================================================================
+     3. LUXURY 4-CARD HERO KPI GRID (GENEROUS SPACING, NO CRAMPING)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Earnings -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fd-metric-card">
+            <div>
+                <div class="fd-metric-top">
+                    <span class="fd-metric-tag">FINANCE // 01</span>
+                    <span class="fd-metric-pill" style="background:#DCFCE7; color:#15803D;">COMPLETED</span>
+                </div>
+                <div class="fd-metric-val" style="color: #16A34A;">&#8377;{{ total_earnings|floatformat:0 }}</div>
+                <div class="fd-metric-title">Total Verified Earnings</div>
+            </div>
+            <div class="fd-metric-footer">
+                <span>Pipeline Value:</span>
+                <strong class="text-dark">&#8377;{{ active_contracts_value|floatformat:0 }} active</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Active Contracts -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fd-metric-card">
+            <div>
+                <div class="fd-metric-top">
+                    <span class="fd-metric-tag">ENGAGEMENT // 02</span>
+                    <span class="fd-metric-pill" style="background:#E0F2FE; color:#0284C7;">IN PROGRESS</span>
+                </div>
+                <div class="fd-metric-val" style="color: #0284C7;">{{ active_contracts }}</div>
+                <div class="fd-metric-title">Active Hired Contracts</div>
+            </div>
+            <div class="fd-metric-footer">
+                <span>Completed Milestones:</span>
+                <strong class="text-dark">{{ completed_milestones }} approved</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Submitted Proposals -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fd-metric-card">
+            <div>
+                <div class="fd-metric-top">
+                    <span class="fd-metric-tag">PIPELINE // 03</span>
+                    <span class="fd-metric-pill" style="background:#FEF3C7; color:#B45309;">{{ pending_proposals }} PENDING</span>
+                </div>
+                <div class="fd-metric-val" style="color: #D97706;">{{ total_proposals }}</div>
+                <div class="fd-metric-title">Submitted Proposals</div>
+            </div>
+            <div class="fd-metric-footer">
+                <span>Bid Conversion Rate:</span>
+                <strong class="text-dark">{{ conversion_rate }}% win</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Reputation & Rating -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fd-metric-card">
+            <div>
+                <div class="fd-metric-top">
+                    <span class="fd-metric-tag">REPUTATION // 04</span>
+                    <span class="fd-metric-pill" style="background:#FEF3C7; color:#B45309;">VERIFIED RATING</span>
+                </div>
+                <div class="fd-metric-val" style="color: #0F172A;">
+                    {{ avg_rating }} <span style="font-size:1.1rem;color:#EAB308;">★</span>
+                </div>
+                <div class="fd-metric-title">Reputation Score</div>
+            </div>
+            <div class="fd-metric-footer">
+                <span>Client Reviews:</span>
+                <strong class="text-dark">{{ reviews_count }} review{{ reviews_count|pluralize }}</strong>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. EXECUTIVE ANALYTICS SECTION (CLEAN TICKS, CENTER STAT DOUGHNUT)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Chart 1: Monthly Earnings Growth Trend -->
+    <div class="col-lg-8">
+        <div class="fd-chart-card">
+            <div class="fd-card-header-clean">
+                <div>
+                    <h5 class="fd-card-title">Earnings Progression Trend</h5>
+                    <div class="fd-card-subtitle">Last 6 months verified payouts and milestone disbursements</div>
+                </div>
+                <div class="fd-kpi-pill">
+                    <span class="text-muted" style="font-size: 0.66rem; font-weight: 700; text-transform: uppercase;">Total Payouts</span>
+                    <span class="fd-kpi-pill-val">&#8377;{{ total_earnings|floatformat:0 }}</span>
+                </div>
+            </div>
+            <div style="height: 240px; position: relative;">
+                <canvas id="freelancerEarningsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart 2: Proposals Breakdown with Center KPI -->
+    <div class="col-lg-4">
+        <div class="fd-chart-card">
+            <div class="fd-card-header-clean">
+                <div>
+                    <h5 class="fd-card-title">Proposal Status Breakdown</h5>
+                    <div class="fd-card-subtitle">Distribution of submitted project bids</div>
+                </div>
+                <div class="fd-kpi-pill">
+                    <span class="text-muted" style="font-size: 0.66rem; font-weight: 700; text-transform: uppercase;">Total Bids</span>
+                    <span class="fd-kpi-pill-val">{{ total_proposals }}</span>
+                </div>
+            </div>
+            
+            <div class="donut-chart-wrapper">
+                <canvas id="freelancerProposalChart"></canvas>
+                <div class="donut-center-kpi">
+                    <div class="donut-center-num">{{ total_proposals }}</div>
+                    <div class="donut-center-label">Total Bids</div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-around text-center pt-3 mt-2 border-top">
+                <div>
+                    <div class="fw-bold" style="color: #10B981; font-size: 1.1rem;">{{ accepted_proposals }}</div>
+                    <small class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Accepted</small>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color: #0284C7; font-size: 1.1rem;">{{ pending_proposals }}</div>
+                    <small class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Pending</small>
+                </div>
+                <div>
+                    <div class="fw-bold" style="color: #94A3B8; font-size: 1.1rem;">{{ rejected_proposals }}</div>
+                    <small class="text-muted" style="font-size: 0.72rem; text-transform: uppercase; font-weight: 700;">Declined</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     5. MAIN WORKSPACE CONTENT: CONTRACTS & BIDS + DOSSIER SIDEBAR
+     ========================================================================= -->
+<div class="row g-4 mb-4">
+    <!-- Left Column: Active Contracts & Recent Bids -->
+    <div class="col-lg-8">
+        <!-- Active Contracts Card -->
+        <div class="fd-section-card">
+            <div class="fd-section-header">
+                <div>
+                    <h5>Active Hired Contracts</h5>
+                    <small class="text-muted">Ongoing client engagements and milestone progress</small>
+                </div>
+                <a href="{% url 'freelancer_contracts' %}" class="btn-act-outline">
+                    View All Contracts ({{ active_contracts }})
+                </a>
+            </div>
+
+            {% if recent_contracts %}
+                <div>
+                    {% for contract in recent_contracts %}
+                        <div class="fd-contract-item">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="fd-client-avatar">
+                                        {{ contract.client.first_name|default:contract.client.username|slice:":1"|upper }}
+                                    </div>
+                                    <div>
+                                        <div class="fw-bold text-dark fs-6">
+                                            <a href="{% url 'freelancer_contract_detail' contract.id %}" class="text-decoration-none text-dark hover-primary">
+                                                {{ contract.project.title }}
+                                            </a>
+                                        </div>
+                                        <small class="text-muted">
+                                            Client: <strong class="text-dark">{{ contract.client.get_full_name|default:contract.client.username }}</strong>
+                                            &bull; Started {{ contract.start_date|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center gap-3 flex-wrap">
+                                    <div class="text-end">
+                                        <div class="small text-muted text-uppercase fw-bold" style="font-size:0.66rem;letter-spacing:0.06em;">Contract Value</div>
+                                        <div class="fw-bold text-success fs-5">&#8377;{{ contract.total_amount }}</div>
+                                    </div>
+                                    <div style="min-width: 120px;">
+                                        <div class="d-flex justify-content-between small text-muted mb-1" style="font-size:0.72rem;">
+                                            <span>Progress</span>
+                                            <span class="fw-bold text-dark">{{ contract.progress_percentage }}%</span>
+                                        </div>
+                                        <div class="progress" style="height: 6px; background: #E2E8F0; border-radius: 99px;">
+                                            <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: #0284C7; border-radius: 99px;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'freelancer_contract_detail' contract.id %}" class="btn-act-primary">
+                                            Workspace &rarr;
+                                        </a>
+                                        <a href="{% url 'start_conversation' %}?user_id={{ contract.client.id }}&project_id={{ contract.project.id }}" class="btn-act-outline">
+                                            <i class="bi bi-chat-dots"></i> Chat
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="fd-empty-clean">
+                    <div class="fw-bold text-dark mb-1">No Active Contracts</div>
+                    <p class="small text-muted mb-3">Browse open projects on the marketplace and submit bids to win new contracts.</p>
+                    <a href="{% url 'project_list' %}" class="btn-hero-primary py-2 px-3">
+                        Browse Open Projects
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Recent Submitted Proposals Card -->
+        <div class="fd-section-card">
+            <div class="fd-section-header">
+                <div>
+                    <h5>Recent Submitted Proposals</h5>
+                    <small class="text-muted">Your latest bids and their real-time client status</small>
+                </div>
+                <a href="{% url 'freelancer_proposals' %}" class="btn-act-outline">
+                    View All Bids ({{ total_proposals }})
+                </a>
+            </div>
+
+            {% if recent_proposals %}
+                <div>
+                    {% for proposal in recent_proposals %}
+                        <div class="fd-contract-item">
+                            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                                <div>
+                                    <div class="fw-bold text-dark fs-6">
+                                        <a href="{% url 'project_detail' proposal.project.pk %}" class="text-decoration-none text-dark hover-primary">
+                                            {{ proposal.project.title }}
+                                        </a>
+                                    </div>
+                                    <small class="text-muted">
+                                        Client: {{ proposal.project.client.get_full_name|default:proposal.project.client.username }}
+                                        &bull; Delivery in {{ proposal.delivery_days }} days
+                                    </small>
+                                </div>
+                                <div class="d-flex align-items-center gap-3">
+                                    <span class="fw-bold text-dark fs-6">&#8377;{{ proposal.bid_amount }}</span>
+                                    {% if proposal.status == 'pending' %}
+                                        <span class="badge" style="background:#FEF3C7;color:#B45309;padding:6px 12px;border-radius:8px;font-size:0.75rem;">Pending</span>
+                                    {% elif proposal.status == 'accepted' %}
+                                        <span class="badge" style="background:#DCFCE7;color:#15803D;padding:6px 12px;border-radius:8px;font-size:0.75rem;">Accepted</span>
+                                    {% elif proposal.status == 'rejected' %}
+                                        <span class="badge" style="background:#FEE2E2;color:#B91C1C;padding:6px 12px;border-radius:8px;font-size:0.75rem;">Declined</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-muted border px-2 py-1">{{ proposal.get_status_display }}</span>
+                                    {% endif %}
+                                    <a href="{% url 'start_conversation' %}?user_id={{ proposal.project.client.id }}&project_id={{ proposal.project.id }}" class="btn-act-outline py-1 px-3">
+                                        <i class="bi bi-chat-dots me-1"></i> Chat
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="fd-empty-clean">
+                    <div class="fw-bold text-dark mb-1">No Proposals Submitted</div>
+                    <p class="small text-muted mb-3">Explore open client projects in the marketplace and submit bids.</p>
+                    <a href="{% url 'project_list' %}" class="btn-hero-primary py-2 px-3">
+                        Explore Open Jobs
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Freelancer Dossier & Milestones -->
+    <div class="col-lg-4">
+        <!-- Executive Freelancer Dossier Card -->
+        <div class="fd-dossier-card">
+            <div class="fd-dossier-banner">
+                <div class="fd-dossier-avatar">
+                    {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                </div>
+            </div>
+            <div class="fd-dossier-body">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <h5 class="fw-bold text-dark mb-0">{{ request.user.get_full_name|default:request.user.username }}</h5>
+                    <span class="badge" style="background:#F0F9FF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.65rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">
+                        PRO VERIFIED
+                    </span>
+                </div>
+                <div class="text-muted small mb-3">{{ profile.title|default:"Freelance Specialist" }}</div>
+
+                <!-- 2x2 Stat Tile Grid -->
+                <div class="row g-2 mb-3">
+                    <div class="col-6">
+                        <div class="fd-stat-tile">
+                            <div class="fd-stat-tile-label">Hourly Rate</div>
+                            <div class="fd-stat-tile-val text-primary">&#8377;{{ profile.hourly_rate|default:"0.00" }}<span style="font-size:0.7rem;font-weight:600;color:#64748B;">/hr</span></div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="fd-stat-tile">
+                            <div class="fd-stat-tile-label">Location</div>
+                            <div class="fd-stat-tile-val text-truncate">{{ profile.location|default:"Remote" }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="fd-stat-tile">
+                            <div class="fd-stat-tile-label">Success Rate</div>
+                            <div class="fd-stat-tile-val text-success">{{ conversion_rate }}%</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="fd-stat-tile">
+                            <div class="fd-stat-tile-label">Member Since</div>
+                            <div class="fd-stat-tile-val">{{ request.user.date_joined|date:"M Y" }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <div class="small fw-bold text-muted mb-2" style="font-size:0.72rem; text-transform:uppercase; letter-spacing:0.06em;">Key Expertise:</div>
+                    <div class="d-flex flex-wrap gap-1">
+                        {% for skill in profile.skills_list %}
+                            <span class="badge" style="background: #F0F9FF; color: #0284C7; border: 1px solid #BAE6FD; font-size: 0.72rem; padding: 4px 10px; border-radius: 6px;">
+                                {{ skill }}
+                            </span>
+                        {% empty %}
+                            <span class="text-muted small">No skills listed yet.</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <a href="{% url 'freelancer_profile' %}" class="btn-act-outline w-100 justify-content-center py-2">
+                    <i class="bi bi-person-gear me-1"></i> Edit Profile &amp; Skills
+                </a>
+            </div>
+        </div>
+
+        <!-- Upcoming Milestones Widget -->
+        <div class="fd-section-card p-4">
+            <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+                <h6 class="fw-bold text-dark mb-0" style="font-size: 0.95rem;">Upcoming Milestones</h6>
+                <span class="badge" style="background: #F0F9FF; color: #0284C7; font-size: 0.7rem; font-weight: 700;">
+                    {{ pending_milestones|length }} Pending
+                </span>
+            </div>
+
+            {% if pending_milestones %}
+                <div class="d-flex flex-column gap-3">
+                    {% for ms in pending_milestones %}
+                        <div class="p-3 rounded-3 border bg-white" style="box-shadow: 0 1px 4px rgba(0,0,0,0.02);">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <div class="fw-bold text-dark small text-truncate" style="max-width: 170px;">
+                                    {{ ms.title }}
+                                </div>
+                                <span class="fw-bold text-success small">&#8377;{{ ms.amount }}</span>
+                            </div>
+                            <div class="text-muted small mb-2 text-truncate" style="font-size: 0.75rem;">
+                                {{ ms.contract.project.title }}
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="badge" style="background: #FEF3C7; color: #B45309; font-size: 0.68rem; font-weight: 700;">
+                                    {{ ms.get_status_display }}
+                                </span>
+                                <a href="{% url 'freelancer_contract_detail' ms.contract.id %}" class="small text-decoration-none fw-semibold" style="color: #0284C7;">
+                                    Deliver &rarr;
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="text-center py-4 text-muted small">
+                    No pending deliverables or milestones.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     6. CHART.JS SCRIPT INITIALIZATION (CDN & RENDERING)
+     ========================================================================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const earningsLabels = {{ earnings_chart_labels_json|safe }};
+        const earningsData = {{ earnings_chart_data_json|safe }};
+        const donutLabels = {{ proposal_donut_labels_json|safe }};
+        const donutData = {{ proposal_donut_data_json|safe }};
+
+        // 1. Area & Line Chart: Freelancer Monthly Earnings
+        const earningsCanvas = document.getElementById('freelancerEarningsChart');
+        if (earningsCanvas) {
+            const ctx = earningsCanvas.getContext('2d');
+            
+            // Luminous light blue shining gradient
+            const gradientFill = ctx.createLinearGradient(0, 0, 0, 230);
+            gradientFill.addColorStop(0, 'rgba(2, 132, 199, 0.32)');
+            gradientFill.addColorStop(0.5, 'rgba(56, 189, 248, 0.12)');
+            gradientFill.addColorStop(1, 'rgba(240, 249, 255, 0.00)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: earningsLabels,
+                    datasets: [{
+                        label: 'Earnings (INR)',
+                        data: earningsData,
+                        borderColor: '#0284C7',
+                        borderWidth: 3,
+                        backgroundColor: gradientFill,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#0284C7',
+                        pointBorderWidth: 2.5,
+                        pointRadius: 4.5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#0284C7',
+                        pointHoverBorderColor: '#FFFFFF',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#F8FAFC',
+                            bodyColor: '#38BDF8',
+                            titleFont: { size: 12, weight: '700', family: 'Plus Jakarta Sans' },
+                            bodyFont: { size: 13, weight: '600', family: 'Plus Jakarta Sans' },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Earnings: ₹' + Number(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                                color: '#64748B'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { dash: [4, 4] },
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                                color: '#64748B',
+                                maxTicksLimit: 5,
+                                precision: 0,
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // 2. Doughnut Chart: Proposal Status Breakdown with Center Cutout
+        const donutCanvas = document.getElementById('freelancerProposalChart');
+        if (donutCanvas) {
+            const donutCtx = donutCanvas.getContext('2d');
+            
+            const sumValues = donutData.reduce((a, b) => a + b, 0);
+            const chartData = sumValues > 0 ? donutData : [1];
+            const chartLabels = sumValues > 0 ? donutLabels : ['No Proposals Yet'];
+            const chartColors = sumValues > 0 
+                ? ['#10B981', '#0284C7', '#94A3B8']
+                : ['#E2E8F0'];
+
+            new Chart(donutCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        data: chartData,
+                        backgroundColor: chartColors,
+                        borderWidth: 3,
+                        borderColor: '#FFFFFF',
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '76%',
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#FFFFFF',
+                            bodyColor: '#38BDF8',
+                            titleFont: { size: 12, family: 'Plus Jakarta Sans' },
+                            bodyFont: { size: 12, weight: '700', family: 'Plus Jakarta Sans' },
+                            padding: 8,
+                            cornerRadius: 8,
+                            callbacks: {
+                                label: function(context) {
+                                    if (sumValues === 0) return ' No proposals yet';
+                                    return ' ' + context.label + ': ' + context.parsed + ' proposals';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,682 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}My Projects{% endblock %}
+{% block dashboard_title %}Manage Your Projects{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Client Projects - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. LUMINOUS SHINING HERO BANNER ─── */
+    .cp-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .cp-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .cp-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .cp-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .cp-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 640px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* Primary Light Blue Button */
+    .btn-cp-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.85rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 10px 22px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    .btn-cp-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    /* ─── 2. EDITORIAL NUMBERED METRIC CARDS ─── */
+    .cp-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cp-metric-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.1);
+    }
+
+    .cp-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #0284C7;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .cp-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .cp-metric-index {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .cp-metric-num {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .cp-metric-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .cp-metric-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+
+    /* ─── 3. FILTER & SEARCH CONTROL STRIP ─── */
+    .cp-filter-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .cp-filter-tab {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .cp-filter-tab.active {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border-color: #0284C7;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .cp-filter-tab:not(.active) {
+        background: #F8FAFC;
+        color: #475569;
+        border-color: #E2E8F0;
+    }
+
+    .cp-filter-tab:not(.active):hover {
+        background: #E0F2FE;
+        color: #0284C7;
+        border-color: #BAE6FD;
+    }
+
+    .cp-search-input {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        padding: 9px 14px;
+        color: #0F172A;
+        transition: all 0.15s ease;
+    }
+
+    .cp-search-input:focus {
+        background: #FFFFFF;
+        border-color: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    /* ─── 4. PROJECTS TABLE CARD ─── */
+    .cp-table-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .cp-table {
+        margin-bottom: 0;
+    }
+
+    .cp-table th {
+        background: #F8FAFC;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        color: #64748B;
+        padding: 14px 18px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+    }
+
+    .cp-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 0.86rem;
+        vertical-align: middle;
+    }
+
+    .cp-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .cp-table tr:hover td {
+        background: #F8FAFC;
+    }
+
+    .cp-project-link {
+        color: #0F172A;
+        font-weight: 700;
+        font-size: 0.92rem;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+
+    .cp-project-link:hover {
+        color: #0284C7;
+    }
+
+    /* Proposals Badge */
+    .cp-bids-badge {
+        background: #E0F2FE;
+        color: #0284C7;
+        border: 1px solid #BAE6FD;
+        font-weight: 700;
+        font-size: 0.78rem;
+        padding: 5px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .cp-bids-badge:hover {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+    }
+
+    /* Status Badges */
+    .badge-cd-open { background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; }
+    .badge-cd-in_progress { background: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .badge-cd-completed { background: #F3E8FF; color: #7C3AED; border: 1px solid #DDD6FE; }
+    .badge-cd-draft { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+    .badge-cd-closed { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+
+    /* Action Buttons (Minimalist Text-First) */
+    .btn-cp-action {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-cp-action:hover {
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        background: #F0F9FF;
+    }
+
+    .btn-cp-action-danger {
+        background: #FFFFFF;
+        color: #DC2626 !important;
+        border: 1px solid #FECACA;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-cp-action-danger:hover {
+        background: #FEF2F2;
+        border-color: #DC2626;
+    }
+
+    .btn-cp-action-warning {
+        background: #FFFFFF;
+        color: #D97706 !important;
+        border: 1px solid #FDE68A;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-cp-action-warning:hover {
+        background: #FFFBEB;
+        border-color: #D97706;
+    }
+
+    /* Minimal Empty State */
+    .cp-empty-minimal {
+        text-align: center;
+        padding: 56px 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        margin: 20px;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     A. CLIENT VERIFICATION PENDING NOTICE
+     ========================================================================= -->
+{% if not request.user.profile.is_approved %}
+<div class="card border-0 rounded-3 shadow-sm mb-4" style="background: #FFFBEB; border-left: 4px solid #D97706 !important;">
+    <div class="card-body p-4 d-flex align-items-center justify-content-between flex-wrap gap-3">
+        <div>
+            <div class="small fw-bold text-uppercase" style="letter-spacing: 0.08em; color: #B45309;">Verification Pending</div>
+            <h5 class="fw-bold mb-1" style="color: #92400E;">Client Account Awaiting Administrator Review</h5>
+            <p class="mb-0 small" style="color: #78350F; max-width: 680px;">
+                Your client profile has been registered. Once verified by the platform admin, you will be authorized to publish project postings, inspect deliverables, and hire talent.
+            </p>
+        </div>
+        <span class="badge px-3 py-2 fw-bold" style="background: #FEF3C7; color: #92400E; border: 1px solid #FDE68A; font-size: 0.78rem;">
+            Awaiting Admin Approval
+        </span>
+    </div>
+</div>
+{% endif %}
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="cp-hero-banner">
+    <div class="row align-items-center g-4">
+        <div class="col-xl-8 col-lg-7">
+            <div class="cp-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Project Repository</span>
+            </div>
+            <h2 class="cp-hero-title">
+                My Project Postings
+            </h2>
+            <p class="cp-hero-sub">
+                Manage your active job listings, evaluate incoming talent bids, inspect milestone progress, and control listing visibility across the marketplace.
+            </p>
+        </div>
+        <div class="col-xl-4 col-lg-5 text-lg-end">
+            {% if request.user.profile.is_approved %}
+            <a href="{% url 'client_project_create' %}" class="btn-cp-primary">
+                + Post New Project
+            </a>
+            {% else %}
+            <button type="button" class="btn-cp-primary" style="opacity:0.75;cursor:not-allowed;" title="Pending Admin Approval" onclick="alert('Your client account is pending administrator approval before you can post new projects.');">
+                Post Project (Pending)
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. FOUR EDITORIAL SUMMARY METRIC CARDS (NUMBERED, ICON-FREE)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: All Projects -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="cp-metric-card">
+            <div class="cp-metric-index">01 / Lifetime Listings</div>
+            <div>
+                <div class="cp-metric-num" style="color: #0F172A;">{{ counts.all|default:0 }}</div>
+                <div class="cp-metric-label">Total Projects</div>
+                <div class="cp-metric-sub">All listings created on account</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Open for Bidding -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="cp-metric-card">
+            <div class="cp-metric-index">02 / Live Marketplace</div>
+            <div>
+                <div class="cp-metric-num" style="color: #0284C7;">{{ counts.open|default:0 }}</div>
+                <div class="cp-metric-label">Open for Bidding</div>
+                <div class="cp-metric-sub">Active projects accepting bids</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: In Progress -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="cp-metric-card">
+            <div class="cp-metric-index">03 / Execution</div>
+            <div>
+                <div class="cp-metric-num" style="color: #059669;">{{ counts.in_progress|default:0 }}</div>
+                <div class="cp-metric-label">In Progress</div>
+                <div class="cp-metric-sub">Hired specialists delivering work</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Completed -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="cp-metric-card">
+            <div class="cp-metric-index">04 / Delivered</div>
+            <div>
+                <div class="cp-metric-num" style="color: #7C3AED;">{{ counts.completed|default:0 }}</div>
+                <div class="cp-metric-label">Completed</div>
+                <div class="cp-metric-sub">100% delivered deliverables</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. FILTER TABS & KEYWORD SEARCH STRIP
+     ========================================================================= -->
+<div class="cp-filter-bar">
+    <div class="row g-3 align-items-center">
+        <!-- Status Filter Pills -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'client_projects' %}{% if query %}?q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if not current_status %}active{% endif %}">
+                    All Postings ({{ counts.all|default:0 }})
+                </a>
+                <a href="{% url 'client_projects' %}?status=open{% if query %}&q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if current_status == 'open' %}active{% endif %}">
+                    Open for Bids ({{ counts.open|default:0 }})
+                </a>
+                <a href="{% url 'client_projects' %}?status=in_progress{% if query %}&q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if current_status == 'in_progress' %}active{% endif %}">
+                    In Progress ({{ counts.in_progress|default:0 }})
+                </a>
+                <a href="{% url 'client_projects' %}?status=completed{% if query %}&q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if current_status == 'completed' %}active{% endif %}">
+                    Completed ({{ counts.completed|default:0 }})
+                </a>
+                <a href="{% url 'client_projects' %}?status=closed{% if query %}&q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if current_status == 'closed' %}active{% endif %}">
+                    Closed ({{ counts.closed|default:0 }})
+                </a>
+                <a href="{% url 'client_projects' %}?status=draft{% if query %}&q={{ query|urlencode }}{% endif %}" class="cp-filter-tab {% if current_status == 'draft' %}active{% endif %}">
+                    Drafts ({{ counts.draft|default:0 }})
+                </a>
+            </div>
+        </div>
+
+        <!-- Search Input Form -->
+        <div class="col-xl-4 col-lg-5">
+            <form action="{% url 'client_projects' %}" method="GET">
+                {% if current_status %}
+                    <input type="hidden" name="status" value="{{ current_status }}">
+                {% endif %}
+                <div class="d-flex gap-2">
+                    <input type="text" name="q" value="{{ query }}" class="form-control cp-search-input flex-grow-1" placeholder="Search by project title or keyword...">
+                    <button type="submit" class="btn btn-sm btn-cp-primary py-2 px-3">
+                        Search
+                    </button>
+                    {% if query %}
+                    <a href="{% url 'client_projects' %}{% if current_status %}?status={{ current_status }}{% endif %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center" title="Clear Search">
+                        Reset
+                    </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. PROJECTS TABLE CARD
+     ========================================================================= -->
+<div class="cp-table-card">
+    <div class="table-responsive">
+        <table class="table cp-table align-middle">
+            <thead>
+                <tr>
+                    <th>Project Details</th>
+                    <th>Budget</th>
+                    <th>Timeline</th>
+                    <th>Proposals</th>
+                    <th>Status</th>
+                    <th>Posted Date</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for project in page_obj %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'project_detail' project.id %}" class="cp-project-link d-block mb-1">
+                                {{ project.title }}
+                            </a>
+                            <div class="d-flex align-items-center gap-2">
+                                <span class="badge" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.72rem;">
+                                    {{ project.category.name|default:"General" }}
+                                </span>
+                                <small class="text-muted" style="font-size: 0.72rem;">
+                                    ID: #{{ project.id }}
+                                </small>
+                            </div>
+                        </td>
+                        <td>
+                            <div class="fw-bold" style="color: #0F172A;">
+                                {% if project.budget_max > 0 %}
+                                    ${{ project.budget_min|floatformat:0 }} &ndash; ${{ project.budget_max|floatformat:0 }}
+                                {% else %}
+                                    ${{ project.budget_min|floatformat:0 }}
+                                {% endif %}
+                            </div>
+                            <small class="text-muted d-block" style="font-size: 0.72rem;">{{ project.get_budget_type_display }}</small>
+                        </td>
+                        <td>
+                            {% if project.deadline %}
+                                <div class="fw-semibold text-dark" style="font-size: 0.84rem;">
+                                    {{ project.deadline|date:"M d, Y" }}
+                                </div>
+                                <small class="text-muted" style="font-size: 0.72rem;">Target Deadline</small>
+                            {% else %}
+                                <span class="text-muted small">Flexible Timeline</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="cp-bids-badge" title="Evaluate bids for this listing">
+                                {{ project.num_proposals|default:project.prop_count|default:0 }} Proposal{{ project.num_proposals|default:project.prop_count|pluralize }} &rarr;
+                            </a>
+                        </td>
+                        <td>
+                            <span class="badge badge-cd-{{ project.status }}" style="font-size: 0.75rem;">
+                                {{ project.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ project.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-1">
+                                <a href="{% url 'project_detail' project.id %}" class="btn-cp-action" title="View Public Listing">
+                                    View
+                                </a>
+                                <a href="{% url 'client_project_edit' project.id %}" class="btn-cp-action" title="Edit Listing Details">
+                                    Edit
+                                </a>
+                                {% if project.status == 'open' %}
+                                    <form method="POST" action="{% url 'client_project_close' project.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-cp-action-warning" title="Close Bidding" onclick="return confirm('Are you sure you want to close bidding on this project?');">
+                                            Close
+                                        </button>
+                                    </form>
+                                {% endif %}
+                                <a href="{% url 'client_project_delete' project.id %}" class="btn-cp-action-danger" title="Delete Project" onclick="return confirm('Are you sure you want to delete this project listing? This cannot be undone.');">
+                                    Delete
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="p-0">
+                            <div class="cp-empty-minimal">
+                                <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.05rem;">No Projects Found</div>
+                                <p class="text-muted small mb-3">
+                                    {% if query or current_status %}
+                                        No project listings match your current filters. Try resetting search criteria.
+                                    {% else %}
+                                        You have not created any project postings yet. Post your first requirement to receive bids.
+                                    {% endif %}
+                                </p>
+                                <div class="d-inline-flex gap-2">
+                                    {% if query or current_status %}
+                                        <a href="{% url 'client_projects' %}" class="btn-cp-action py-2 px-3">
+                                            Reset Filters
+                                        </a>
+                                    {% endif %}
+                                    <a href="{% url 'client_project_create' %}" class="btn-cp-primary py-2 px-3">
+                                        + Post a New Project
+                                    </a>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="p-3 px-4 bg-white border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <small class="text-muted" style="font-size: 0.8rem;">
+                Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </small>
+            <nav aria-label="Projects pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.previous_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">&larr; Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" style="{% if page_obj.number == num %}background:#0284C7;border-color:#0284C7;color:#FFFFFF;{% else %}color:#0284C7;{% endif %} border-radius: 6px; margin: 0 2px;" href="?page={{ num }}{% if current_status %}&status={{ current_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.next_page_number }}{% if current_status %}&status={{ current_status }}{% endif %}{% if query %}&q={{ query|urlencode }}{% endif %}">Next &rarr;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

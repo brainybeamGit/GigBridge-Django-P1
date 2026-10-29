@@ -1,0 +1,28 @@
+{% extends 'client/dashboard_base.html' %}
+
+{% block breadcrumb_current %}Payment Checkout{% endblock %}
+{% block dashboard_title %}Direct Escrow Checkout{% endblock %}
+
+{% block dashboard_content %}
+<div class="text-center py-5 bg-white rounded-4 shadow-sm border p-5">
+    <div class="spinner-border text-success mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+    <h4 class="fw-bold text-navy mb-2">Redirecting to Contract Details...</h4>
+    <p class="text-muted small mb-3">
+        Razorpay checkout is processed directly inside your contract dashboard.
+    </p>
+    {% if contract %}
+        <a href="{% url 'client_contract_detail' contract.id %}" class="btn btn-primary rounded-pill px-4">
+            Go to Contract #{{ contract.id }}
+        </a>
+        <script>
+            setTimeout(function() {
+                window.location.href = "{% url 'client_contract_detail' contract.id %}";
+            }, 300);
+        </script>
+    {% else %}
+        <a href="{% url 'client_contracts' %}" class="btn btn-primary rounded-pill px-4">
+            View My Contracts
+        </a>
+    {% endif %}
+</div>
+{% endblock %}

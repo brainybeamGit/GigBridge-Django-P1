@@ -1,0 +1,498 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Active Contracts{% endblock %}
+{% block dashboard_title %}My Contracts &amp; Projects{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ═══════════════════════════════════════════════════════════════════
+       EDITORIAL LUXURY LIGHT BLUE THEME - CONTRACTS
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+        --ctr-sky-50: #F0F9FF;
+        --ctr-sky-100: #E0F2FE;
+        --ctr-sky-200: #BAE6FD;
+        --ctr-sky-300: #7DD3FC;
+        --ctr-primary: #0284C7;
+        --ctr-primary-dark: #0369A1;
+        --ctr-navy: #0F172A;
+        --ctr-slate-500: #64748B;
+        --ctr-slate-700: #334155;
+        --ctr-border: #E2E8F0;
+        --ctr-radius: 18px;
+    }
+
+    /* ── 1. LUMINOUS HERO BANNER ── */
+    .ctr-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: var(--ctr-radius);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .ctr-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: var(--ctr-primary-dark);
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .ctr-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--ctr-primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .ctr-hero-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--ctr-navy);
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .ctr-hero-sub {
+        font-size: 0.92rem;
+        color: var(--ctr-slate-700);
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ── 2. EDITORIAL KPI METRIC CARDS (ZERO CLUTTERED ICONS) ── */
+    .ctr-kpi-card {
+        background: #FFFFFF;
+        border: 1px solid var(--ctr-border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        display: block;
+        text-decoration: none;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+    }
+
+    .ctr-kpi-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.12);
+    }
+
+    .ctr-kpi-card.active-kpi {
+        border-color: var(--ctr-primary);
+        background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%);
+        box-shadow: 0 8px 24px -2px rgba(2, 132, 199, 0.16);
+    }
+
+    .ctr-kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 12px;
+    }
+
+    .ctr-kpi-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--ctr-slate-500);
+    }
+
+    .ctr-kpi-index {
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-family: monospace;
+        letter-spacing: 0.05em;
+        color: #94A3B8;
+    }
+
+    .ctr-kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: var(--ctr-navy);
+        margin-bottom: 4px;
+    }
+
+    .ctr-kpi-caption {
+        font-size: 0.76rem;
+        color: var(--ctr-slate-500);
+        margin-bottom: 0;
+    }
+
+    /* ── 3. FILTER TABS STRIP ── */
+    .ctr-filter-strip {
+        background: #FFFFFF;
+        border: 1px solid var(--ctr-border);
+        border-radius: 14px;
+        padding: 12px 18px;
+        margin-bottom: 22px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .ctr-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s ease;
+        border: 1px solid transparent;
+    }
+
+    .ctr-pill-btn.active {
+        background: var(--ctr-primary);
+        color: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .ctr-pill-btn:not(.active) {
+        background: #F8FAFC;
+        color: var(--ctr-slate-700);
+        border-color: #E2E8F0;
+    }
+
+    .ctr-pill-btn:not(.active):hover {
+        background: var(--ctr-sky-50);
+        color: var(--ctr-primary-dark);
+        border-color: var(--ctr-sky-200);
+    }
+
+    /* ── 4. CONTRACT LUXURY ITEM CARDS ── */
+    .ctr-item-card {
+        background: #FFFFFF;
+        border: 1px solid var(--ctr-border);
+        border-radius: 18px;
+        padding: 24px 28px;
+        margin-bottom: 18px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        box-shadow: 0 4px 18px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .ctr-item-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 10px 28px -4px rgba(2, 132, 199, 0.12);
+    }
+
+    .ctr-status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .ctr-status-active {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+    }
+
+    .ctr-status-completed {
+        background: #E0F2FE;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+    }
+
+    .ctr-status-cancelled {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .ctr-client-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 0.95rem;
+        flex-shrink: 0;
+    }
+
+    .ctr-btn-action {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 8px 16px;
+        border-radius: 10px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s ease;
+        text-align: center;
+    }
+
+    .ctr-btn-primary {
+        background: var(--ctr-primary);
+        color: #FFFFFF;
+        border: 1px solid var(--ctr-primary);
+    }
+
+    .ctr-btn-primary:hover {
+        background: var(--ctr-primary-dark);
+        color: #FFFFFF;
+    }
+
+    .ctr-btn-outline {
+        background: #FFFFFF;
+        color: var(--ctr-slate-700);
+        border: 1px solid #CBD5E1;
+    }
+
+    .ctr-btn-outline:hover {
+        background: var(--ctr-sky-50);
+        border-color: var(--ctr-primary);
+        color: var(--ctr-primary);
+    }
+
+    .ctr-ms-pill {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 8px 12px;
+        font-size: 0.78rem;
+    }
+</style>
+
+<!-- 1. Luminous Hero Banner -->
+<div class="ctr-hero">
+    <div class="ctr-hero-badge">
+        <span class="pulse-dot"></span>
+        <span>DELIVERY WORKROOM &bull; VERIFIED CONTRACTS</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h1 class="ctr-hero-title">Engagements &amp; Active Contracts</h1>
+            <p class="ctr-hero-sub">Direct delivery hub for client contracts, advance escrow verification, milestone approvals, and code submissions.</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'freelancer_earnings' %}" class="btn btn-outline-secondary bg-white fw-bold px-3 py-2 rounded-3 border">
+                Earnings Ledger
+            </a>
+            <a href="{% url 'freelancer_messages' %}" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background: var(--ctr-primary); border-color: var(--ctr-primary);">
+                Client Messages &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Editorial KPI Cards (Zero Cluttered Icons) -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=all" class="ctr-kpi-card {% if status_filter == 'all' %}active-kpi{% endif %}">
+            <div class="ctr-kpi-header">
+                <span class="ctr-kpi-label">Total Contracts</span>
+                <span class="ctr-kpi-index">ALL // 01</span>
+            </div>
+            <div class="ctr-kpi-value">{{ contracts|length }}</div>
+            <p class="ctr-kpi-caption">Lifetime client engagements</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=active" class="ctr-kpi-card {% if status_filter == 'active' %}active-kpi{% endif %}">
+            <div class="ctr-kpi-header">
+                <span class="ctr-kpi-label">Active / In Progress</span>
+                <span class="ctr-kpi-index">WORK // 02</span>
+            </div>
+            <div class="ctr-kpi-value text-success">{{ active_count }}</div>
+            <p class="ctr-kpi-caption">Currently under development</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=completed" class="ctr-kpi-card {% if status_filter == 'completed' %}active-kpi{% endif %}">
+            <div class="ctr-kpi-header">
+                <span class="ctr-kpi-label">Completed</span>
+                <span class="ctr-kpi-index">DONE // 03</span>
+            </div>
+            <div class="ctr-kpi-value text-primary">{{ completed_count }}</div>
+            <p class="ctr-kpi-caption">Disbursed and delivered</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <div class="ctr-kpi-card">
+            <div class="ctr-kpi-header">
+                <span class="ctr-kpi-label">Contract Value</span>
+                <span class="ctr-kpi-index">VAL // 04</span>
+            </div>
+            <div class="ctr-kpi-value">&#8377;{{ total_val|floatformat:0 }}</div>
+            <p class="ctr-kpi-caption">Cumulative contract book</p>
+        </div>
+    </div>
+</div>
+
+<!-- 3. Filter Strip -->
+<div class="ctr-filter-strip d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="?status=all" class="ctr-pill-btn {% if status_filter == 'all' %}active{% endif %}">
+            All Contracts
+        </a>
+        <a href="?status=active" class="ctr-pill-btn {% if status_filter == 'active' %}active{% endif %}">
+            Active Workroom ({{ active_count }})
+        </a>
+        <a href="?status=completed" class="ctr-pill-btn {% if status_filter == 'completed' %}active{% endif %}">
+            Completed ({{ completed_count }})
+        </a>
+    </div>
+
+    <div class="text-muted small">
+        Showing <strong>{{ contracts|length }}</strong> contracts
+    </div>
+</div>
+
+<!-- 4. Contracts Item List -->
+{% if contracts %}
+    <div class="d-flex flex-column">
+        {% for contract in contracts %}
+            <div class="ctr-item-card">
+                <div class="row align-items-center g-4">
+                    <!-- Project Title, Status & Client Profile -->
+                    <div class="col-lg-5">
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            {% if contract.status == 'active' %}
+                                <span class="ctr-status-pill ctr-status-active">Active Delivery</span>
+                            {% elif contract.status == 'completed' %}
+                                <span class="ctr-status-pill ctr-status-completed">Completed &amp; Paid</span>
+                            {% else %}
+                                <span class="ctr-status-pill ctr-status-cancelled">{{ contract.get_status_display }}</span>
+                            {% endif %}
+                            <small class="text-muted">&bull; Started {{ contract.start_date|date:"M d, Y" }}</small>
+                        </div>
+
+                        <h4 class="fw-bold text-dark mb-2">
+                            <a href="{% url 'freelancer_contract_detail' contract.id %}" class="text-decoration-none text-dark hover-primary">
+                                {{ contract.project.title }}
+                            </a>
+                        </h4>
+
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <div class="ctr-client-avatar">
+                                {{ contract.client.first_name|default:contract.client.username|slice:":1"|upper }}
+                            </div>
+                            <div>
+                                <div class="small fw-bold text-dark">
+                                    {{ contract.client.get_full_name|default:contract.client.username }}
+                                </div>
+                                <div class="text-muted" style="font-size: 0.75rem;">
+                                    {{ contract.client.profile.company_name|default:"Verified Employer" }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Financial Valuation & Escrow Status -->
+                    <div class="col-sm-6 col-lg-3 border-start-md">
+                        <div class="small text-muted fw-bold text-uppercase letter-spacing-1 mb-1">Contract Valuation</div>
+                        <div class="fs-4 fw-bold text-dark mb-1">&#8377;{{ contract.total_amount }}</div>
+                        <div class="small text-muted">
+                            Advance: <strong class="{% if contract.is_advance_paid %}text-success{% else %}text-warning{% endif %}">&#8377;{{ contract.advance_amount|floatformat:2 }}</strong>
+                            {% if contract.is_advance_paid %}(Escrow Secured){% else %}(Pending){% endif %}
+                        </div>
+                    </div>
+
+                    <!-- Progress Bar & Actions -->
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <span class="small fw-bold text-muted text-uppercase">Delivery Progress</span>
+                            <span class="small fw-bold text-dark">{{ contract.progress_percentage }}%</span>
+                        </div>
+                        <div class="progress mb-3" style="height: 6px; background-color: #E2E8F0; border-radius: 999px;">
+                            <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: linear-gradient(90deg, #0284C7, #38BDF8); border-radius: 999px;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        <div class="d-flex flex-column gap-2">
+                            <a href="{% url 'freelancer_contract_detail' contract.id %}" class="ctr-btn-action ctr-btn-primary w-100">
+                                Open Contract &amp; Deliverables &rarr;
+                            </a>
+                            <a href="{% url 'start_conversation' %}?user_id={{ contract.client.id }}&project_id={{ contract.project.id }}" class="ctr-btn-action ctr-btn-outline w-100">
+                                Private Chat with Client
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Milestone Deliverables Mini-Ledger -->
+                {% if contract.milestones.all %}
+                    <div class="mt-4 pt-3 border-top">
+                        <div class="d-flex align-items-center justify-content-between mb-2">
+                            <span class="small fw-bold text-muted text-uppercase letter-spacing-1" style="font-size: 0.72rem;">Milestone Deliverable Stages</span>
+                            <span class="small text-muted">{{ contract.milestones.count }} Total Milestones</span>
+                        </div>
+                        <div class="row g-2">
+                            {% for ms in contract.milestones.all %}
+                                <div class="col-md-6 col-lg-4">
+                                    <div class="ctr-ms-pill d-flex justify-content-between align-items-center">
+                                        <div class="text-truncate me-2" style="max-width: 170px;">
+                                            <div class="fw-semibold text-dark text-truncate">{{ ms.title }}</div>
+                                            <div class="text-muted" style="font-size: 0.72rem;">{{ ms.due_date|default:"Flexible timeline" }}</div>
+                                        </div>
+                                        <div class="text-end flex-shrink-0">
+                                            <div class="fw-bold text-dark">&#8377;{{ ms.amount }}</div>
+                                            <span class="badge {% if ms.status == 'approved' or ms.status == 'paid' %}bg-success-subtle text-success border border-success-subtle{% elif ms.status == 'submitted' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-light text-secondary border{% endif %} py-0 px-2" style="font-size: 0.65rem;">
+                                                {{ ms.get_status_display }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="card border-0 shadow-sm rounded-4 p-5 text-center bg-white">
+        <h5 class="fw-bold text-dark mb-2">No Contracts Found</h5>
+        <p class="text-muted small mb-4" style="max-width: 480px; margin: 0 auto 1.5rem;">
+            {% if status_filter != 'all' %}
+                You have no contracts with status "{{ status_filter }}".
+            {% else %}
+                You do not have any contracts yet. Once an employer accepts your proposal quotation, your contract workspace will activate automatically here.
+            {% endif %}
+        </p>
+        <div>
+            <a href="{% url 'project_list' %}" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background: var(--ctr-primary); border-color: var(--ctr-primary);">
+                Explore Projects &amp; Submit Bids &rarr;
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,566 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Profile &amp; Settings{% endblock %}
+{% block dashboard_title %}Freelancer Profile &amp; Settings{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ═══════════════════════════════════════════════════════════════════
+       EDITORIAL LUXURY LIGHT BLUE THEME - FREELANCER PROFILE
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ═══════════════════════════════════════════════════════════════════ */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    :root {
+        --pro-sky-50: #F0F9FF;
+        --pro-sky-100: #E0F2FE;
+        --pro-sky-200: #BAE6FD;
+        --pro-sky-300: #7DD3FC;
+        --pro-primary: #0284C7;
+        --pro-primary-dark: #0369A1;
+        --pro-navy: #0F172A;
+        --pro-slate-500: #64748B;
+        --pro-slate-700: #334155;
+        --pro-border: #E2E8F0;
+        --pro-radius: 18px;
+    }
+
+    /* ── 1. LUMINOUS HERO BANNER ── */
+    .pro-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: var(--pro-radius);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 22px;
+    }
+
+    .pro-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: var(--pro-primary-dark);
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .pro-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--pro-primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .pro-hero-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--pro-navy);
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .pro-hero-sub {
+        font-size: 0.92rem;
+        color: var(--pro-slate-700);
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ── 2. QUICK NAV BAR (SMOOTH SCROLL) ── */
+    .pro-nav-strip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        border: 1px solid var(--pro-border);
+        border-radius: 12px;
+        padding: 8px 14px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+
+    .pro-nav-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--pro-slate-700);
+        text-decoration: none;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .pro-nav-pill:hover {
+        background: var(--pro-sky-50);
+        color: var(--pro-primary);
+        border-color: var(--pro-sky-200);
+    }
+
+    /* ── 3. CARDS & PANELS ── */
+    .pro-panel {
+        background: #FFFFFF;
+        border: 1px solid var(--pro-border);
+        border-radius: 18px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .pro-panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        padding-bottom: 14px;
+        margin-bottom: 20px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .pro-panel-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--pro-navy);
+        margin-bottom: 2px;
+    }
+
+    .pro-panel-sub {
+        font-size: 0.82rem;
+        color: var(--pro-slate-500);
+        margin-bottom: 0;
+    }
+
+    .pro-avatar-big {
+        width: 88px;
+        height: 88px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        margin: 0 auto 16px auto;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.25);
+        overflow: hidden;
+    }
+
+    .pro-avatar-big img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .pro-status-badge {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+    }
+
+    .pro-skill-badge {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        color: #334155;
+        border-radius: 8px;
+        padding: 4px 10px;
+        font-size: 0.76rem;
+        font-weight: 600;
+    }
+
+    .btn-pro-primary {
+        background: var(--pro-primary);
+        color: #FFFFFF !important;
+        border: 1px solid var(--pro-primary);
+        border-radius: 10px;
+        font-size: 0.88rem;
+        font-weight: 700;
+        padding: 10px 24px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+
+    .btn-pro-primary:hover {
+        background: var(--pro-primary-dark);
+        border-color: var(--pro-primary-dark);
+        transform: translateY(-1px);
+    }
+</style>
+
+<!-- 1. Luminous Hero Banner -->
+<div class="pro-hero">
+    <div class="pro-hero-badge">
+        <span class="pulse-dot"></span>
+        <span>DOSSIER &amp; SETTINGS &bull; FREELANCER SUITE</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h1 class="pro-hero-title">{{ request.user.get_full_name|default:request.user.username }}</h1>
+            <p class="pro-hero-sub">
+                {{ profile.title|default:"Freelance Specialist" }} &bull; Rate: <strong>&#8377;{{ profile.hourly_rate|default:"0.00" }}/hr</strong> &bull; Member since {{ request.user.date_joined|date:"F Y" }}
+            </p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'freelancer_earnings' %}" class="btn btn-outline-secondary bg-white fw-bold px-3 py-2 rounded-3 border">
+                Earnings Ledger &rarr;
+            </a>
+            <a href="{% url 'freelancer_contracts' %}" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background: var(--pro-primary); border-color: var(--pro-primary);">
+                Active Workroom
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Sticky Quick Navigation Strip -->
+<div class="pro-nav-strip">
+    <a href="#profile-details" class="pro-nav-pill">
+        Profile &amp; Expertise
+    </a>
+    <a href="#account-stats" class="pro-nav-pill">
+        Delivery Metrics
+    </a>
+    <a href="#security-otp" class="pro-nav-pill">
+        Security &amp; Password Reset (OTP)
+    </a>
+    <a href="#danger-zone" class="pro-nav-pill text-danger">
+        Delete Account
+    </a>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Dossier Card & Overview -->
+    <div class="col-lg-4">
+        <div class="pro-panel text-center">
+            <div class="pro-avatar-big">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="{{ request.user.username }}">
+                {% else %}
+                    {{ request.user.first_name|default:request.user.username|slice:":1"|upper }}
+                {% endif %}
+            </div>
+
+            <h5 class="fw-bold text-dark mb-1">{{ request.user.get_full_name|default:request.user.username }}</h5>
+            <div class="text-muted small mb-2">{{ profile.title|default:"Independent Contractor" }}</div>
+
+            <span class="pro-status-badge mb-3">
+                Verified Freelancer
+            </span>
+
+            <div class="bg-light p-3 rounded-3 text-start small mb-3">
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Username:</span>
+                    <strong class="text-dark">{{ request.user.username }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Email:</span>
+                    <strong class="text-dark text-truncate" style="max-width: 160px;">{{ request.user.email }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Hourly Rate:</span>
+                    <strong class="text-dark">&#8377;{{ profile.hourly_rate|default:"0.00" }}/hr</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1 border-bottom">
+                    <span class="text-muted">Location:</span>
+                    <strong class="text-dark">{{ profile.location|default:"Remote" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-1">
+                    <span class="text-muted">Member Since:</span>
+                    <strong class="text-dark">{{ request.user.date_joined|date:"M Y" }}</strong>
+                </div>
+            </div>
+
+            <!-- Skills List -->
+            <div class="text-start">
+                <div class="small fw-bold text-muted text-uppercase letter-spacing-1 mb-2">Technical Skills</div>
+                <div class="d-flex flex-wrap gap-1">
+                    {% for skill in profile.skills_list %}
+                        <span class="pro-skill-badge">{{ skill }}</span>
+                    {% empty %}
+                        <span class="text-muted small">No skills added yet.</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Profile Form, Career Stats, Security & Danger Zone -->
+    <div class="col-lg-8">
+        <!-- ── Section 1: Edit Profile Details ── -->
+        <div class="pro-panel" id="profile-details">
+            <div class="pro-panel-header">
+                <div>
+                    <h4 class="pro-panel-title">Freelancer Profile &amp; Bio</h4>
+                    <p class="pro-panel-sub">Public portfolio details, hourly rate, skills, and summary</p>
+                </div>
+                <span class="badge bg-light text-secondary border small">Basic Info</span>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+
+                <!-- First & Last Name -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_first_name">
+                            First Name <span class="text-danger">*</span>
+                        </label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_last_name">
+                            Last Name <span class="text-danger">*</span>
+                        </label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Email & Phone -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_email">
+                            Email Address <span class="text-danger">*</span>
+                        </label>
+                        {{ form.email }}
+                        <small class="text-muted" style="font-size: 0.72rem;">Used for OTP password reset and contract notifications.</small>
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_phone">
+                            Phone Number
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Title & Hourly Rate -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-7">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_title">
+                            Professional Title / Category <span class="text-danger">*</span>
+                        </label>
+                        {{ form.title }}
+                        <small class="text-muted" style="font-size: 0.72rem;">e.g. Full-Stack Python Architect, React Developer</small>
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-sm-5">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_hourly_rate">
+                            Hourly Rate (&#8377; INR)
+                        </label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light text-muted">&#8377;</span>
+                            {{ form.hourly_rate }}
+                            <span class="input-group-text bg-light text-muted">/hr</span>
+                        </div>
+                        {% if form.hourly_rate.errors %}<div class="text-danger small mt-1">{{ form.hourly_rate.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Location & Website -->
+                <div class="row g-3 mb-3">
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_location">
+                            Location (City, Country)
+                        </label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-sm-6">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_website">
+                            Portfolio / GitHub URL
+                        </label>
+                        {{ form.website }}
+                        {% if form.website.errors %}<div class="text-danger small mt-1">{{ form.website.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Skills -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark mb-1" for="id_skills">
+                        Skills (Comma Separated)
+                    </label>
+                    {{ form.skills }}
+                    <small class="text-muted" style="font-size:0.72rem;">Enter comma-separated tags, e.g. Django, React, PostgreSQL, Docker, AWS</small>
+                    {% if form.skills.errors %}<div class="text-danger small mt-1">{{ form.skills.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Bio -->
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-dark mb-1" for="id_bio">
+                        Professional Bio &amp; Overview
+                    </label>
+                    {{ form.bio }}
+                    <small class="text-muted" style="font-size:0.72rem;">Highlight your expertise, past achievements, and typical delivery turnaround.</small>
+                    {% if form.bio.errors %}<div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>{% endif %}
+                </div>
+
+                <!-- Avatar Upload -->
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-dark mb-1" for="id_avatar">
+                        Profile Photo / Avatar Upload
+                    </label>
+                    {{ form.avatar }}
+                    {% if form.avatar.errors %}<div class="text-danger small mt-1">{{ form.avatar.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
+                    <span class="text-muted small">Changes will update your freelancer profile across the platform.</span>
+                    <button type="submit" class="btn-pro-primary">
+                        Save Changes &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Section 2: Account Delivery Statistics ── -->
+        <div class="pro-panel" id="account-stats">
+            <div class="pro-panel-header">
+                <div>
+                    <h4 class="pro-panel-title">Career Delivery Metrics</h4>
+                    <p class="pro-panel-sub">Verified contract volume and platform performance</p>
+                </div>
+                <span class="badge bg-light text-secondary border small">Metrics</span>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-dark mb-0">&#8377;{{ total_earned|floatformat:0 }}</div>
+                        <small class="text-muted fw-semibold">Total Earned</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-success mb-0">{{ active_contracts_count }}</div>
+                        <small class="text-muted fw-semibold">Active Workrooms</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-dark mb-0">{{ completed_contracts_count }}</div>
+                        <small class="text-muted fw-semibold">Completed Contracts</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-primary mb-0">{{ avg_rating }} / 5.0</div>
+                        <small class="text-muted fw-semibold">Review Score ({{ reviews_count }})</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Section 3: Security & Password Reset (OTP Flow) ── -->
+        <div class="pro-panel" id="security-otp">
+            <div class="pro-panel-header">
+                <div>
+                    <h4 class="pro-panel-title">Security &amp; Password Reset</h4>
+                    <p class="pro-panel-sub">Reset your account password via verified email OTP</p>
+                </div>
+                <span class="badge bg-light text-secondary border small">Security</span>
+            </div>
+
+            <div class="p-4 rounded-3 border bg-light mb-3">
+                <h6 class="fw-bold text-dark mb-2">Two-Factor Email OTP Password Change</h6>
+                <p class="text-muted small mb-3">
+                    To change your password, a one-time 6-digit OTP code will be dispatched to your registered email address <strong>{{ request.user.email }}</strong>. Once verified, you can enter and confirm your new password.
+                </p>
+                <a href="{% url 'forgot_password' %}" class="btn btn-outline-primary btn-sm px-4 py-2 fw-bold rounded-3">
+                    Send Password Reset OTP &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Section 4: Danger Zone (Account Deletion) ── -->
+        <div class="pro-panel border-danger-subtle" id="danger-zone">
+            <div class="pro-panel-header border-danger-subtle">
+                <div>
+                    <h4 class="pro-panel-title text-danger">Danger Zone &bull; Account Deletion</h4>
+                    <p class="pro-panel-sub">Permanently delete your freelancer account, profile, and listings</p>
+                </div>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle small">Irreversible</span>
+            </div>
+
+            <div class="p-3 rounded-3 bg-danger-subtle border border-danger-subtle mb-3">
+                <p class="small text-danger mb-0">
+                    <strong>Warning:</strong> Deleting your account will permanently remove your freelancer profile, proposals, and communication history. Active contracts must be closed before deletion is permitted.
+                </p>
+            </div>
+
+            {% if has_active_contracts %}
+                <div class="alert alert-warning small mb-0">
+                    You currently have <strong>{{ active_contracts_count }} active contract(s)</strong>. Account deletion is restricted until all ongoing projects are completed or resolved.
+                </div>
+            {% else %}
+                <button type="button" class="btn btn-outline-danger btn-sm fw-bold px-3 py-2 rounded-3" data-bs-toggle="modal" data-bs-target="#deleteFreelancerAccountModal">
+                    Permanently Delete My Account
+                </button>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteFreelancerAccountModal" tabindex="-1" aria-labelledby="deleteFreelancerAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom px-4 py-3 bg-danger text-white">
+                <h5 class="modal-title fw-bold mb-0" id="deleteFreelancerAccountModalLabel">Confirm Freelancer Account Deletion</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'freelancer_delete_account' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    <p class="text-danger fw-bold small mb-2">THIS ACTION CANNOT BE UNDONE.</p>
+                    <p class="text-muted small mb-3">
+                        To confirm deletion, please type your exact username <strong class="text-dark">{{ request.user.username }}</strong> below:
+                    </p>
+                    <input
+                        type="text"
+                        name="confirm_username"
+                        class="form-control mb-3"
+                        placeholder="Type {{ request.user.username }}"
+                        required
+                        autocomplete="off"
+                    >
+                </div>
+                <div class="modal-footer border-top bg-light px-4 py-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger btn-sm fw-bold">Permanently Delete Account</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

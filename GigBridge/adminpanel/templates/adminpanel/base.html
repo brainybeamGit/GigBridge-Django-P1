@@ -1,0 +1,879 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Admin Panel{% endblock %} | GigBridge Command Center</title>
+
+    <!-- Global Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           ADMIN PANEL LUXURY LIGHT BLUE & NAVY DESIGN SYSTEM
+           Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+           ═══════════════════════════════════════════════════════════════════ */
+        :root {
+            --adm-primary: #0284C7;
+            --adm-primary-hover: #0369A1;
+            --adm-navy: #0F172A;
+            --adm-slate-700: #334155;
+            --adm-slate-500: #64748B;
+            --adm-sky-50: #F0F9FF;
+            --adm-sky-100: #E0F2FE;
+            --adm-sky-200: #BAE6FD;
+            --adm-sky-300: #7DD3FC;
+            --adm-border: #E2E8F0;
+            --adm-card-radius: 16px;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #F8FAFC;
+            color: var(--adm-navy);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ─── 1. LUXURY LIGHT BLUE SIDEBAR (COMPLETELY STATIC & FIXED) ─── */
+        .admin-sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 55%, #E0F2FE 100%);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid var(--adm-sky-200);
+            box-shadow: 4px 0 24px rgba(2, 132, 199, 0.04);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .admin-sidebar::-webkit-scrollbar {
+            width: 5px;
+        }
+        .admin-sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .admin-sidebar::-webkit-scrollbar-thumb {
+            background: #BAE6FD;
+            border-radius: 999px;
+        }
+
+        /* Main Content Wrapper Offset for Fixed Sidebar */
+        .admin-main-wrapper {
+            margin-left: 260px;
+            width: calc(100% - 260px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (max-width: 991px) {
+            .admin-sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+            }
+            .admin-main-wrapper {
+                margin-left: 0;
+                width: 100%;
+            }
+        }
+
+        .admin-sidebar-header {
+            padding: 24px 22px;
+            border-bottom: 1px solid var(--adm-sky-200);
+            background: #FFFFFF;
+        }
+
+        .admin-brand-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--adm-sky-50);
+            border: 1px solid var(--adm-sky-200);
+            color: var(--adm-primary-hover);
+            border-radius: 999px;
+            padding: 3px 10px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            margin-top: 8px;
+        }
+
+        .admin-nav-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 11px 22px;
+            color: var(--adm-slate-700);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.88rem;
+            border-left: 3px solid transparent;
+            transition: all 0.16s ease;
+        }
+
+        .admin-nav-item:hover {
+            color: var(--adm-primary-hover);
+            background: var(--adm-sky-100);
+            border-left-color: var(--adm-primary);
+        }
+
+        .admin-nav-item.active {
+            color: var(--adm-primary-hover);
+            background: var(--adm-sky-100);
+            border-left-color: var(--adm-primary);
+            font-weight: 700;
+            box-shadow: inset 0 0 12px rgba(2, 132, 199, 0.08);
+        }
+
+        .admin-nav-index {
+            font-family: monospace;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #94A3B8;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-nav-item.active .admin-nav-index {
+            color: var(--adm-primary);
+        }
+
+        /* ─── 2. TOPBAR & ADMIN PROFILE TRIGGER ─── */
+        .admin-topbar {
+            background: #FFFFFF;
+            border-bottom: 1px solid var(--adm-border);
+            padding: 16px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.02);
+        }
+
+        .admin-profile-trigger {
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 12px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+            border: 1px solid transparent;
+            user-select: none;
+        }
+
+        .admin-profile-trigger:hover {
+            background: #F0F9FF;
+            border-color: #BAE6FD;
+            box-shadow: 0 2px 10px rgba(2, 132, 199, 0.12);
+        }
+
+        .admin-avatar-pill {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--adm-primary), var(--adm-primary-hover));
+            color: #FFFFFF;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 0.95rem;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        /* ─── 3. CARDS & LUXURY HOVER EFFECTS ─── */
+        .admin-card {
+            background: #FFFFFF;
+            border-radius: var(--adm-card-radius);
+            border: 1px solid var(--adm-border);
+            box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+            overflow: hidden;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+
+        .admin-card:hover {
+            border-color: #BAE6FD;
+            box-shadow: 0 10px 28px -4px rgba(2, 132, 199, 0.10);
+        }
+
+        .stat-card-pro,
+        .kpi-metric-tile,
+        .analytics-card,
+        .health-micro-card {
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), 
+                        border-color 0.25s ease !important;
+        }
+
+        .stat-card-pro:hover,
+        .kpi-metric-tile:hover,
+        .analytics-card:hover,
+        .health-micro-card:hover {
+            transform: translateY(-4px) !important;
+            border-color: #0284C7 !important;
+            box-shadow: 0 14px 32px -4px rgba(2, 132, 199, 0.18) !important;
+        }
+
+        .stat-card-pro {
+            background: #FFFFFF;
+            border-radius: 16px;
+            padding: 22px 24px;
+            border: 1px solid #BAE6FD;
+            box-shadow: 0 4px 18px -2px rgba(2, 132, 199, 0.06);
+            height: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .adm-kpi-label {
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748B;
+        }
+
+        .adm-kpi-index {
+            font-size: 0.74rem;
+            font-weight: 800;
+            font-family: monospace;
+            letter-spacing: 0.06em;
+            color: #0F172A;
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            padding: 2px 8px;
+            border-radius: 6px;
+            display: inline-block;
+        }
+
+        .adm-kpi-value {
+            font-size: 2.25rem;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            line-height: 1.1;
+            color: #0F172A;
+            margin-top: 8px;
+            margin-bottom: 4px;
+        }
+
+        .adm-kpi-caption {
+            font-size: 0.78rem;
+            color: #64748B;
+            margin: 0;
+            font-weight: 500;
+        }
+
+        .table th {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--adm-slate-500);
+            font-weight: 700;
+            border-bottom: 1px solid var(--adm-border);
+            padding: 14px 18px;
+            background: #F8FAFC;
+        }
+
+        .table td {
+            padding: 16px 18px;
+            vertical-align: middle;
+            border-bottom: 1px solid #F1F5F9;
+            font-size: 0.88rem;
+        }
+
+        .table tbody tr:hover td {
+            background-color: #F8FAFC;
+        }
+
+        /* ─── 4. FLOATING TOAST NOTIFICATION ─── */
+        .admin-toast-container {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 9999;
+            max-width: 420px;
+            pointer-events: none;
+        }
+
+        .admin-toast-card {
+            background: #0F172A;
+            color: #FFFFFF;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 14px 18px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+            margin-top: 10px;
+            pointer-events: auto;
+            animation: slideInToast 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .admin-toast-card.toast-success {
+            border-left: 4px solid #10B981;
+        }
+
+        .admin-toast-card.toast-error {
+            border-left: 4px solid #EF4444;
+        }
+
+        .admin-toast-card.toast-warning {
+            border-left: 4px solid #F59E0B;
+        }
+
+        .admin-toast-card.toast-info {
+            border-left: 4px solid #0284C7;
+        }
+
+        @keyframes slideInToast {
+            from { opacity: 0; transform: translateY(16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ─── 5. ACTION DROPDOWN LUXURY STYLING & HOVER ─── */
+        .btn-action-dropdown {
+            background: #F0F9FF !important;
+            color: #0369A1 !important;
+            border: 1px solid #BAE6FD !important;
+            font-size: 0.78rem !important;
+            font-weight: 700 !important;
+            padding: 6px 14px !important;
+            border-radius: 8px !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1) !important;
+            box-shadow: 0 1px 3px rgba(2, 132, 199, 0.08) !important;
+        }
+
+        .btn-action-dropdown:hover,
+        .btn-action-dropdown:focus,
+        .btn-action-dropdown[aria-expanded="true"] {
+            background: #0284C7 !important;
+            border-color: #0284C7 !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.25) !important;
+            transform: translateY(-1px);
+        }
+
+        .dropdown-menu {
+            border: 1px solid #BAE6FD !important;
+            border-radius: 12px !important;
+            box-shadow: 0 14px 36px -4px rgba(15, 23, 42, 0.12), 0 4px 12px rgba(2, 132, 199, 0.08) !important;
+            padding: 6px !important;
+            background: #FFFFFF !important;
+        }
+
+        .dropdown-item {
+            font-size: 0.82rem !important;
+            font-weight: 600 !important;
+            color: #334155 !important;
+            padding: 8px 14px !important;
+            border-radius: 8px !important;
+            transition: all 0.18s ease !important;
+        }
+
+        .dropdown-item:hover,
+        .dropdown-item:focus {
+            background: #F0F9FF !important;
+            color: #0284C7 !important;
+            transform: translateX(3px);
+        }
+
+        .dropdown-item.text-danger:hover {
+            background: #FEF2F2 !important;
+            color: #DC2626 !important;
+        }
+
+        .dropdown-item.text-warning:hover {
+            background: #FFFBEB !important;
+            color: #D97706 !important;
+        }
+
+        .dropdown-item.text-success:hover {
+            background: #ECFDF5 !important;
+            color: #059669 !important;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<div class="d-flex">
+    <!-- ═══════════════════════════════════════════════════════════
+         LEFT SIDEBAR: LUXURY LIGHT BLUE SHINING THEME
+         ═══════════════════════════════════════════════════════════ -->
+    <aside class="admin-sidebar">
+        <div class="admin-sidebar-header">
+            <a href="{% url 'adminpanel_dashboard' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                <div>
+                    <span class="fw-bold fs-4 text-dark">GigBridge</span>
+                    <div class="small text-muted" style="font-size:0.75rem;">Command Console</div>
+                </div>
+            </a>
+            <div class="admin-brand-tag">
+                <span>ADMIN // CONTROL SUITE</span>
+            </div>
+        </div>
+
+        <nav class="flex-grow-1 pt-3 d-flex flex-column">
+            <a href="{% url 'adminpanel_dashboard' %}" class="admin-nav-item {% if active_tab == 'dashboard' or request.resolver_match.url_name == 'adminpanel_dashboard' %}active{% endif %}">
+                <span>Overview &amp; KPIs</span>
+                <span class="admin-nav-index">01</span>
+            </a>
+            <a href="{% url 'adminpanel_clients' %}" class="admin-nav-item {% if active_tab == 'clients' or request.resolver_match.url_name == 'adminpanel_clients' %}active{% endif %}">
+                <span>Clients Directory</span>
+                <span class="admin-nav-index">02</span>
+            </a>
+            <a href="{% url 'adminpanel_freelancers' %}" class="admin-nav-item {% if active_tab == 'freelancers' or request.resolver_match.url_name == 'adminpanel_freelancers' or request.resolver_match.url_name == 'adminpanel_users' %}active{% endif %}">
+                <span>Freelancers</span>
+                <span class="admin-nav-index">03</span>
+            </a>
+            <a href="{% url 'adminpanel_projects' %}" class="admin-nav-item {% if active_tab == 'projects' or request.resolver_match.url_name == 'adminpanel_projects' %}active{% endif %}">
+                <span>All Projects</span>
+                <span class="admin-nav-index">04</span>
+            </a>
+            <a href="{% url 'adminpanel_proposals' %}" class="admin-nav-item {% if active_tab == 'proposals' or request.resolver_match.url_name == 'adminpanel_proposals' %}active{% endif %}">
+                <span>Proposals &amp; Bids</span>
+                <span class="admin-nav-index">05</span>
+            </a>
+            <a href="{% url 'adminpanel_contracts' %}" class="admin-nav-item {% if active_tab == 'contracts' or request.resolver_match.url_name == 'adminpanel_contracts' %}active{% endif %}">
+                <span>Contracts &amp; Escrow</span>
+                <span class="admin-nav-index">06</span>
+            </a>
+            <a href="{% url 'adminpanel_payments' %}" class="admin-nav-item {% if active_tab == 'payments' or request.resolver_match.url_name == 'adminpanel_payments' %}active{% endif %}">
+                <span>Financial Ledger</span>
+                <span class="admin-nav-index">07</span>
+            </a>
+            <a href="{% url 'adminpanel_categories' %}" class="admin-nav-item {% if active_tab == 'categories' or request.resolver_match.url_name == 'adminpanel_categories' %}active{% endif %}">
+                <span>Market Categories</span>
+                <span class="admin-nav-index">08</span>
+            </a>
+            <a href="{% url 'adminpanel_reviews' %}" class="admin-nav-item {% if active_tab == 'reviews' or request.resolver_match.url_name == 'adminpanel_reviews' %}active{% endif %}">
+                <span>Ratings &amp; Reviews</span>
+                <span class="admin-nav-index">09</span>
+            </a>
+            <a href="{% url 'adminpanel_messages' %}" class="admin-nav-item {% if active_tab == 'messages' or request.resolver_match.url_name == 'adminpanel_messages' %}active{% endif %}">
+                <span>User Inquiries</span>
+                <span class="admin-nav-index">10</span>
+            </a>
+
+            <div class="mt-auto pt-3 border-top mx-3 mb-3">
+                <a href="{% url 'admin:index' %}" target="_blank" class="admin-nav-item px-2 py-2">
+                    <span class="small">Django SuperAdmin</span>
+                    <span class="admin-nav-index">&rarr;</span>
+                </a>
+                <a href="{% url 'home' %}" class="admin-nav-item px-2 py-2">
+                    <span class="small">Public Marketplace</span>
+                    <span class="admin-nav-index">&rarr;</span>
+                </a>
+            </div>
+        </nav>
+    </aside>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         MAIN CONTENT AREA
+         ═══════════════════════════════════════════════════════════ -->
+    <main class="admin-main-wrapper flex-grow-1 min-vw-0" style="min-width: 0;">
+        <!-- Top Bar -->
+        <div class="admin-topbar">
+            <div>
+                <div class="d-flex align-items-center gap-2">
+                    <h4 class="fw-bold text-dark mb-0">{% block page_title %}Platform Overview{% endblock %}</h4>
+                    <span class="badge" style="background:#DCFCE7;color:#166534;border:1px solid #BBF7D0;font-size:0.72rem;letter-spacing:0.04em;">
+                        LIVE COMMAND
+                    </span>
+                </div>
+                <small class="text-muted">{% block page_subtitle %}Central operations console for GigBridge marketplace.{% endblock %}</small>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+                {% block page_actions %}
+                <!-- Quick Create Client Button -->
+                <button type="button" class="btn btn-primary btn-sm px-3 py-2 rounded-3 fw-bold shadow-sm" style="background:var(--adm-primary);border-color:var(--adm-primary);" data-bs-toggle="modal" data-bs-target="#createClientModal">
+                    + Provision Client
+                </button>
+                {% endblock %}
+
+                <div class="vr mx-1 text-secondary opacity-25"></div>
+
+                <!-- Admin Profile Trigger Icon & Info -->
+                <div class="d-flex align-items-center gap-2 admin-profile-trigger" role="button" data-bs-toggle="modal" data-bs-target="#adminProfileModal" title="Click to view Administrator profile and details">
+                    <div class="admin-avatar-pill" id="topbarAdminAvatar">
+                        {% if request.user.profile.avatar %}
+                            <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}" class="w-100 h-100 object-fit-cover" id="topbarAdminAvatarImg">
+                        {% else %}
+                            <span id="topbarAdminAvatarText">{{ request.user.username|slice:":1"|upper }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="d-none d-md-block text-start">
+                        <div class="fw-bold small text-dark lh-1">{{ request.user.username }}</div>
+                        <span class="text-muted" style="font-size:0.74rem;">Administrator &bull; Profile</span>
+                    </div>
+                </div>
+
+                <a href="{% url 'adminpanel_logout' %}" class="btn btn-outline-danger btn-sm rounded-3 px-3 py-1" style="font-size: 0.8rem; font-weight: 600;">
+                    Sign Out
+                </a>
+            </div>
+        </div>
+
+        <div class="p-4">
+            <!-- Page Body Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FLOATING TOAST CONTAINER (AUTO-DISPLAYS DJANGO MESSAGES)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="admin-toast-container" id="adminToastContainer">
+    {% if messages %}
+        {% for message in messages %}
+            <div class="admin-toast-card toast-{% if message.tags == 'error' %}error{% elif message.tags == 'success' %}success{% elif message.tags == 'warning' %}warning{% else %}info{% endif %}">
+                <div class="flex-grow-1">
+                    <div class="fw-bold small text-white text-uppercase" style="letter-spacing:0.06em;font-size:0.72rem;">
+                        {% if message.tags == 'success' %}Operation Confirmed{% elif message.tags == 'error' %}Notice{% else %}System Status{% endif %}
+                    </div>
+                    <div class="small" style="color:#E2E8F0;">{{ message }}</div>
+                </div>
+                <button type="button" class="btn-close btn-close-white btn-sm" onclick="this.closest('.admin-toast-card').remove();"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL: PROVISION NEW CLIENT ACCOUNT
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="createClientModal" tabindex="-1" aria-labelledby="createClientModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0" id="createClientModalLabel">Provision New Client Account</h5>
+                    <small class="text-muted">Administrator directly configures and authorizes the employer account</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form method="POST" action="{% url 'adminpanel_client_create' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next_url" value="{{ request.get_full_path }}">
+                <div class="modal-body p-4 bg-white">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">First Name <span class="text-danger">*</span></label>
+                            <input type="text" name="first_name" class="form-control" placeholder="Enter first name" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Last Name</label>
+                            <input type="text" name="last_name" class="form-control" placeholder="Enter last name">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Username <span class="text-danger">*</span></label>
+                            <input type="text" name="username" class="form-control" placeholder="e.g. client_enterprise" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Email Address <span class="text-danger">*</span></label>
+                            <input type="email" name="email" class="form-control" placeholder="e.g. client@company.com" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" placeholder="Create client password" required>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Client Role / Industry <span class="text-danger">*</span></label>
+                            <select name="specialization" class="form-select" required>
+                                <option value="" disabled selected>Select Industry / Domain Role</option>
+                                <option value="Web Development">Web Development</option>
+                                <option value="AI & Machine Learning">AI &amp; Machine Learning</option>
+                                <option value="Mobile App Development">Mobile App Development</option>
+                                <option value="UI/UX & Product Design">UI/UX &amp; Product Design</option>
+                                <option value="Digital Marketing & SEO">Digital Marketing &amp; SEO</option>
+                                <option value="Content Writing & Media">Content Writing &amp; Media</option>
+                                <option value="Cybersecurity & Cloud">Cybersecurity &amp; Cloud</option>
+                                <option value="Blockchain & Web3">Blockchain &amp; Web3</option>
+                                <option value="Enterprise IT Solutions">Enterprise IT Solutions</option>
+                                <option value="Startup & Business Ventures">Startup &amp; Business Ventures</option>
+                            </select>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Company Name</label>
+                            <input type="text" name="company_name" class="form-control" placeholder="e.g. GigBridge Corp">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small fw-bold text-dark mb-1">Location</label>
+                            <input type="text" name="location" class="form-control" placeholder="e.g. Mumbai, India or Remote" value="Remote">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label small fw-bold text-dark mb-1">Phone Number (Optional)</label>
+                            <input type="text" name="phone" class="form-control" placeholder="+91 9876543210">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background:var(--adm-primary);border-color:var(--adm-primary);">
+                        Provision Client Account &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     ADMINISTRATOR PROFILE & REAL-TIME PHOTO UPLOAD MODAL
+     ═══════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="adminProfileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <!-- Modal Header -->
+            <div class="modal-header p-4" style="background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%); border-bottom: 1px solid #BAE6FD;">
+                <div>
+                    <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+                        SUPERUSER CREDENTIALS &bull; COMMAND GOVERNANCE
+                    </span>
+                    <h5 class="modal-title fw-bold text-dark mb-0">Administrator Profile &amp; Authority</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 bg-light">
+                <!-- Profile Avatar & Real-time Photo Upload Strip -->
+                <div class="p-4 bg-white rounded-4 border mb-4 shadow-sm d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div class="d-flex align-items-center gap-4">
+                        <!-- Dynamic Avatar Container -->
+                        <div class="position-relative">
+                            <div id="modalAdminAvatar" class="rounded-circle shadow-sm" style="width:84px;height:84px;background:linear-gradient(135deg, #0284C7, #0369A1);color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:800;overflow:hidden;border:3px solid #BAE6FD;">
+                                {% if request.user.profile.avatar %}
+                                    <img src="{{ request.user.profile.avatar.url }}" alt="{{ request.user.username }}" class="w-100 h-100 object-fit-cover rounded-circle">
+                                {% else %}
+                                    <span>{{ request.user.username|slice:":1"|upper }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 class="fw-bold text-dark mb-1">{{ request.user.get_full_name|default:request.user.username }}</h4>
+                            <div class="d-flex align-items-center gap-2 mb-2">
+                                <span class="badge" style="background:#F0F9FF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">@{{ request.user.username }}</span>
+                                <span class="badge" style="background:#DCFCE7;color:#166534;font-weight:700;">Root Superuser</span>
+                            </div>
+                            <small class="text-muted" id="photoUploadStatus">Click "Upload Photo" to dynamically change avatar in real time.</small>
+                        </div>
+                    </div>
+
+                    <div>
+                        <!-- Hidden File Input for Real-time Photo Upload -->
+                        <input type="file" id="adminPhotoInput" accept="image/*" class="d-none">
+                        <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background:#0284C7;border-color:#0284C7;" onclick="document.getElementById('adminPhotoInput').click()">
+                            Upload Photo &uarr;
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admin Details Grid -->
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Registered Username</span>
+                            <strong class="text-dark">@{{ request.user.username }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Primary Email</span>
+                            <strong class="text-dark">{{ request.user.email|default:"admin@gigbridge.com" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Operator Role</span>
+                            <strong class="text-dark">Platform Administrator &bull; Superuser</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Staff Permission Level</span>
+                            <strong class="text-success">&check; Full Staff &amp; Superuser Authorization</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Account Enrolled</span>
+                            <strong class="text-dark">{{ request.user.date_joined|date:"F d, Y - H:i" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-white rounded-3 border">
+                            <span class="text-muted small d-block">Active Login Session</span>
+                            <strong class="text-dark">{{ request.user.last_login|date:"F d, Y - H:i"|default:"Current Session Active" }}</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Meta Strip -->
+                <div class="p-3 bg-white rounded-3 border d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span style="width:8px;height:8px;border-radius:50%;background:#10B981;display:inline-block;"></span>
+                        <span class="small fw-semibold text-dark">Security Protocol:</span>
+                        <span class="small text-muted">256-Bit TLS &bull; Cryptographic Escrow Audit Active &bull; Zero Escalations</span>
+                    </div>
+                    <span class="badge bg-light text-secondary border font-monospace small">TOKEN #GB-SEC-{{ request.user.id }}</span>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white p-3 d-flex justify-content-end">
+                <button type="button" class="btn btn-light rounded-3 px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_modals %}{% endblock %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Floating toast utility
+    function showAdminToast(msgText, type = 'success') {
+        const container = document.getElementById('adminToastContainer');
+        if (!container) return;
+        const card = document.createElement('div');
+        card.className = `admin-toast-card toast-${type}`;
+        card.innerHTML = `
+            <div class="flex-grow-1">
+                <div class="fw-bold small text-white text-uppercase" style="letter-spacing:0.06em;font-size:0.72rem;">Operation Confirmed</div>
+                <div class="small" style="color:#E2E8F0;">${msgText}</div>
+            </div>
+            <button type="button" class="btn-close btn-close-white btn-sm" onclick="this.closest('.admin-toast-card').remove();"></button>
+        `;
+        container.appendChild(card);
+        setTimeout(() => {
+            card.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(10px)';
+            setTimeout(() => card.remove(), 400);
+        }, 4500);
+    }
+
+    // Auto fade existing Django toasts after 4.5 seconds
+    document.addEventListener('DOMContentLoaded', function () {
+        const toasts = document.querySelectorAll('.admin-toast-card');
+        toasts.forEach(function (toast) {
+            setTimeout(function () {
+                toast.style.transition = 'opacity 0.4s ease, transform 0.4s ease';
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateY(10px)';
+                setTimeout(function () {
+                    toast.remove();
+                }, 400);
+            }, 4500);
+        });
+
+        // Real-time Dynamic Photo Upload Handler
+        const photoInput = document.getElementById('adminPhotoInput');
+        if (photoInput) {
+            photoInput.addEventListener('change', async function () {
+                if (!this.files || !this.files[0]) return;
+                const file = this.files[0];
+
+                // 1. Instant optimistic real-time preview
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const dataUrl = e.target.result;
+                    const modalAvatar = document.getElementById('modalAdminAvatar');
+                    if (modalAvatar) {
+                        modalAvatar.innerHTML = `<img src="${dataUrl}" class="w-100 h-100 object-fit-cover rounded-circle">`;
+                    }
+                    const topbarAvatar = document.getElementById('topbarAdminAvatar');
+                    if (topbarAvatar) {
+                        topbarAvatar.innerHTML = `<img src="${dataUrl}" class="w-100 h-100 object-fit-cover rounded-3">`;
+                    }
+                };
+                reader.readAsDataURL(file);
+
+                // 2. Real-time AJAX POST upload
+                const statusEl = document.getElementById('photoUploadStatus');
+                if (statusEl) {
+                    statusEl.innerHTML = '<span class="text-primary fw-semibold">Uploading photo in real time...</span>';
+                }
+
+                const formData = new FormData();
+                formData.append('avatar', file);
+
+                function getCookie(name) {
+                    let cookieValue = null;
+                    if (document.cookie && document.cookie !== '') {
+                        const cookies = document.cookie.split(';');
+                        for (let i = 0; i < cookies.length; i++) {
+                            const cookie = cookies[i].trim();
+                            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                break;
+                            }
+                        }
+                    }
+                    return cookieValue;
+                }
+                const csrftoken = getCookie('csrftoken');
+
+                try {
+                    const res = await fetch("{% url 'adminpanel_upload_photo' %}", {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        },
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        if (statusEl) {
+                            statusEl.innerHTML = '<span class="text-success fw-semibold">&check; Photo updated in real time!</span>';
+                        }
+                        showAdminToast(data.message, 'success');
+                    } else {
+                        if (statusEl) {
+                            statusEl.innerHTML = `<span class="text-danger fw-semibold">${data.message || 'Upload failed'}</span>`;
+                        }
+                    }
+                } catch (err) {
+                    console.error('Photo upload error:', err);
+                    if (statusEl) {
+                        statusEl.innerHTML = '<span class="text-danger fw-semibold">Network error during upload</span>';
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

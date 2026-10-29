@@ -1,0 +1,476 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}My Proposals{% endblock %}
+{% block dashboard_title %}Submitted Proposals &amp; Bids{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ═══════════════════════════════════════════════════════════════════
+       EDITORIAL LUXURY LIGHT BLUE THEME - PROPOSALS
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ═══════════════════════════════════════════════════════════════════ */
+    :root {
+        --prop-sky-50: #F0F9FF;
+        --prop-sky-100: #E0F2FE;
+        --prop-sky-200: #BAE6FD;
+        --prop-sky-300: #7DD3FC;
+        --prop-primary: #0284C7;
+        --prop-primary-dark: #0369A1;
+        --prop-navy: #0F172A;
+        --prop-slate-500: #64748B;
+        --prop-slate-700: #334155;
+        --prop-border: #E2E8F0;
+        --prop-card-radius: 18px;
+    }
+
+    /* ── 1. LUMINOUS HERO BANNER ── */
+    .prop-hero {
+        background:
+            radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 10% 80%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: var(--prop-card-radius);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .prop-hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: var(--prop-primary-dark);
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .prop-hero-tag .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--prop-primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .prop-hero-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--prop-navy);
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .prop-hero-sub {
+        font-size: 0.92rem;
+        color: var(--prop-slate-700);
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ── 2. EDITORIAL KPI METRIC CARDS (ICON-FREE) ── */
+    .prop-kpi-card {
+        background: #FFFFFF;
+        border: 1px solid var(--prop-border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        position: relative;
+        overflow: hidden;
+        transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s ease, border-color 0.2s ease;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+        display: block;
+        text-decoration: none;
+        height: 100%;
+    }
+
+    .prop-kpi-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 12px 28px -4px rgba(2, 132, 199, 0.12);
+    }
+
+    .prop-kpi-card.active-kpi {
+        border-color: var(--prop-primary);
+        background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 100%);
+        box-shadow: 0 8px 24px -2px rgba(2, 132, 199, 0.16);
+    }
+
+    .prop-kpi-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        margin-bottom: 12px;
+    }
+
+    .prop-kpi-label {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--prop-slate-500);
+    }
+
+    .prop-kpi-index {
+        font-size: 0.75rem;
+        font-weight: 800;
+        font-family: monospace;
+        letter-spacing: 0.05em;
+        color: #94A3B8;
+    }
+
+    .prop-kpi-value {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
+        color: var(--prop-navy);
+        margin-bottom: 4px;
+    }
+
+    .prop-kpi-caption {
+        font-size: 0.76rem;
+        color: var(--prop-slate-500);
+        margin-bottom: 0;
+    }
+
+    /* ── 3. FILTER TABS & SEARCH BAR ── */
+    .prop-filter-strip {
+        background: #FFFFFF;
+        border: 1px solid var(--prop-border);
+        border-radius: 14px;
+        padding: 12px 18px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .prop-pill-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.18s ease;
+        border: 1px solid transparent;
+    }
+
+    .prop-pill-btn.active {
+        background: var(--prop-primary);
+        color: #FFFFFF;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+    }
+
+    .prop-pill-btn:not(.active) {
+        background: #F8FAFC;
+        color: var(--prop-slate-700);
+        border-color: #E2E8F0;
+    }
+
+    .prop-pill-btn:not(.active):hover {
+        background: var(--prop-sky-50);
+        color: var(--prop-primary-dark);
+        border-color: var(--prop-sky-200);
+    }
+
+    /* ── 4. PROPOSALS TABLE & CARD LIST ── */
+    .prop-main-card {
+        background: #FFFFFF;
+        border: 1px solid var(--prop-border);
+        border-radius: 18px;
+        padding: 0;
+        overflow: hidden;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .prop-table {
+        margin-bottom: 0;
+    }
+
+    .prop-table thead th {
+        background: #F8FAFC;
+        padding: 14px 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--prop-slate-500);
+        border-bottom: 1px solid #E2E8F0;
+    }
+
+    .prop-table tbody td {
+        padding: 18px 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 0.88rem;
+    }
+
+    .prop-table tbody tr:last-child td {
+        border-bottom: none;
+    }
+
+    .prop-table tbody tr:hover td {
+        background-color: #F8FAFC;
+    }
+
+    .prop-status-pill {
+        display: inline-block;
+        padding: 4px 12px;
+        border-radius: 999px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+
+    .prop-status-pending {
+        background: #FEF3C7;
+        color: #92400E;
+        border: 1px solid #FDE68A;
+    }
+
+    .prop-status-accepted {
+        background: #DCFCE7;
+        color: #166534;
+        border: 1px solid #BBF7D0;
+    }
+
+    .prop-status-rejected {
+        background: #FEE2E2;
+        color: #991B1B;
+        border: 1px solid #FECACA;
+    }
+
+    .prop-btn-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.15s ease;
+    }
+
+    .prop-btn-primary {
+        background: var(--prop-primary);
+        color: #FFFFFF;
+        border: 1px solid var(--prop-primary);
+    }
+
+    .prop-btn-primary:hover {
+        background: var(--prop-primary-dark);
+        color: #FFFFFF;
+    }
+
+    .prop-btn-outline {
+        background: #FFFFFF;
+        color: var(--prop-slate-700);
+        border: 1px solid #CBD5E1;
+    }
+
+    .prop-btn-outline:hover {
+        background: #F8FAFC;
+        border-color: var(--prop-primary);
+        color: var(--prop-primary);
+    }
+</style>
+
+<!-- 1. Luminous Hero Banner -->
+<div class="prop-hero">
+    <div class="prop-hero-tag">
+        <span class="pulse-dot"></span>
+        <span>BID PIPELINE &bull; FREELANCER SUITE</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+            <h1 class="prop-hero-title">Proposal Submissions &amp; Bids</h1>
+            <p class="prop-hero-sub">Monitor submitted project quotations, client review timelines, accepted engagements, and contract conversions.</p>
+        </div>
+        <div>
+            <a href="{% url 'project_list' %}" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background: var(--prop-primary); border-color: var(--prop-primary);">
+                Explore Projects &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Editorial KPI Cards (Zero Cluttered Icons) -->
+<div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=all" class="prop-kpi-card {% if status_filter == 'all' %}active-kpi{% endif %}">
+            <div class="prop-kpi-header">
+                <span class="prop-kpi-label">Total Submissions</span>
+                <span class="prop-kpi-index">ALL // 01</span>
+            </div>
+            <div class="prop-kpi-value">{{ total_count }}</div>
+            <p class="prop-kpi-caption">All lifetime bid proposals</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=pending" class="prop-kpi-card {% if status_filter == 'pending' %}active-kpi{% endif %}">
+            <div class="prop-kpi-header">
+                <span class="prop-kpi-label">Under Review</span>
+                <span class="prop-kpi-index">WAIT // 02</span>
+            </div>
+            <div class="prop-kpi-value text-primary">{{ pending_count }}</div>
+            <p class="prop-kpi-caption">Awaiting client decision</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=accepted" class="prop-kpi-card {% if status_filter == 'accepted' %}active-kpi{% endif %}">
+            <div class="prop-kpi-header">
+                <span class="prop-kpi-label">Accepted / Hired</span>
+                <span class="prop-kpi-index">WON // 03</span>
+            </div>
+            <div class="prop-kpi-value text-success">{{ accepted_count }}</div>
+            <p class="prop-kpi-caption">Converted to contracts</p>
+        </a>
+    </div>
+
+    <div class="col-sm-6 col-lg-3">
+        <a href="?status=rejected" class="prop-kpi-card {% if status_filter == 'rejected' %}active-kpi{% endif %}">
+            <div class="prop-kpi-header">
+                <span class="prop-kpi-label">Declined / Closed</span>
+                <span class="prop-kpi-index">ARCH // 04</span>
+            </div>
+            <div class="prop-kpi-value text-secondary">{{ rejected_count }}</div>
+            <p class="prop-kpi-caption">Unsuccessful or archived</p>
+        </a>
+    </div>
+</div>
+
+<!-- 3. Filter Strip -->
+<div class="prop-filter-strip d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div class="d-flex flex-wrap gap-2">
+        <a href="?status=all" class="prop-pill-btn {% if status_filter == 'all' %}active{% endif %}">
+            All Quotations ({{ total_count }})
+        </a>
+        <a href="?status=pending" class="prop-pill-btn {% if status_filter == 'pending' %}active{% endif %}">
+            Pending Review ({{ pending_count }})
+        </a>
+        <a href="?status=accepted" class="prop-pill-btn {% if status_filter == 'accepted' %}active{% endif %}">
+            Accepted / Hired ({{ accepted_count }})
+        </a>
+        <a href="?status=rejected" class="prop-pill-btn {% if status_filter == 'rejected' %}active{% endif %}">
+            Declined ({{ rejected_count }})
+        </a>
+    </div>
+    <div class="text-muted small">
+        Showing <strong>{{ proposals|length }}</strong> results
+    </div>
+</div>
+
+<!-- 4. Proposals Ledger -->
+<div class="prop-main-card">
+    {% if proposals %}
+        <div class="table-responsive">
+            <table class="table prop-table align-middle">
+                <thead>
+                    <tr>
+                        <th>Project &amp; Employer</th>
+                        <th>Category</th>
+                        <th>Your Bid</th>
+                        <th>Turnaround</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for proposal in proposals %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark mb-1">
+                                    <a href="{% url 'project_detail' proposal.project.pk %}" class="text-decoration-none text-dark hover-primary">
+                                        {{ proposal.project.title }}
+                                    </a>
+                                </div>
+                                <div class="small text-muted">
+                                    Client: <span class="text-secondary fw-semibold">{{ proposal.project.client.get_full_name|default:proposal.project.client.username }}</span>
+                                    &bull; <span>Submitted {{ proposal.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-light text-dark border px-2 py-1 rounded-pill small">
+                                    {{ proposal.project.category.name|default:"General" }}
+                                </span>
+                            </td>
+                            <td>
+                                <div class="fw-bold fs-6 text-dark">&#8377;{{ proposal.bid_amount }}</div>
+                            </td>
+                            <td>
+                                <span class="small text-muted">{{ proposal.delivery_days }} calendar days</span>
+                            </td>
+                            <td>
+                                {% if proposal.status == 'pending' %}
+                                    <span class="prop-status-pill prop-status-pending">
+                                        Pending Review
+                                    </span>
+                                {% elif proposal.status == 'accepted' %}
+                                    <span class="prop-status-pill prop-status-accepted">
+                                        Accepted / Hired
+                                    </span>
+                                {% elif proposal.status == 'rejected' %}
+                                    <span class="prop-status-pill prop-status-rejected">
+                                        Declined
+                                    </span>
+                                {% else %}
+                                    <span class="prop-status-pill bg-light text-secondary border">
+                                        {{ proposal.get_status_display }}
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <div class="d-flex justify-content-end gap-2 flex-wrap">
+                                    <a href="{% url 'start_conversation' %}?user_id={{ proposal.project.client.id }}&project_id={{ proposal.project.id }}" class="prop-btn-action prop-btn-outline">
+                                        Client Chat
+                                    </a>
+                                    {% if proposal.contract %}
+                                        <a href="{% url 'freelancer_contract_detail' proposal.contract.id %}" class="prop-btn-action prop-btn-primary">
+                                            View Contract &rarr;
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'project_detail' proposal.project.pk %}" class="prop-btn-action prop-btn-outline">
+                                            Job Details
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center py-5 px-3">
+            <h5 class="fw-bold text-dark mb-2">No Proposals Found</h5>
+            <p class="text-muted small mb-4" style="max-width: 480px; margin: 0 auto 1.5rem;">
+                {% if status_filter != 'all' %}
+                    You have no proposals matching status filter "{{ status_filter }}".
+                {% else %}
+                    You haven't submitted quotations for any client projects yet. Explore available postings on GigBridge to submit bids.
+                {% endif %}
+            </p>
+            <a href="{% url 'project_list' %}" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background: var(--prop-primary); border-color: var(--prop-primary);">
+                Browse Available Projects &rarr;
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,535 @@
+import json
+import calendar
+from decimal import Decimal
+from django.core.paginator import Paginator
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.http import require_POST
+from django.contrib.auth import logout
+from django.contrib import messages
+from django.contrib.auth.models import User
+from django.db.models import Sum, Avg, Count, Q
+from django.utils import timezone
+from django.http import JsonResponse
+
+from client.models import (
+    Project, Proposal, Contract, Milestone, Payment, Review, UserProfile, Category,
+    Conversation, Message
+)
+from client.forms import UserProfileForm
+
+
+def _require_freelancer(request):
+    """Returns True if the user is a freelancer."""
+    try:
+        return request.user.profile.role == 'freelancer' and not request.user.is_superuser
+    except Exception:
+        return False
+
+
+@login_required
+def dashboard_view(request):
+    if request.user.is_superuser or (getattr(request.user, 'profile', None) and request.user.profile.role == 'admin'):
+        return redirect('adminpanel_dashboard')
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_dashboard')
+
+    user = request.user
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    # Proposals
+    proposals = Proposal.objects.filter(freelancer=user)
+    total_proposals = proposals.count()
+    pending_proposals = proposals.filter(status='pending').count()
+    accepted_proposals = proposals.filter(status='accepted').count()
+    rejected_proposals = proposals.filter(status='rejected').count()
+
+    # Contracts
+    contracts = Contract.objects.filter(freelancer=user)
+    active_contracts = contracts.filter(status='active').count()
+    completed_contracts = contracts.filter(status='completed').count()
+
+    # Earnings
+    total_earnings = Payment.objects.filter(
+        freelancer=user, status='completed'
+    ).aggregate(total=Sum('amount'))['total'] or 0
+
+    # Milestones
+    milestones = Milestone.objects.filter(contract__freelancer=user)
+    completed_milestones = milestones.filter(status__in=['approved', 'paid']).count()
+    pending_milestones = milestones.filter(status__in=['pending', 'in_progress', 'revision_requested'])
+
+    # Recent Data
+    recent_contracts = contracts.filter(status='active').select_related(
+        'project', 'client', 'client__profile'
+    ).prefetch_related('milestones').order_by('-created_at')[:4]
+
+    recent_proposals = proposals.select_related(
+        'project', 'project__client', 'project__category'
+    ).order_by('-created_at')[:5]
+
+    # Reviews & Rating
+    reviews = Review.objects.filter(reviewee=user).order_by('-created_at')
+    avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 5.0
+
+    # Active contracts value
+    active_contracts_value = contracts.filter(status='active').aggregate(total=Sum('total_amount'))['total'] or 0
+
+    # Win / Conversion rate
+    conversion_rate = round((accepted_proposals / total_proposals) * 100, 1) if total_proposals > 0 else 0.0
+
+    # Pending deliverables / revisions
+    pending_deliverables = Milestone.objects.filter(
+        contract__freelancer=user,
+        contract__status='active',
+        status__in=['pending', 'in_progress', 'revision_requested']
+    ).select_related('contract', 'contract__project', 'contract__client').order_by('due_date')[:4]
+
+    # Last 6 months earnings trend for Chart.js
+    today = timezone.now().date()
+    earnings_chart_labels = []
+    earnings_chart_data = []
+    for i in range(5, -1, -1):
+        y = today.year
+        m = today.month - i
+        while m <= 0:
+            m += 12
+            y -= 1
+        month_label = f"{calendar.month_abbr[m]} '{str(y)[2:]}"
+        earnings_chart_labels.append(month_label)
+
+        m_earned = Payment.objects.filter(
+            freelancer=user,
+            status='completed',
+            created_at__year=y,
+            created_at__month=m
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        earnings_chart_data.append(float(m_earned))
+
+    proposal_donut_labels = ['Accepted', 'Pending', 'Declined']
+    proposal_donut_data = [accepted_proposals, pending_proposals, rejected_proposals]
+
+    context = {
+        'profile': profile,
+        'total_proposals': total_proposals,
+        'pending_proposals': pending_proposals,
+        'accepted_proposals': accepted_proposals,
+        'rejected_proposals': rejected_proposals,
+        'active_contracts': active_contracts,
+        'completed_contracts': completed_contracts,
+        'active_contracts_value': active_contracts_value,
+        'conversion_rate': conversion_rate,
+        'total_earnings': total_earnings,
+        'completed_milestones': completed_milestones,
+        'pending_milestones': pending_milestones[:4],
+        'pending_deliverables': pending_deliverables,
+        'recent_contracts': recent_contracts,
+        'recent_proposals': recent_proposals,
+        'avg_rating': round(avg_rating, 1),
+        'reviews_count': reviews.count(),
+        'earnings_chart_labels_json': json.dumps(earnings_chart_labels),
+        'earnings_chart_data_json': json.dumps(earnings_chart_data),
+        'proposal_donut_labels_json': json.dumps(proposal_donut_labels),
+        'proposal_donut_data_json': json.dumps(proposal_donut_data),
+    }
+    return render(request, 'freelancer/dashboard.html', context)
+
+
+@login_required
+def profile_view(request):
+    user = request.user
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_profile')
+
+    profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        form.fields['first_name'].initial = user.first_name
+        form.fields['last_name'].initial = user.last_name
+        form.fields['email'].initial = user.email
+
+        if form.is_valid():
+            user.first_name = form.cleaned_data.get('first_name', user.first_name)
+            user.last_name = form.cleaned_data.get('last_name', user.last_name)
+            new_email = form.cleaned_data.get('email', '').strip()
+            if new_email and new_email != user.email:
+                if User.objects.filter(email=new_email).exclude(pk=user.pk).exists():
+                    messages.error(request, "That email is already registered to another account.")
+                else:
+                    user.email = new_email
+            user.save()
+            form.save()
+            messages.success(request, "Your profile has been updated successfully!")
+            return redirect('freelancer_profile')
+        else:
+            messages.error(request, "Please correct the errors below.")
+    else:
+        form = UserProfileForm(instance=profile, initial={
+            'first_name': user.first_name,
+            'last_name': user.last_name,
+            'email': user.email,
+        })
+
+    reviews = Review.objects.filter(reviewee=user)
+    avg_rating = reviews.aggregate(avg=Avg('rating'))['avg'] or 5.0
+
+    # Account activity statistics for structured profile scrolling
+    total_contracts = Contract.objects.filter(freelancer=user).count()
+    active_contracts_count = Contract.objects.filter(freelancer=user, status='active').count()
+    completed_contracts_count = Contract.objects.filter(freelancer=user, status='completed').count()
+    proposals_count = Proposal.objects.filter(freelancer=user).count()
+    total_earned = Payment.objects.filter(
+        contract__freelancer=user, status='completed'
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0.00')
+    has_active_contracts = active_contracts_count > 0
+
+    context = {
+        'form': form,
+        'profile': profile,
+        'avg_rating': round(avg_rating, 1),
+        'reviews_count': reviews.count(),
+        'total_contracts': total_contracts,
+        'active_contracts_count': active_contracts_count,
+        'completed_contracts_count': completed_contracts_count,
+        'proposals_count': proposals_count,
+        'total_earned': total_earned,
+        'has_active_contracts': has_active_contracts,
+    }
+    return render(request, 'freelancer/profile.html', context)
+
+
+@login_required
+@require_POST
+def freelancer_delete_account_view(request):
+    user = request.user
+    if getattr(user, 'profile', None) and user.profile.role == 'client':
+        return redirect('client_profile')
+
+    # Security check: Cannot delete if active ongoing contracts exist
+    has_active = Contract.objects.filter(freelancer=user, status='active').exists()
+    if has_active:
+        messages.error(
+            request,
+            "Cannot delete account while you have active ongoing contracts with clients. "
+            "Please complete or resolve all active contracts before deleting your account."
+        )
+        return redirect('freelancer_profile')
+
+    confirm_username = request.POST.get('confirm_username', '').strip()
+    if confirm_username != user.username:
+        messages.error(
+            request,
+            f"Account deletion cancelled. You must type your exact username '{user.username}' to confirm deletion."
+        )
+        return redirect('freelancer_profile')
+
+    deleted_username = user.username
+    logout(request)
+    user.delete()
+
+    messages.info(request, f"Your freelancer account '{deleted_username}' and profile have been permanently deleted.")
+    return redirect('home')
+
+
+@login_required
+def proposals_view(request):
+    user = request.user
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_proposals')
+
+    status_filter = request.GET.get('status', 'all')
+    proposals_qs = Proposal.objects.filter(freelancer=user).select_related(
+        'project', 'project__client', 'project__category'
+    )
+
+    if status_filter in ['pending', 'accepted', 'rejected', 'withdrawn']:
+        proposals_qs = proposals_qs.filter(status=status_filter)
+
+    total_count = Proposal.objects.filter(freelancer=user).count()
+    pending_count = Proposal.objects.filter(freelancer=user, status='pending').count()
+    accepted_count = Proposal.objects.filter(freelancer=user, status='accepted').count()
+    rejected_count = Proposal.objects.filter(freelancer=user, status='rejected').count()
+
+    context = {
+        'proposals': proposals_qs.order_by('-created_at'),
+        'status_filter': status_filter,
+        'total_count': total_count,
+        'pending_count': pending_count,
+        'accepted_count': accepted_count,
+        'rejected_count': rejected_count,
+    }
+    return render(request, 'freelancer/proposals.html', context)
+
+
+@login_required
+def contracts_view(request):
+    user = request.user
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_contracts')
+
+    status_filter = request.GET.get('status', 'all')
+    contracts_qs = Contract.objects.filter(freelancer=user).select_related(
+        'project', 'client', 'client__profile'
+    ).prefetch_related('milestones')
+
+    if status_filter in ['active', 'completed', 'cancelled']:
+        contracts_qs = contracts_qs.filter(status=status_filter)
+
+    active_count = Contract.objects.filter(freelancer=user, status='active').count()
+    completed_count = Contract.objects.filter(freelancer=user, status='completed').count()
+    total_val = Contract.objects.filter(freelancer=user).aggregate(total=Sum('total_amount'))['total'] or 0
+
+    context = {
+        'contracts': contracts_qs.order_by('-created_at'),
+        'status_filter': status_filter,
+        'active_count': active_count,
+        'completed_count': completed_count,
+        'total_val': total_val,
+    }
+    return render(request, 'freelancer/contracts.html', context)
+
+
+@login_required
+def messages_view(request):
+    user = request.user
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_messages')
+
+    conversations = Conversation.objects.filter(
+        participants=user
+    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at')
+
+    first_conv = conversations.first()
+    if first_conv:
+        return redirect('freelancer_conversation_detail', pk=first_conv.id)
+
+    context = {
+        'conversations': conversations,
+        'active_conversation': None,
+    }
+    return render(request, 'freelancer/messages.html', context)
+
+
+@login_required
+def conversation_detail_view(request, pk):
+    conversation = Conversation.objects.filter(pk=pk).first()
+    if not conversation:
+        messages.info(request, "This conversation has been removed or no longer exists.")
+        return redirect('freelancer_messages')
+
+    if not conversation.participants.filter(id=request.user.id).exists():
+        messages.error(request, "You are not part of this conversation.")
+        return redirect('freelancer_messages')
+
+    # Mark client's messages as read
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+    if request.method == 'POST':
+        content = request.POST.get('content', '').strip()
+        attachment = request.FILES.get('attachment')
+        if content or attachment:
+            msg = Message.objects.create(
+                conversation=conversation,
+                sender=request.user,
+                content=content,
+                attachment=attachment
+            )
+            conversation.updated_at = timezone.now()
+            conversation.save(update_fields=['updated_at'])
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == '1':
+                return JsonResponse({
+                    'status': 'ok',
+                    'id': msg.id,
+                    'content': msg.content,
+                    'time': msg.created_at.strftime('%I:%M %p'),
+                    'is_sender': True,
+                    'sender_name': request.user.first_name or request.user.username,
+                    'attachment_url': msg.attachment.url if msg.attachment else None,
+                    'attachment_name': msg.attachment.name.split('/')[-1] if msg.attachment else None,
+                })
+            return redirect('freelancer_conversation_detail', pk=pk)
+
+    conversations = list(Conversation.objects.filter(
+        participants=request.user
+    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at'))
+
+    for c in conversations:
+        c.other_user = c.get_other_participant(request.user)
+        c.unread_messages_count = c.unread_count_for(request.user)
+
+    context = {
+        'conversations': conversations,
+        'active_conversation': conversation,
+        'chat_messages': conversation.messages.select_related('sender').order_by('created_at'),
+        'other_user': conversation.get_other_participant(request.user),
+    }
+    return render(request, 'freelancer/messages.html', context)
+
+
+@login_required
+def conversation_delete_view(request, pk):
+    conversation = Conversation.objects.filter(pk=pk).first()
+    if conversation:
+        if not conversation.participants.filter(id=request.user.id).exists() and not request.user.is_superuser:
+            messages.error(request, "Unauthorized to delete this conversation.")
+            return redirect('freelancer_messages')
+        conversation.messages.all().delete()
+        conversation.delete()
+        messages.success(request, "Conversation removed successfully.")
+    return redirect('freelancer_messages')
+
+
+@login_required
+def contract_detail_view(request, pk):
+    user = request.user
+    if getattr(user, 'profile', None) and user.profile.role == 'client':
+        return redirect('client_contract_detail', pk=pk)
+
+    contract = get_object_or_404(
+        Contract.objects.select_related('project', 'client', 'client__profile'),
+        pk=pk
+    )
+    if contract.freelancer != user and not user.is_superuser:
+        messages.error(request, "You are not authorized to view this contract.")
+        return redirect('freelancer_contracts')
+
+    milestones = contract.milestones.all().order_by('created_at')
+    payments = contract.payments.filter(status='completed').order_by('-created_at')
+    advance_ms = contract.advance_milestone
+    final_ms = contract.final_milestone
+
+    context = {
+        'contract': contract,
+        'milestones': milestones,
+        'payments': payments,
+        'advance_ms': advance_ms,
+        'final_ms': final_ms,
+    }
+    return render(request, 'freelancer/contract_detail.html', context)
+
+
+@login_required
+def submit_delivery_view(request, contract_id):
+    if request.method != 'POST':
+        return redirect('freelancer_contract_detail', pk=contract_id)
+
+    contract = get_object_or_404(Contract, id=contract_id)
+    if contract.freelancer != request.user and not request.user.is_superuser:
+        messages.error(request, "Unauthorized action.")
+        return redirect('freelancer_contracts')
+
+    # Step 5 & 6 Business rule: Advance payment must be verified before work submission
+    if not contract.is_advance_paid:
+        messages.error(request, "Cannot submit work: The client has not yet paid the agreed advance payment.")
+        return redirect('freelancer_contract_detail', pk=contract.id)
+
+    final_ms = contract.final_milestone
+    if not final_ms:
+        final_ms = contract.milestones.order_by('-created_at').first()
+
+    if not final_ms:
+        messages.error(request, "No deliverable milestone found for this contract.")
+        return redirect('freelancer_contract_detail', pk=contract.id)
+
+    submission_notes = request.POST.get('submission_notes', '').strip()
+    deliverable_link = request.POST.get('deliverable_link', '').strip()
+    submission_file = request.FILES.get('submission_file')
+
+    if not submission_notes and not submission_file and not deliverable_link:
+        messages.error(request, "Please provide description notes, a repository/demo link, or upload your source code deliverable.")
+        return redirect('freelancer_contract_detail', pk=contract.id)
+
+    final_ms.submission_notes = submission_notes
+    if deliverable_link:
+        final_ms.deliverable_link = deliverable_link
+    if submission_file:
+        final_ms.submission_file = submission_file
+    final_ms.status = 'submitted'
+    final_ms.submitted_at = timezone.now()
+    final_ms.save()
+
+    messages.success(
+        request,
+        "Complete project deliverables and source code submitted successfully! The client has been notified to review your work."
+    )
+    return redirect('freelancer_contract_detail', pk=contract.id)
+
+
+@login_required
+def earnings_view(request):
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_dashboard')
+
+    user = request.user
+    payments_qs = Payment.objects.filter(freelancer=user).select_related(
+        'contract', 'contract__project', 'client', 'milestone'
+    ).order_by('-created_at')
+
+    # Total completed earnings
+    total_earned = payments_qs.filter(status='completed').aggregate(total=Sum('amount'))['total'] or 0
+
+    # Active contracts pending pipeline value
+    contracts = Contract.objects.filter(freelancer=user)
+    total_contract_value = contracts.aggregate(total=Sum('total_amount'))['total'] or 0
+    active_contracts = contracts.filter(status='active')
+    active_pipeline_value = active_contracts.aggregate(total=Sum('total_amount'))['total'] or 0
+
+    # In-escrow / pending payment: active contracts value minus what has already been paid on active contracts
+    active_paid = payments_qs.filter(contract__in=active_contracts, status='completed').aggregate(total=Sum('amount'))['total'] or 0
+    pending_escrow = max(0, active_pipeline_value - active_paid)
+
+    # Completed payouts count
+    completed_payouts_count = payments_qs.filter(status='completed').count()
+
+    # Milestone breakdown
+    milestones = Milestone.objects.filter(contract__freelancer=user)
+    approved_milestones_count = milestones.filter(status__in=['approved', 'paid']).count()
+
+    # Filter status if requested
+    status_filter = request.GET.get('status', 'all')
+    if status_filter == 'completed':
+        filtered_payments = payments_qs.filter(status='completed')
+    elif status_filter == 'pending':
+        filtered_payments = payments_qs.filter(status='pending')
+    else:
+        filtered_payments = payments_qs
+
+    paginator = Paginator(filtered_payments, 10)
+    page_obj = paginator.get_page(request.GET.get('page', 1))
+
+    # Last 6 months earnings trend for Chart.js
+    today = timezone.now().date()
+    earnings_chart_labels = []
+    earnings_chart_data = []
+    for i in range(5, -1, -1):
+        y = today.year
+        m = today.month - i
+        while m <= 0:
+            m += 12
+            y -= 1
+        month_label = f"{calendar.month_abbr[m]} '{str(y)[2:]}"
+        earnings_chart_labels.append(month_label)
+
+        m_earned = payments_qs.filter(
+            status='completed',
+            created_at__year=y,
+            created_at__month=m
+        ).aggregate(total=Sum('amount'))['total'] or 0
+        earnings_chart_data.append(float(m_earned))
+
+    context = {
+        'payments': page_obj,
+        'page_obj': page_obj,
+        'total_earned': total_earned,
+        'pending_escrow': pending_escrow,
+        'active_pipeline_value': active_pipeline_value,
+        'completed_payouts_count': completed_payouts_count,
+        'approved_milestones_count': approved_milestones_count,
+        'total_count': payments_qs.count(),
+        'status_filter': status_filter,
+        'active_contracts': active_contracts[:5],
+        'earnings_chart_labels_json': json.dumps(earnings_chart_labels),
+        'earnings_chart_data_json': json.dumps(earnings_chart_data),
+    }
+    return render(request, 'freelancer/earnings.html', context)

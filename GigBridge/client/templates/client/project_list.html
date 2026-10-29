@@ -1,0 +1,634 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Find Work &amp; Browse Projects | GigBridge{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════
+     HERO & QUICK SEARCH HEADER BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-projects-hero">
+    <div class="container position-relative" style="z-index: 2;">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Browse Projects</li>
+            </ol>
+        </nav>
+
+        <div class="row align-items-center g-4">
+            <div class="col-lg-8">
+                <div class="gb-hero-pill-badge">
+                    <i class="bi bi-stars"></i> Verified Freelance Opportunities
+                </div>
+                <h1 class="gb-projects-hero-title">Browse Available Projects &amp; Gigs</h1>
+                <p class="gb-projects-hero-subtitle">
+                    Discover high-value freelance opportunities across all specializations. Submit proposals, negotiate milestones, and work directly with verified clients.
+                </p>
+
+                <!-- Embedded Quick Search Bar -->
+                <form action="{% url 'project_list' %}" method="GET" class="gb-hero-search-box">
+                    {% if selected_category %}<input type="hidden" name="category" value="{{ selected_category }}">{% endif %}
+                    {% if budget_type %}<input type="hidden" name="budget_type" value="{{ budget_type }}">{% endif %}
+                    {% if min_budget %}<input type="hidden" name="min_budget" value="{{ min_budget }}">{% endif %}
+                    {% if max_budget %}<input type="hidden" name="max_budget" value="{{ max_budget }}">{% endif %}
+                    {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
+                    <i class="bi bi-search text-muted fs-5 ms-1"></i>
+                    <input type="text" name="q" value="{{ q }}" class="gb-hero-search-input" placeholder="Search by title, tech stack (e.g. Python, React, SEO), or keywords...">
+                    {% if q %}
+                        <a href="{% url 'project_list' %}" class="text-muted me-2" title="Clear Search"><i class="bi bi-x-circle-fill"></i></a>
+                    {% endif %}
+                    <button type="submit" class="gb-hero-search-btn">
+                        <span>Search</span>
+                        <i class="bi bi-arrow-right-short fs-5"></i>
+                    </button>
+                </form>
+
+                <!-- Quick Category Pill Shortcuts -->
+                <div class="gb-quick-cat-scroll">
+                    <a href="{% url 'project_list' %}" class="gb-quick-cat-pill {% if not selected_category %}active{% endif %}">
+                        <i class="bi bi-grid-fill"></i> All Categories
+                    </a>
+                    {% for cat in categories|slice:":7" %}
+                        <a href="{% url 'project_list' %}?category={{ cat.slug }}{% if q %}&q={{ q }}{% endif %}{% if budget_type %}&budget_type={{ budget_type }}{% endif %}" 
+                           class="gb-quick-cat-pill {% if selected_category == cat.slug %}active{% endif %}">
+                            <i class="bi {{ cat.icon|default:'bi-briefcase' }}"></i> {{ cat.name }}
+                            {% if cat.open_project_count %}<span class="badge bg-white text-dark ms-1" style="font-size:0.65rem;">{{ cat.open_project_count }}</span>{% endif %}
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="col-lg-4 text-lg-end d-none d-lg-block">
+                <div class="card border-0 rounded-4 p-4 text-start text-dark shadow-lg" style="background: rgba(255,255,255,0.95); backdrop-filter: blur(12px);">
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="gb-stat-icon-circle bg-primary-subtle text-primary" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </div>
+                        <div>
+                            <div class="fw-bold text-navy fs-5">{{ total_results }} Open Gig{{ total_results|pluralize }}</div>
+                            <div class="text-muted small">Ready for your proposal</div>
+                        </div>
+                    </div>
+                    <div class="d-flex gap-2 align-items-center text-muted small mb-3">
+                        <i class="bi bi-shield-check text-success fs-5"></i>
+                        <span>100% Secure Milestone Escrow Guarantee</span>
+                    </div>
+                    <a href="{% url 'client_project_create' %}" class="btn btn-outline-primary w-100 rounded-3 fw-bold btn-sm py-2">
+                        <i class="bi bi-plus-circle me-1"></i> Post a Project Instead
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN CONTENT: SIDEBAR FILTERS & PROJECT LISTINGS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Mobile Filter Drawer Offcanvas -->
+        <div class="offcanvas offcanvas-start rounded-end-4" tabindex="-1" id="filterOffcanvas" aria-labelledby="filterOffcanvasLabel">
+            <div class="offcanvas-header border-bottom">
+                <h5 class="offcanvas-title fw-bold text-navy" id="filterOffcanvasLabel">
+                    <i class="bi bi-sliders me-2 text-primary"></i> Filter Projects
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body p-4">
+                <!-- Mobile Filter Form clone -->
+                <form action="{% url 'project_list' %}" method="GET">
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Keyword Search</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                            <input type="text" name="q" value="{{ q }}" class="form-control bg-white border-start-0" placeholder="Title, skills, keywords...">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Category</label>
+                        <select name="category" class="form-select">
+                            <option value="">All Categories</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.slug }}" {% if selected_category == cat.slug %}selected{% endif %}>
+                                    {{ cat.name }} ({{ cat.open_project_count }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Budget Type</label>
+                        <select name="budget_type" class="form-select">
+                            <option value="" {% if not budget_type %}selected{% endif %}>All Types</option>
+                            <option value="fixed" {% if budget_type == 'fixed' %}selected{% endif %}>Fixed Price</option>
+                            <option value="hourly" {% if budget_type == 'hourly' %}selected{% endif %}>Hourly Rate</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Budget Range ($)</label>
+                        <div class="row g-2">
+                            <div class="col-6">
+                                <input type="number" name="min_budget" value="{{ min_budget }}" class="form-control form-control-sm" placeholder="Min $">
+                            </div>
+                            <div class="col-6">
+                                <input type="number" name="max_budget" value="{{ max_budget }}" class="form-control form-control-sm" placeholder="Max $">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-muted">Status</label>
+                        <select name="status" class="form-select form-select-sm">
+                            <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open for Bidding</option>
+                            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                        </select>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary rounded-3 fw-bold">
+                            Apply Filters
+                        </button>
+                        <a href="{% url 'project_list' %}" class="btn btn-light rounded-3 text-muted">
+                            Reset All
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- ──────────────────────────────────────────
+                 DESKTOP FILTER SIDEBAR (Left Column)
+                 ────────────────────────────────────────── -->
+            <div class="col-lg-3 d-none d-lg-block">
+                <div class="gb-filter-card sticky-top" style="top: 90px; z-index: 15;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <h5 class="fw-bold text-navy mb-0 fs-6">
+                                <i class="bi bi-sliders me-1 text-primary"></i> Filter Projects
+                            </h5>
+                            {% if active_filters_count > 0 %}
+                                <span class="badge bg-primary-subtle text-primary rounded-pill small">{{ active_filters_count }}</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'project_list' %}" class="text-muted small text-decoration-none hover-primary">
+                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                        </a>
+                    </div>
+
+                    <!-- Active Filter Dismiss Pills -->
+                    {% if active_filters_count > 0 %}
+                        <div class="d-flex flex-wrap gap-1 mb-3 pb-3 border-bottom">
+                            {% if q %}
+                                <a href="?{% if selected_category %}category={{ selected_category }}&{% endif %}{% if budget_type %}budget_type={{ budget_type }}&{% endif %}{% if min_budget %}min_budget={{ min_budget }}&{% endif %}{% if max_budget %}max_budget={{ max_budget }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="gb-active-filter-chip">
+                                    Keyword: "{{ q|truncatechars:12 }}" <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                            {% if selected_category_obj %}
+                                <a href="?{% if q %}q={{ q }}&{% endif %}{% if budget_type %}budget_type={{ budget_type }}&{% endif %}{% if min_budget %}min_budget={{ min_budget }}&{% endif %}{% if max_budget %}max_budget={{ max_budget }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="gb-active-filter-chip">
+                                    {{ selected_category_obj.name|truncatechars:15 }} <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                            {% if budget_type %}
+                                <a href="?{% if q %}q={{ q }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if min_budget %}min_budget={{ min_budget }}&{% endif %}{% if max_budget %}max_budget={{ max_budget }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="gb-active-filter-chip">
+                                    Type: {{ budget_type|title }} <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                            {% if min_budget or max_budget %}
+                                <a href="?{% if q %}q={{ q }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if budget_type %}budget_type={{ budget_type }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="gb-active-filter-chip">
+                                    ${{ min_budget|default:"0" }} - ${{ max_budget|default:"Any" }} <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                            {% if status_filter and status_filter != 'open' %}
+                                <a href="?{% if q %}q={{ q }}&{% endif %}{% if selected_category %}category={{ selected_category }}&{% endif %}{% if budget_type %}budget_type={{ budget_type }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="gb-active-filter-chip">
+                                    Status: {{ status_filter|title }} <i class="bi bi-x"></i>
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Main Filter Form -->
+                    <form action="{% url 'project_list' %}" method="GET" id="desktopFilterForm">
+                        {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+
+                        <!-- 1. Search Query -->
+                        <div class="mb-3">
+                            <label class="gb-filter-heading">Keyword</label>
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-search"></i></span>
+                                <input type="text" name="q" value="{{ q }}" class="form-control bg-light border-start-0" placeholder="Title, skills, keyword...">
+                            </div>
+                        </div>
+
+                        <!-- 2. Category Selector -->
+                        <div class="mb-3">
+                            <div class="gb-filter-heading">
+                                <span>Category</span>
+                                {% if selected_category %}
+                                    <a href="?{% if q %}q={{ q }}&{% endif %}{% if budget_type %}budget_type={{ budget_type }}&{% endif %}{% if sort %}sort={{ sort }}&{% endif %}" class="text-primary small" style="text-transform:none;font-weight:600;font-size:0.75rem;">Clear</a>
+                                {% endif %}
+                            </div>
+                            <div class="gb-category-radio-list">
+                                <label class="gb-cat-radio-label {% if not selected_category %}active{% endif %}">
+                                    <span class="d-flex align-items-center gap-2">
+                                        <input type="radio" name="category" value="" {% if not selected_category %}checked{% endif %} class="d-none" onchange="this.form.submit()">
+                                        <i class="bi bi-grid-fill text-muted"></i> All Categories
+                                    </span>
+                                </label>
+                                {% for cat in categories %}
+                                    <label class="gb-cat-radio-label {% if selected_category == cat.slug %}active{% endif %}">
+                                        <span class="d-flex align-items-center gap-2">
+                                            <input type="radio" name="category" value="{{ cat.slug }}" {% if selected_category == cat.slug %}checked{% endif %} class="d-none" onchange="this.form.submit()">
+                                            <i class="bi {{ cat.icon|default:'bi-briefcase' }} text-muted"></i> {{ cat.name }}
+                                        </span>
+                                        <span class="gb-cat-count-badge">{{ cat.open_project_count }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- 3. Budget Type Segmented Control -->
+                        <div class="mb-3">
+                            <label class="gb-filter-heading">Budget Type</label>
+                            <div class="gb-segmented-group">
+                                <div class="gb-segmented-item">
+                                    <input type="radio" name="budget_type" id="dtBtAll" value="" {% if not budget_type %}checked{% endif %} onchange="this.form.submit()">
+                                    <label for="dtBtAll">All</label>
+                                </div>
+                                <div class="gb-segmented-item">
+                                    <input type="radio" name="budget_type" id="dtBtFixed" value="fixed" {% if budget_type == 'fixed' %}checked{% endif %} onchange="this.form.submit()">
+                                    <label for="dtBtFixed">Fixed</label>
+                                </div>
+                                <div class="gb-segmented-item">
+                                    <input type="radio" name="budget_type" id="dtBtHourly" value="hourly" {% if budget_type == 'hourly' %}checked{% endif %} onchange="this.form.submit()">
+                                    <label for="dtBtHourly">Hourly</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 4. Budget Range Inputs & Quick Presets -->
+                        <div class="mb-3">
+                            <label class="gb-filter-heading">Budget Range ($)</label>
+                            <div class="row g-2 mb-2">
+                                <div class="col-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-light text-muted small">$</span>
+                                        <input type="number" id="inputMinBudget" name="min_budget" value="{{ min_budget }}" class="form-control bg-light" placeholder="Min">
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text bg-light text-muted small">$</span>
+                                        <input type="number" id="inputMaxBudget" name="max_budget" value="{{ max_budget }}" class="form-control bg-light" placeholder="Max">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="gb-budget-presets">
+                                <button type="button" class="gb-budget-preset-btn" onclick="setBudgetRange('', 100)">Under $100</button>
+                                <button type="button" class="gb-budget-preset-btn" onclick="setBudgetRange(100, 500)">$100 - $500</button>
+                                <button type="button" class="gb-budget-preset-btn" onclick="setBudgetRange(500, 1500)">$500 - $1.5k</button>
+                                <button type="button" class="gb-budget-preset-btn" onclick="setBudgetRange(1500, '')">$1.5k+</button>
+                            </div>
+                        </div>
+
+                        <!-- 5. Status Filter -->
+                        <div class="mb-4">
+                            <label class="gb-filter-heading">Project Status</label>
+                            <select name="status" class="form-select form-select-sm bg-light" onchange="this.form.submit()">
+                                <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open for Bidding</option>
+                                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+                            </select>
+                        </div>
+
+                        <!-- Submit Action -->
+                        <button type="submit" class="btn btn-primary w-100 rounded-3 fw-bold btn-sm py-2 shadow-sm">
+                            <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- ──────────────────────────────────────────
+                 PROJECTS LISTINGS (Right Column)
+                 ────────────────────────────────────────── -->
+            <div class="col-lg-9">
+                <!-- Results Toolbar (Summary, View Mode & Sort Dropdown) -->
+                <div class="gb-results-toolbar">
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Mobile Filter Button Trigger -->
+                        <button class="btn btn-outline-primary btn-sm d-lg-none rounded-3 fw-bold" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterOffcanvas">
+                            <i class="bi bi-sliders me-1"></i> Filters {% if active_filters_count > 0 %}<span class="badge bg-primary text-white ms-1">{{ active_filters_count }}</span>{% endif %}
+                        </button>
+
+                        <div class="text-muted small">
+                            Showing <strong class="text-navy">{{ page_obj.start_index|default:0 }}–{{ page_obj.end_index|default:0 }}</strong> of <strong class="text-navy">{{ total_results }}</strong> available project{{ total_results|pluralize }}
+                            {% if selected_category_obj %}
+                                in <span class="badge bg-primary-subtle text-primary rounded-pill">{{ selected_category_obj.name }}</span>
+                            {% endif %}
+                            {% if q %}
+                                for <span class="fw-semibold text-navy">"{{ q }}"</span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- View Switcher (Grid vs List) -->
+                        <div class="d-none d-sm-flex align-items-center gap-1">
+                            <button type="button" id="btnGridView" class="gb-view-toggle-btn active" title="Grid View">
+                                <i class="bi bi-grid-fill"></i>
+                            </button>
+                            <button type="button" id="btnListView" class="gb-view-toggle-btn" title="List View">
+                                <i class="bi bi-view-list"></i>
+                            </button>
+                        </div>
+
+                        <!-- Sorting Dropdown -->
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="text-muted small d-none d-md-inline text-nowrap">Sort by:</label>
+                            <select class="form-select form-select-sm border-0 bg-light rounded-3 fw-semibold text-navy" style="width: auto;" onchange="handleSortChange(this.value)">
+                                <option value="newest" {% if sort == 'newest' or sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                                <option value="budget_high" {% if sort == 'budget_high' or sort == '-budget_max' %}selected{% endif %}>Highest Budget</option>
+                                <option value="budget_low" {% if sort == 'budget_low' or sort == 'budget_min' %}selected{% endif %}>Lowest Budget</option>
+                                <option value="proposals" {% if sort == 'proposals' %}selected{% endif %}>Most Proposals</option>
+                                <option value="views" {% if sort == 'views' %}selected{% endif %}>Most Viewed</option>
+                                <option value="oldest" {% if sort == 'oldest' or sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Projects Grid Container -->
+                <div class="row g-4 projects-list-container" id="projectsContainer">
+                    {% for project in page_obj %}
+                        <div class="col-md-6">
+                            <div class="gb-project-card-v2">
+                                <div class="gb-card-body-section">
+                                    <!-- Card Header Meta -->
+                                    <div class="gb-card-top-meta">
+                                        <span class="gb-cat-tag">
+                                            <i class="bi {{ project.category.icon|default:'bi-briefcase' }}"></i>
+                                            {{ project.category.name|default:"General" }}
+                                        </span>
+                                        <div class="d-flex align-items-center gap-2">
+                                            {% if project.status == 'open' %}
+                                                <span class="gb-status-tag gb-status-open">
+                                                    <span class="status-pulse-dot"></span> Open for Bids
+                                                </span>
+                                            {% elif project.status == 'in_progress' %}
+                                                <span class="gb-status-tag gb-status-in_progress">
+                                                    <i class="bi bi-arrow-repeat"></i> In Progress
+                                                </span>
+                                            {% elif project.status == 'completed' %}
+                                                <span class="gb-status-tag gb-status-completed">
+                                                    <i class="bi bi-check2-all"></i> Completed
+                                                </span>
+                                            {% else %}
+                                                <span class="gb-status-tag gb-status-completed">
+                                                    {{ project.get_status_display }}
+                                                </span>
+                                            {% endif %}
+                                            <button type="button" class="btn btn-link text-muted p-0 border-0 ms-1 bookmark-btn" title="Bookmark gig" onclick="toggleBookmark(this)">
+                                                <i class="bi bi-bookmark fs-6"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Project Title -->
+                                    <h3 class="gb-project-card-title">
+                                        <a href="{% url 'project_detail' project.id %}">
+                                            {{ project.title }}
+                                        </a>
+                                    </h3>
+
+                                    <!-- Client & Time Meta Row -->
+                                    <div class="gb-client-meta-row">
+                                        <span class="gb-client-avatar-mini">
+                                            {{ project.client.first_name|default:project.client.username|slice:":1"|upper }}
+                                        </span>
+                                        <span class="text-dark fw-semibold">
+                                            {{ project.client.get_full_name|default:project.client.username }}
+                                        </span>
+                                        <i class="bi bi-patch-check-fill text-primary small" title="Verified Client"></i>
+                                        <span>&bull;</span>
+                                        <span>{{ project.created_at|timesince }} ago</span>
+                                        <span>&bull;</span>
+                                        <span><i class="bi bi-eye text-muted me-1"></i>{{ project.views_count }}</span>
+                                    </div>
+
+                                    <!-- Description Clamp -->
+                                    <p class="gb-project-card-desc">
+                                        {{ project.description }}
+                                    </p>
+
+                                    <!-- Skills Tags -->
+                                    <div class="gb-skills-pill-wrap">
+                                        {% for skill in project.skills_list|slice:":4" %}
+                                            <span class="gb-skill-tag">{{ skill }}</span>
+                                        {% empty %}
+                                            <span class="gb-skill-tag">Freelance</span>
+                                        {% endfor %}
+                                        {% if project.skills_list|length > 4 %}
+                                            <span class="gb-skill-tag text-muted">+{{ project.skills_list|length|add:"-4" }} more</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- Card Footer Row -->
+                                <div class="gb-card-bottom-row">
+                                    <div class="gb-budget-display">
+                                        <div class="gb-budget-figure">
+                                            {% if project.budget_max > 0 and project.budget_max != project.budget_min %}
+                                                ${{ project.budget_min|floatformat:0 }} – ${{ project.budget_max|floatformat:0 }}
+                                            {% else %}
+                                                ${{ project.budget_min|floatformat:0 }}
+                                            {% endif %}
+                                        </div>
+                                        <div class="gb-budget-type-label">
+                                            <span>{{ project.get_budget_type_display }}</span>
+                                            <span>&bull;</span>
+                                            <span>{{ project.num_proposals|default:project.proposals_count }} proposal{{ project.proposals_count|pluralize }}</span>
+                                            {% if project.deadline %}
+                                                <span>&bull;</span>
+                                                <span class="text-navy"><i class="bi bi-calendar-event me-1"></i>Due {{ project.deadline|date:"M d" }}</span>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+
+                                    <a href="{% url 'project_detail' project.id %}" class="gb-btn-bid-action">
+                                        <span>View &amp; Bid</span>
+                                        <i class="bi bi-arrow-right"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <div class="col-12">
+                            <div class="gb-empty-state-box">
+                                <div class="gb-empty-icon-wrap">
+                                    <i class="bi bi-search"></i>
+                                </div>
+                                <h3 class="fw-bold text-navy mb-2">No Matching Projects Found</h3>
+                                <p class="text-muted mx-auto mb-4" style="max-width: 480px; font-size: 0.95rem;">
+                                    We couldn't find any freelance projects matching your active filters. Try broadening your keywords, increasing your budget range, or resetting filters.
+                                </p>
+                                <div class="d-flex justify-content-center gap-3">
+                                    <a href="{% url 'project_list' %}" class="btn btn-primary rounded-pill px-4 fw-bold">
+                                        <i class="bi bi-arrow-counterclockwise me-1"></i> Reset All Filters
+                                    </a>
+                                    <a href="{% url 'client_project_create' %}" class="btn btn-outline-secondary rounded-pill px-4">
+                                        Post a New Project
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Modern Pagination Navigation -->
+                {% if page_obj.has_other_pages %}
+                    <nav class="mt-5 gb-pagination-wrap" aria-label="Projects page navigation">
+                        <ul class="pagination justify-content-center">
+                            {% if page_obj.has_previous %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if budget_type %}&budget_type={{ budget_type }}{% endif %}{% if min_budget %}&min_budget={{ min_budget }}{% endif %}{% if max_budget %}&max_budget={{ max_budget }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="Previous">
+                                        <i class="bi bi-chevron-left me-1"></i> Previous
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link text-muted"><i class="bi bi-chevron-left me-1"></i> Previous</span>
+                                </li>
+                            {% endif %}
+
+                            {% for num in page_obj.paginator.page_range %}
+                                {% if page_obj.number == num %}
+                                    <li class="page-item active" aria-current="page">
+                                        <span class="page-link">{{ num }}</span>
+                                    </li>
+                                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ num }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if budget_type %}&budget_type={{ budget_type }}{% endif %}{% if min_budget %}&min_budget={{ min_budget }}{% endif %}{% if max_budget %}&max_budget={{ max_budget }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}">{{ num }}</a>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+
+                            {% if page_obj.has_next %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if q %}&q={{ q }}{% endif %}{% if selected_category %}&category={{ selected_category }}{% endif %}{% if budget_type %}&budget_type={{ budget_type }}{% endif %}{% if min_budget %}&min_budget={{ min_budget }}{% endif %}{% if max_budget %}&max_budget={{ max_budget }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if sort %}&sort={{ sort }}{% endif %}" aria-label="Next">
+                                        Next <i class="bi bi-chevron-right ms-1"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li class="page-item disabled">
+                                    <span class="page-link text-muted">Next <i class="bi bi-chevron-right ms-1"></i></span>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </nav>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     CALL TO ACTION BANNER (BOTTOM)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white border-top">
+    <div class="container text-center py-4">
+        <div class="card border-0 rounded-4 p-5 text-white shadow-lg mx-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); max-width: 900px;">
+            <div class="row align-items-center g-4">
+                <div class="col-lg-8 text-lg-start">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-2 px-3 py-2 fw-semibold">Need talent for your project?</span>
+                    <h3 class="fw-bold mb-2 text-white">Have a Project in Mind? Hire Top Rated Talent.</h3>
+                    <p class="text-white-50 mb-0">Post your job in minutes, review competitive proposals, and only pay when milestones are completed to your satisfaction.</p>
+                </div>
+                <div class="col-lg-4 text-lg-end">
+                    <a href="{% url 'client_project_create' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap">
+                        <i class="bi bi-plus-lg me-1"></i> Post a Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Quick budget range presets helper
+    function setBudgetRange(minVal, maxVal) {
+        const inputMin = document.getElementById('inputMinBudget');
+        const inputMax = document.getElementById('inputMaxBudget');
+        if (inputMin) inputMin.value = minVal;
+        if (inputMax) inputMax.value = maxVal;
+        const form = document.getElementById('desktopFilterForm');
+        if (form) form.submit();
+    }
+
+    // Handle sort change while retaining all GET params
+    function handleSortChange(sortValue) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('sort', sortValue);
+        url.searchParams.delete('page'); // Reset to page 1 on sort change
+        window.location.href = url.toString();
+    }
+
+    // Interactive View Mode Switcher (Grid vs List View with LocalStorage persistence)
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('projectsContainer');
+        const btnGrid = document.getElementById('btnGridView');
+        const btnList = document.getElementById('btnListView');
+
+        const savedView = localStorage.getItem('gb_projects_view_mode') || 'grid';
+        if (savedView === 'list' && container) {
+            container.classList.add('list-layout');
+            if (btnList) btnList.classList.add('active');
+            if (btnGrid) btnGrid.classList.remove('active');
+        }
+
+        if (btnGrid && btnList && container) {
+            btnGrid.addEventListener('click', function() {
+                container.classList.remove('list-layout');
+                btnGrid.classList.add('active');
+                btnList.classList.remove('active');
+                localStorage.setItem('gb_projects_view_mode', 'grid');
+            });
+
+            btnList.addEventListener('click', function() {
+                container.classList.add('list-layout');
+                btnList.classList.add('active');
+                btnGrid.classList.remove('active');
+                localStorage.setItem('gb_projects_view_mode', 'list');
+            });
+        }
+    });
+
+    // Bookmark toggle animation
+    function toggleBookmark(btn) {
+        const icon = btn.querySelector('i');
+        if (icon) {
+            if (icon.classList.contains('bi-bookmark')) {
+                icon.classList.remove('bi-bookmark');
+                icon.classList.add('bi-bookmark-fill', 'text-primary');
+            } else {
+                icon.classList.remove('bi-bookmark-fill', 'text-primary');
+                icon.classList.add('bi-bookmark');
+            }
+        }
+    }
+</script>
+{% endblock %}

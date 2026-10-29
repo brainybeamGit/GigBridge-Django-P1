@@ -1,0 +1,547 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Earnings{% endblock %}
+{% block dashboard_title %}Earnings &amp; Payouts Ledger{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Luxury Executive Freelancer Earnings & Payouts System
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --fe-primary: #0284C7;
+        --fe-navy: #0F172A;
+        --fe-border: #E2E8F0;
+        --fe-radius: 16px;
+    }
+
+    /* ─── 1. LUMINOUS HERO COMMAND BANNER ─── */
+    .fe-hero-banner {
+        background:
+            radial-gradient(circle at 88% 20%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.7) 28%, transparent 65%),
+            radial-gradient(circle at 6% 85%, rgba(56, 189, 248, 0.28) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 20px;
+        padding: 30px 36px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -4px rgba(2, 132, 199, 0.14), inset 0 0 60px rgba(255, 255, 255, 0.65);
+        margin-bottom: 24px;
+    }
+
+    .fe-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .fe-hero-badge .pulse-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+        display: inline-block;
+    }
+
+    .fe-hero-title {
+        font-size: 1.85rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .fe-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 620px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. LUXURY 4-CARD FINANCIAL KPI GRID ─── */
+    .fe-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fe-radius);
+        padding: 24px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .fe-metric-card:hover {
+        transform: translateY(-3px);
+        border-color: #BAE6FD;
+        box-shadow: 0 10px 28px rgba(2, 132, 199, 0.12);
+    }
+
+    .fe-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, #0284C7, #38BDF8);
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .fe-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .fe-metric-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 14px;
+    }
+
+    .fe-metric-tag {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+    }
+
+    .fe-metric-pill {
+        font-size: 0.68rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        padding: 3px 8px;
+        border-radius: 6px;
+    }
+
+    .fe-metric-val {
+        font-size: 2.25rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .fe-metric-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #334155;
+        margin-bottom: 4px;
+    }
+
+    .fe-metric-footer {
+        font-size: 0.77rem;
+        color: #64748B;
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px dashed #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* ─── 3. CHART & LEDGER STYLING ─── */
+    .fe-section-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: var(--fe-radius);
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    .fe-section-header {
+        padding: 18px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .fe-section-header h5 {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin: 0;
+    }
+
+    .fe-transaction-row {
+        padding: 16px 24px;
+        border-bottom: 1px solid #F1F5F9;
+        transition: background 0.15s ease;
+    }
+
+    .fe-transaction-row:last-child {
+        border-bottom: none;
+    }
+
+    .fe-transaction-row:hover {
+        background: #F8FAFC;
+    }
+
+    .btn-act-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        padding: 7px 16px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-act-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .btn-act-outline {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 7px 14px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+    }
+
+    .btn-act-outline:hover {
+        background: #F0F9FF;
+        border-color: #BAE6FD;
+        color: #0284C7 !important;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS HERO COMMAND BANNER
+     ========================================================================= -->
+<div class="fe-hero-banner">
+    <div class="row align-items-center g-4">
+        <div class="col-xl-7 col-lg-6">
+            <div class="fe-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>FINANCIAL WORKSPACE // EARNINGS &amp; PAYOUTS</span>
+            </div>
+            <h1 class="fe-hero-title">
+                Earnings &amp; Payouts Ledger
+            </h1>
+            <p class="fe-hero-sub">
+                Real-time breakdown of your total money earned, escrow releases, active contract values, and verified transaction receipts.
+            </p>
+        </div>
+        <div class="col-xl-5 col-lg-6">
+            <div class="d-flex flex-wrap align-items-center gap-2 justify-content-lg-end">
+                <a href="{% url 'freelancer_contracts' %}" class="btn-hero-primary">
+                    <i class="bi bi-file-earmark-check"></i> Active Contracts
+                </a>
+                <a href="{% url 'project_list' %}" class="btn-hero-glass">
+                    <i class="bi bi-search"></i> Browse Jobs
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. LUXURY 4-CARD FINANCIAL KPI GRID (GENEROUS SPACING, NO CRAMPING)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Money Earned -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fe-metric-card">
+            <div>
+                <div class="fe-metric-top">
+                    <span class="fe-metric-tag">FINANCE // 01</span>
+                    <span class="fe-metric-pill" style="background:#DCFCE7; color:#15803D;">COMPLETED</span>
+                </div>
+                <div class="fe-metric-val" style="color: #16A34A;">&#8377;{{ total_earned|floatformat:2 }}</div>
+                <div class="fe-metric-title">Total Money Earned</div>
+            </div>
+            <div class="fe-metric-footer">
+                <span>Verified Payouts:</span>
+                <strong class="text-dark">{{ completed_payouts_count }} transaction{{ completed_payouts_count|pluralize }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: In-Escrow / Pending Pipeline -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fe-metric-card">
+            <div>
+                <div class="fe-metric-top">
+                    <span class="fe-metric-tag">ESCROW // 02</span>
+                    <span class="fe-metric-pill" style="background:#E0F2FE; color:#0284C7;">IN ESCROW</span>
+                </div>
+                <div class="fe-metric-val" style="color: #0284C7;">&#8377;{{ pending_escrow|floatformat:2 }}</div>
+                <div class="fe-metric-title">Pending Escrow Pipeline</div>
+            </div>
+            <div class="fe-metric-footer">
+                <span>Contract Pipeline:</span>
+                <strong class="text-dark">&#8377;{{ active_pipeline_value|floatformat:2 }} active</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Approved Deliverables -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fe-metric-card">
+            <div>
+                <div class="fe-metric-top">
+                    <span class="fe-metric-tag">DELIVERIES // 03</span>
+                    <span class="fe-metric-pill" style="background:#FEF3C7; color:#B45309;">APPROVED</span>
+                </div>
+                <div class="fe-metric-val" style="color: #D97706;">{{ approved_milestones_count }}</div>
+                <div class="fe-metric-title">Approved Deliverables</div>
+            </div>
+            <div class="fe-metric-footer">
+                <span>Status:</span>
+                <strong class="text-dark">Escrow released to balance</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Standard Rate -->
+    <div class="col-xl-3 col-md-6">
+        <div class="fe-metric-card">
+            <div>
+                <div class="fe-metric-top">
+                    <span class="fe-metric-tag">RATE // 04</span>
+                    <span class="fe-metric-pill" style="background:#F1F5F9; color:#475569;">PUBLIC PROFILE</span>
+                </div>
+                <div class="fe-metric-val" style="color: #0F172A;">&#8377;{{ request.user.profile.hourly_rate|default:"0.00" }}<span style="font-size:1rem;color:#64748B;font-weight:600;">/hr</span></div>
+                <div class="fe-metric-title">Standard Hourly Rate</div>
+            </div>
+            <div class="fe-metric-footer">
+                <span>Profile Settings:</span>
+                <a href="{% url 'freelancer_profile' %}" class="text-decoration-none fw-bold" style="color:#0284C7;">Edit &rarr;</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. EARNINGS PROGRESSION CHART
+     ========================================================================= -->
+<div class="fe-section-card p-4 mb-4">
+    <div class="d-flex align-items-center justify-content-between mb-3 pb-2 border-bottom">
+        <div>
+            <h5 class="fw-bold text-dark mb-0">Monthly Payout Progression</h5>
+            <small class="text-muted">Last 6 months verified payouts credited from milestone approvals</small>
+        </div>
+        <span class="badge" style="background:#F0F9FF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.75rem;padding:6px 12px;">
+            Verified Payouts: &#8377;{{ total_earned|floatformat:2 }}
+        </span>
+    </div>
+    <div style="height: 240px; position: relative;">
+        <canvas id="freelancerMonthlyEarningsChart"></canvas>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. PAYMENTS & TRANSACTIONS LEDGER
+     ========================================================================= -->
+<div class="fe-section-card">
+    <div class="fe-section-header">
+        <div>
+            <h5>Payment &amp; Escrow Transaction History</h5>
+            <small class="text-muted">Detailed records of all milestone disbursements and advance payments</small>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="?status=all" class="btn btn-sm rounded-pill px-3 fw-semibold {% if status_filter == 'all' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                All ({{ total_count }})
+            </a>
+            <a href="?status=completed" class="btn btn-sm rounded-pill px-3 fw-semibold {% if status_filter == 'completed' %}btn-success{% else %}btn-outline-secondary{% endif %}">
+                Completed ({{ completed_payouts_count }})
+            </a>
+        </div>
+    </div>
+
+    {% if payments %}
+        <div>
+            {% for payment in payments %}
+                <div class="fe-transaction-row">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div style="width:42px;height:42px;border-radius:12px;background:#E0F2FE;color:#0284C7;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:1.1rem;flex-shrink:0;">
+                                &#8377;
+                            </div>
+                            <div>
+                                <div class="fw-bold text-dark fs-6">
+                                    <a href="{% url 'freelancer_contract_detail' payment.contract.id %}" class="text-decoration-none text-dark hover-primary">
+                                        {{ payment.contract.project.title }}
+                                    </a>
+                                </div>
+                                <small class="text-muted">
+                                    Client: <strong class="text-dark">{{ payment.client.get_full_name|default:payment.client.username }}</strong>
+                                    &bull; {% if payment.milestone %}{{ payment.milestone.title }}{% else %}{{ payment.get_payment_type_display }}{% endif %}
+                                    &bull; {{ payment.created_at|date:"M d, Y &bull; h:i A" }}
+                                </small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="text-end">
+                                <div class="fw-bold text-success fs-5">&#8377;{{ payment.amount }}</div>
+                                <span class="badge" style="background:#DCFCE7;color:#15803D;font-size:0.68rem;padding:3px 8px;">{{ payment.get_status_display }}</span>
+                            </div>
+
+                            {% if payment.id %}
+                                <a href="{% url 'client_invoice' payment.id %}" class="btn-act-outline">
+                                    View Receipt
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+            <div class="p-3 border-top d-flex justify-content-center">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&status={{ status_filter }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&status={{ status_filter }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5 text-muted">
+            <h5 class="fw-bold text-dark mb-1">No Transactions Recorded Yet</h5>
+            <p class="small text-muted mb-3">When clients release milestone payments for completed deliverables, your transactions will appear here.</p>
+            <a href="{% url 'project_list' %}" class="btn-hero-primary py-2 px-3">
+                Find Projects &amp; Submit Bids
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<!-- =========================================================================
+     5. CHART.JS SCRIPT INITIALIZATION
+     ========================================================================= -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const earningsLabels = {{ earnings_chart_labels_json|safe }};
+        const earningsData = {{ earnings_chart_data_json|safe }};
+
+        const earningsCanvas = document.getElementById('freelancerMonthlyEarningsChart');
+        if (earningsCanvas) {
+            const ctx = earningsCanvas.getContext('2d');
+            const gradientFill = ctx.createLinearGradient(0, 0, 0, 230);
+            gradientFill.addColorStop(0, 'rgba(2, 132, 199, 0.32)');
+            gradientFill.addColorStop(0.5, 'rgba(56, 189, 248, 0.12)');
+            gradientFill.addColorStop(1, 'rgba(240, 249, 255, 0.00)');
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: earningsLabels,
+                    datasets: [{
+                        label: 'Payouts (INR)',
+                        data: earningsData,
+                        borderColor: '#0284C7',
+                        borderWidth: 3,
+                        backgroundColor: gradientFill,
+                        fill: true,
+                        tension: 0.38,
+                        pointBackgroundColor: '#FFFFFF',
+                        pointBorderColor: '#0284C7',
+                        pointBorderWidth: 2.5,
+                        pointRadius: 4.5,
+                        pointHoverRadius: 7,
+                        pointHoverBackgroundColor: '#0284C7',
+                        pointHoverBorderColor: '#FFFFFF',
+                        pointHoverBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            backgroundColor: '#0F172A',
+                            titleColor: '#F8FAFC',
+                            bodyColor: '#38BDF8',
+                            titleFont: { size: 12, weight: '700', family: 'Plus Jakarta Sans' },
+                            bodyFont: { size: 13, weight: '600', family: 'Plus Jakarta Sans' },
+                            padding: 10,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                label: function(context) {
+                                    return ' Payout: ₹' + Number(context.parsed.y).toLocaleString();
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { display: false },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                                color: '#64748B'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            border: { dash: [4, 4] },
+                            grid: { color: '#F1F5F9' },
+                            ticks: {
+                                font: { size: 11, family: 'Plus Jakarta Sans', weight: '600' },
+                                color: '#64748B',
+                                maxTicksLimit: 5,
+                                precision: 0,
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Invoice {{ payment.invoice_number }} | GigBridge{% endblock %}
+
+{% block content %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- Print & Navigation Actions -->
+        <div class="d-flex justify-content-between align-items-center mb-4 no-print">
+            <a href="{% url 'client_payments' %}" class="btn btn-outline-secondary btn-sm">
+                <i class="bi bi-arrow-left me-1"></i> Back to Payments
+            </a>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-primary btn-sm" onclick="window.print();">
+                    <i class="bi bi-printer me-1"></i> Print / Save as PDF
+                </button>
+            </div>
+        </div>
+
+        <!-- Official Invoice Card -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white mx-auto" style="max-width: 850px;">
+            <!-- Header Brand & Invoice ID -->
+            <div class="d-flex justify-content-between align-items-start pb-4 border-bottom mb-4">
+                <div>
+                    <div class="gb-brand mb-2 text-dark">
+                        <span class="gb-brand-icon"><i class="bi bi-briefcase-fill"></i></span>
+                        <span class="text-navy fw-bold fs-4">Gig<span class="text-primary">Bridge</span></span>
+                    </div>
+                    <p class="text-muted small mb-0">
+                        100 Market Street, Suite 400<br>
+                        San Francisco, CA 94105, USA<br>
+                        support@gigbridge.com
+                    </p>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-1 rounded-pill fw-semibold mb-2">
+                        PAID &amp; RELEASED
+                    </span>
+                    <h4 class="fw-bold text-navy mb-0 font-monospace">{{ payment.invoice_number }}</h4>
+                    <span class="text-muted small">Date: {{ payment.created_at|date:"F d, Y" }}</span>
+                </div>
+            </div>
+
+            <!-- Client & Freelancer Details -->
+            <div class="row g-4 mb-4">
+                <div class="col-sm-6">
+                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Billed To (Client):</span>
+                    <h6 class="fw-bold text-navy mb-0">{{ payment.client.get_full_name|default:payment.client.username }}</h6>
+                    <div class="text-secondary small">{{ payment.client.profile.company_name|default:"Employer Account" }}</div>
+                    <div class="text-muted small">{{ payment.client.email }}</div>
+                    <div class="text-muted small">{{ payment.client.profile.location|default:"Remote" }}</div>
+                </div>
+
+                <div class="col-sm-6 text-sm-end">
+                    <span class="text-muted small fw-bold text-uppercase d-block mb-1">Paid To (Freelancer):</span>
+                    <h6 class="fw-bold text-navy mb-0">{{ payment.freelancer.get_full_name|default:payment.freelancer.username }}</h6>
+                    <div class="text-secondary small">{{ payment.freelancer.profile.title|default:"Independent Contractor" }}</div>
+                    <div class="text-muted small">{{ payment.freelancer.email }}</div>
+                </div>
+            </div>
+
+            <!-- Line Items Table -->
+            <div class="table-responsive mb-4">
+                <table class="table align-middle border">
+                    <thead class="table-light small">
+                        <tr>
+                            <th>Description</th>
+                            <th>Contract #</th>
+                            <th class="text-end">Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <strong class="text-navy">{{ payment.contract.project.title }}</strong>
+                                <div class="text-muted small">
+                                    Stage: <span class="badge bg-light text-dark border">{{ payment.get_payment_type_display|default:payment.milestone.title }}</span> &bull; {{ payment.milestone.title|default:"Agreed Milestone" }}
+                                </div>
+                            </td>
+                            <td>#{{ payment.contract.id }}</td>
+                            <td class="text-end fw-bold text-navy fs-6">&#8377;{{ payment.amount|floatformat:2 }}</td>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-light">
+                        <tr>
+                            <td colspan="2" class="text-end fw-bold">Subtotal:</td>
+                            <td class="text-end fw-bold">&#8377;{{ payment.amount|floatformat:2 }}</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-end text-muted small">Marketplace Escrow Processing Fee:</td>
+                            <td class="text-end text-muted small">&#8377;0.00</td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" class="text-end fw-bold text-navy fs-5">Total Paid:</td>
+                            <td class="text-end fw-bold text-success fs-5">&#8377;{{ payment.amount|floatformat:2 }} INR</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Transaction Metadata -->
+            <div class="p-3 rounded-3 bg-light border small text-muted mb-4">
+                <div class="row g-2">
+                    <div class="col-sm-6">
+                        <span class="fw-semibold text-dark">Payment Gateway:</span> {{ payment.payment_method }}
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="fw-semibold text-dark">Payment ID:</span> <span class="font-monospace">{{ payment.razorpay_payment_id|default:"N/A" }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="fw-semibold text-dark">Order ID:</span> <span class="font-monospace">{{ payment.razorpay_order_id|default:"N/A" }}</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="fw-semibold text-dark">Signature Hash:</span> <span class="font-monospace">{{ payment.razorpay_signature|truncatechars:20|default:"Verified" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Footer -->
+            <div class="text-center text-muted small pt-3 border-top">
+                <p class="mb-0">
+                    Thank you for utilizing GigBridge. This electronic invoice represents a binding milestone disbursement protected by GigBridge Escrow Terms.
+                </p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<style>
+@media print {
+    .no-print, .gb-navbar, .gb-footer {
+        display: none !important;
+    }
+    body, main, .bg-light {
+        background-color: #ffffff !important;
+    }
+    .card {
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+    }
+}
+</style>
+{% endblock %}

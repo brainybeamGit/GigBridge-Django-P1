@@ -1,0 +1,364 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Projects Management{% endblock %}
+{% block page_title %}All Projects Directory{% endblock %}
+{% block page_subtitle %}Review marketplace listings, check proposal submissions, update status, and manage client gigs.{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            MARKETPLACE LISTINGS &bull; JOB REGISTRY
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">All Marketplace Projects</h2>
+        <p class="text-secondary small mb-0">Monitor open quotations, active working contracts, project specs, and lifecycle overrides.</p>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Projects</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_projects }}</div>
+            <p class="adm-kpi-caption">All postings on platform</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Open for Bidding</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ open_count }}</div>
+            <p class="adm-kpi-caption">Accepting proposals</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">In Progress</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ in_progress_count }}</div>
+            <p class="adm-kpi-caption">Active development contracts</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Completed / Closed</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ completed_count }}</div>
+            <p class="adm-kpi-caption">{{ closed_count }} closed / draft</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_projects' %}" class="row g-2 align-items-center">
+        <div class="col-md-4">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search title, client, skills...">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open</option>
+                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+                <option value="closed" {% if status_filter == 'closed' %}selected{% endif %}>Closed</option>
+                <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Draft</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for cat in categories %}
+                    <option value="{{ cat.id }}" {% if category_filter == cat.id|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or status_filter or category_filter %}
+                <a href="{% url 'adminpanel_projects' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Projects Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Project Listings ({{ projects|length }})</span>
+        <span class="text-muted small">Live marketplace records</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Project Title</th>
+                    <th>Employer</th>
+                    <th>Category</th>
+                    <th>Budget Range</th>
+                    <th>Proposals</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for proj in projects %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-dark">
+                            <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#viewProjectModal{{ proj.id }}" class="text-dark text-decoration-none hover-primary">
+                                {{ proj.title|truncatechars:38 }}
+                            </a>
+                        </div>
+                        <span class="text-muted small">{{ proj.budget_type|title }} &bull; {{ proj.views_count }} views</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ proj.client.get_full_name|default:proj.client.username }}</span>
+                        <div class="text-muted small">@{{ proj.client.username }}</div>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            {{ proj.category.name|default:"General" }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="fw-bold text-dark">
+                            &#8377;{{ proj.budget_min|floatformat:0 }} - &#8377;{{ proj.budget_max|floatformat:0 }}
+                        </div>
+                    </td>
+                    <td>
+                        <a href="{% url 'adminpanel_proposals' %}?q={{ proj.title }}" class="badge bg-light text-dark border text-decoration-none px-2 py-1 rounded-pill">
+                            {{ proj.proposals.count }} Bids
+                        </a>
+                    </td>
+                    <td>
+                        {% if proj.status == 'open' %}
+                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Open</span>
+                        {% elif proj.status == 'in_progress' %}
+                            <span class="badge bg-warning-subtle text-warning px-2 py-1 rounded-pill">In Progress</span>
+                        {% elif proj.status == 'completed' %}
+                            <span class="badge bg-primary-subtle text-primary px-2 py-1 rounded-pill">Completed</span>
+                        {% elif proj.status == 'closed' %}
+                            <span class="badge bg-secondary-subtle text-secondary px-2 py-1 rounded-pill">Closed</span>
+                        {% else %}
+                            <span class="badge bg-light text-muted border px-2 py-1 rounded-pill">{{ proj.get_status_display }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ proj.created_at|date:"M d, Y" }}</td>
+                    <td class="text-end pe-4">
+                        <!-- Converted multi-button into Actions Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewProjectModal{{ proj.id }}">
+                                        View Project Details
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#statusProjectModal{{ proj.id }}">
+                                        Override Status
+                                    </button>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 small py-2" href="{% url 'project_detail' proj.id %}" target="_blank">
+                                        Open Public Job Post &rarr;
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteProjectModal{{ proj.id }}">
+                                        Delete Project Listing
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        No projects match the selected criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for proj in projects %}
+<!-- View Project Modal -->
+<div class="modal fade" id="viewProjectModal{{ proj.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-4">
+                <div>
+                    <span class="badge bg-light text-dark border px-2 py-1 small mb-1">
+                        {{ proj.category.name|default:"General" }} &bull; {{ proj.get_status_display }}
+                    </span>
+                    <h5 class="modal-title fw-bold mb-0 text-dark">{{ proj.title }}</h5>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Employer Client</span>
+                            <strong class="text-dark">{{ proj.client.get_full_name|default:proj.client.username }} (@{{ proj.client.username }})</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Budget Range &amp; Type</span>
+                            <strong class="text-dark">&#8377;{{ proj.budget_min|floatformat:0 }} – &#8377;{{ proj.budget_max|floatformat:0 }} ({{ proj.get_budget_type_display }})</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Target Deadline</span>
+                            <strong class="text-dark">{{ proj.deadline|date:"F d, Y"|default:"Flexible" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Proposals Received</span>
+                            <strong class="text-dark">{{ proj.proposals.count }} proposal(s)</strong>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block mb-1">Required Skills</span>
+                            {% for skill in proj.skills_list %}
+                                <span class="badge bg-light text-secondary border me-1">{{ skill }}</span>
+                            {% empty %}
+                                <span class="text-muted small">None listed</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block mb-1">Description</span>
+                            <p class="mb-0 text-secondary small" style="white-space:pre-line;">{{ proj.description }}</p>
+                        </div>
+                    </div>
+                    {% if proj.attachment %}
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small d-block">Specification Archive</span>
+                                <strong class="text-dark small">{{ proj.attachment.name }}</strong>
+                            </div>
+                            <a href="{{ proj.attachment.url }}" target="_blank" class="btn btn-outline-primary btn-sm rounded-3">
+                                Download Specification &rarr;
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <a href="{% url 'project_detail' proj.id %}" target="_blank" class="btn btn-outline-secondary btn-sm rounded-3 px-3">
+                    View on Marketplace &rarr;
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Change Status Modal -->
+<div class="modal fade" id="statusProjectModal{{ proj.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <h6 class="modal-title fw-bold mb-0 text-dark">Update Project Lifecycle Status</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel_project_status' proj.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 bg-white">
+                    <p class="small text-muted mb-3">Update status for <strong>"{{ proj.title|truncatechars:45 }}"</strong>:</p>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Select New Status</label>
+                        <select name="status" class="form-select">
+                            <option value="open" {% if proj.status == 'open' %}selected{% endif %}>Open for Bidding</option>
+                            <option value="in_progress" {% if proj.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                            <option value="completed" {% if proj.status == 'completed' %}selected{% endif %}>Completed</option>
+                            <option value="closed" {% if proj.status == 'closed' %}selected{% endif %}>Closed</option>
+                            <option value="draft" {% if proj.status == 'draft' %}selected{% endif %}>Draft</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background:#0284C7;border-color:#0284C7;">Update Status</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Project Confirmation Modal -->
+<div class="modal fade" id="deleteProjectModal{{ proj.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3">
+                <h6 class="modal-title fw-bold mb-0">Confirm Delete Project</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h5 class="fw-bold text-dark">Delete "{{ proj.title }}"?</h5>
+                <p class="text-muted small mb-0">
+                    Are you sure? This will permanently delete the project posting along with proposals and contract links.
+                </p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_project_delete' proj.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-4 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

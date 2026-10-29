@@ -1,0 +1,86 @@
+# ============================================================================
+# Python & Django Core
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Local Django settings & Secrets (NEVER commit your production secrets!)
+local_settings.py
+.env
+*.env
+
+# Databases (Keep your local data local)
+*.sqlite3
+*.db
+
+# Django media & static collections
+media/
+staticfiles/
+static_root/
+
+# Logs
+*.log
+
+# ============================================================================
+# Environments & Packages
+# ============================================================================
+# Virtual Environments
+.venv/
+venv/
+ENV/
+env/
+.env/
+env.bak/
+venv.bak/
+bin/
+include/
+lib/
+lib64/
+share/
+
+# pip logs & packaging
+pip-log.txt
+pip-delete-this-directory.txt
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ============================================================================
+# IDEs, Editors & OS Specific
+# ============================================================================
+# JetBrains (PyCharm)
+.idea/
+
+# Visual Studio Code
+.vscode/
+
+# Operating System specific files
+.DS_Store
+Thumbs.db
+
+# ============================================================================
+# Testing & Coverage
+# ============================================================================
+htmlcov/
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/

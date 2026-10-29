@@ -1,0 +1,273 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Categories Management{% endblock %}
+{% block page_title %}Marketplace Categories{% endblock %}
+{% block page_subtitle %}Organize project job domains, icons, slugs, and manage skill taxonomy for client postings.{% endblock %}
+
+{% block page_actions %}
+<button type="button" class="btn btn-primary btn-sm px-3 py-2 rounded-3 fw-bold shadow-sm" style="background:var(--adm-primary);border-color:var(--adm-primary);" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+    + Add Category
+</button>
+{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            TAXONOMY &bull; SPECIALIZATION DOMAINS
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">Marketplace Category Registry</h2>
+        <p class="text-secondary small mb-0">Manage industry classifications, taxonomy slugs, and project categorization tags.</p>
+    </div>
+    <div>
+        <button type="button" class="btn btn-primary fw-bold px-4 py-2 rounded-3 shadow-sm" style="background:#0284C7;border-color:#0284C7;" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+            + New Category
+        </button>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-4 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Categories</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_categories }}</div>
+            <p class="adm-kpi-caption">Active marketplace domains</p>
+        </div>
+    </div>
+    <div class="col-xl-4 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Categorized Projects</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_assigned_projects }}</div>
+            <p class="adm-kpi-caption">Projects tagged with categories</p>
+        </div>
+    </div>
+    <div class="col-xl-4 col-sm-12">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Top Category</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark" style="font-size:1.5rem;">{{ top_cat.name|default:"General" }}</div>
+            <p class="adm-kpi-caption">{{ top_cat.pc|default:0 }} listings posted</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search Bar -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_categories' %}" class="row g-2 align-items-center">
+        <div class="col-md-9">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search category name, slug, or description...">
+        </div>
+        <div class="col-md-3 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Search</button>
+            {% if search_query %}
+                <a href="{% url 'adminpanel_categories' %}" class="btn btn-outline-secondary" title="Reset Search">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Categories Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Marketplace Categories ({{ categories|length }})</span>
+        <button type="button" class="btn btn-primary btn-sm rounded-3 fw-bold" style="background:#0284C7;border-color:#0284C7;" data-bs-toggle="modal" data-bs-target="#createCategoryModal">
+            + New Category
+        </button>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Domain Name</th>
+                    <th>URL Slug</th>
+                    <th>Tagged Projects</th>
+                    <th>Description</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cat in categories %}
+                <tr>
+                    <td class="ps-4">
+                        <span class="fw-bold text-dark fs-6">{{ cat.name }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-secondary border px-2 py-1">{{ cat.slug }}</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'adminpanel_projects' %}?category={{ cat.id }}" class="badge bg-light text-dark border text-decoration-none px-2 py-1 rounded-pill">
+                            {{ cat.proj_count }} projects
+                        </a>
+                    </td>
+                    <td>
+                        <span class="text-muted small">{{ cat.description|default:"No description"|truncatechars:65 }}</span>
+                    </td>
+                    <td class="text-end pe-4">
+                        <!-- Converted multi-button into Actions Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#editCategoryModal{{ cat.id }}">
+                                        Edit Category
+                                    </button>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 small py-2" href="{% url 'adminpanel_projects' %}?category={{ cat.id }}">
+                                        View Linked Projects
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteCategoryModal{{ cat.id }}">
+                                        Delete Category
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        No categories found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+<!-- Create Category Modal -->
+<div class="modal fade" id="createCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <h6 class="modal-title fw-bold mb-0 text-dark">Create New Category</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel_category_create' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 bg-white">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Category Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" placeholder="e.g. Artificial Intelligence" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Bootstrap Icon Class (Optional)</label>
+                        <input type="text" name="icon" class="form-control" placeholder="e.g. bi-cpu, bi-code-slash" value="bi-briefcase">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Description (Optional)</label>
+                        <textarea name="description" class="form-control" rows="3" placeholder="Brief summary of this work domain..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background:#0284C7;border-color:#0284C7;">Create Category</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit and Delete Modals for Each Category -->
+{% for cat in categories %}
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal{{ cat.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <h6 class="modal-title fw-bold mb-0 text-dark">Edit Category: {{ cat.name }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="POST" action="{% url 'adminpanel_category_edit' cat.id %}">
+                {% csrf_token %}
+                <div class="modal-body p-4 bg-white">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Category Name</label>
+                        <input type="text" name="name" class="form-control" value="{{ cat.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Bootstrap Icon Class</label>
+                        <input type="text" name="icon" class="form-control" value="{{ cat.icon }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Description</label>
+                        <textarea name="description" class="form-control" rows="3">{{ cat.description }}</textarea>
+                    </div>
+                </div>
+                <div class="modal-footer bg-light p-3">
+                    <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background:#0284C7;border-color:#0284C7;">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Category Modal -->
+<div class="modal fade" id="deleteCategoryModal{{ cat.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3">
+                <h6 class="modal-title fw-bold mb-0">Confirm Delete Category</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h5 class="fw-bold text-dark">Delete category "{{ cat.name }}"?</h5>
+                <p class="text-muted small mb-0">
+                    {% if cat.proj_count > 0 %}
+                        <span class="text-danger fw-bold">Warning: {{ cat.proj_count }} projects are linked to this category.</span> Their category will become unset.
+                    {% else %}
+                        No projects are currently linked to this category.
+                    {% endif %}
+                </p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_category_delete' cat.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-4 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

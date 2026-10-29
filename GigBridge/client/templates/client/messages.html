@@ -1,0 +1,1137 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Messages{% endblock %}
+{% block dashboard_title %}Project Communications &amp; Messages{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Messages Workroom - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .msg-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 24px 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 22px;
+    }
+
+    .msg-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .msg-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .msg-hero-title {
+        font-size: 1.65rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 4px;
+        line-height: 1.2;
+    }
+
+    .msg-hero-sub {
+        font-size: 0.88rem;
+        color: #334155;
+        max-width: 680px;
+        line-height: 1.45;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. CHAT APP WORKROOM CONTAINER ─── */
+    .msg-chat-container {
+        display: flex;
+        height: 720px;
+        max-height: calc(100vh - 220px);
+        min-height: 640px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 6px 24px rgba(15, 23, 42, 0.04);
+    }
+
+    /* Left Sidebar: Conversations */
+    .msg-chat-sidebar {
+        width: 320px;
+        min-width: 290px;
+        border-right: 1px solid #E2E8F0;
+        display: flex;
+        flex-direction: column;
+        background: #F8FAFC;
+    }
+
+    .msg-sidebar-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid #E2E8F0;
+        background: #FFFFFF;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .msg-search-box {
+        position: relative;
+    }
+
+    .msg-search-input {
+        width: 100%;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 7px 12px;
+        font-size: 0.8rem;
+        color: #0F172A;
+        transition: all 0.15s ease;
+    }
+
+    .msg-search-input:focus {
+        background: #FFFFFF;
+        border-color: #0284C7;
+        box-shadow: 0 0 0 2px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    .msg-conversations-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .msg-conv-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        border-bottom: 1px solid #F1F5F9;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.15s ease;
+    }
+
+    .msg-conv-item:hover {
+        background: #F0F9FF;
+        color: inherit;
+    }
+
+    .msg-conv-item.active {
+        background: #E0F2FE;
+        border-left: 4px solid #0284C7;
+        color: inherit;
+    }
+
+    .msg-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+    }
+
+    /* Right Chat Main */
+    .msg-chat-main {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        background: #FFFFFF;
+        min-width: 0;
+    }
+
+    .msg-main-header {
+        padding: 14px 24px;
+        border-bottom: 1px solid #E2E8F0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #FFFFFF;
+        flex-wrap: gap-2;
+    }
+
+    .msg-body-scroll {
+        flex: 1;
+        padding: 24px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        background: #F8FAFC;
+    }
+
+    /* ─── 3. BUBBLES ─── */
+    .msg-bubble-wrap {
+        display: flex;
+        flex-direction: column;
+        max-width: 72%;
+        animation: fadeInMsg 0.2s ease-out;
+    }
+
+    @keyframes fadeInMsg {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg-bubble-wrap.outgoing {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .msg-bubble-wrap.incoming {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .msg-bubble {
+        padding: 12px 18px;
+        border-radius: 14px;
+        font-size: 0.88rem;
+        line-height: 1.5;
+        word-break: break-word;
+        position: relative;
+    }
+
+    .msg-bubble.outgoing {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-bottom-right-radius: 2px;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.22);
+    }
+
+    .msg-bubble.incoming {
+        background: #FFFFFF;
+        color: #0F172A;
+        border: 1px solid #E2E8F0;
+        border-bottom-left-radius: 2px;
+        box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
+    }
+
+    .msg-time-tag {
+        font-size: 0.7rem;
+        color: #94A3B8;
+        margin-top: 4px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .msg-double-check {
+        color: #0284C7;
+        font-weight: 800;
+        font-size: 0.72rem;
+    }
+
+    /* ─── 4. QUICK REPLIES BAR (DIRECTLY ABOVE INPUT) ─── */
+    .msg-quick-bar {
+        background: #F0F9FF;
+        border-top: 1px solid #BAE6FD;
+        border-bottom: 1px solid #BAE6FD;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .msg-quick-label {
+        font-size: 0.74rem;
+        font-weight: 800;
+        color: #0369A1;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        flex-shrink: 0;
+        margin-right: 4px;
+    }
+
+    .msg-quick-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #FFFFFF;
+        color: #0F172A;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 13px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 3px rgba(2, 132, 199, 0.06);
+    }
+
+    .msg-quick-chip:hover {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px rgba(2, 132, 199, 0.2);
+    }
+
+    .msg-quick-chip.btn-all-templates {
+        background: #0284C7;
+        color: #FFFFFF;
+        font-weight: 700;
+        border-color: #0284C7;
+    }
+
+    .msg-quick-chip.btn-all-templates:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    /* ─── 5. INPUT FOOTER ─── */
+    .msg-input-footer {
+        padding: 16px 24px;
+        border-top: 1px solid #E2E8F0;
+        background: #FFFFFF;
+    }
+
+    .msg-attachment-preview {
+        display: none;
+        align-items: center;
+        gap: 8px;
+        background: #F1F5F9;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 6px 12px;
+        font-size: 0.78rem;
+        color: #0F172A;
+        margin-bottom: 10px;
+    }
+
+    .msg-text-input {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 11px 16px;
+        font-size: 0.9rem;
+        color: #0F172A;
+        transition: all 0.15s ease;
+    }
+
+    .msg-text-input:focus {
+        background: #FFFFFF;
+        border-color: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    .btn-msg-send {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 11px 22px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .btn-msg-send:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+    }
+
+    /* ─── 6. DEFAULT MESSAGES MODAL CARDS ─── */
+    .template-category-header {
+        font-size: 0.84rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #0369A1;
+        margin-bottom: 12px;
+        padding-bottom: 6px;
+        border-bottom: 1.5px solid #E0F2FE;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .template-card-item {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        transition: all 0.15s ease;
+    }
+
+    .template-card-item:hover {
+        border-color: #BAE6FD;
+        background: #F0F9FF;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+    }
+
+    .template-card-title {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .template-card-text {
+        font-size: 0.82rem;
+        color: #475569;
+        line-height: 1.45;
+        margin-bottom: 10px;
+    }
+
+    .btn-template-send {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-template-send:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .btn-template-insert {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #CBD5E1;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        padding: 5px 12px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+
+    .btn-template-insert:hover {
+        background: #F8FAFC;
+        border-color: #94A3B8;
+    }
+
+    .msg-empty-chat {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        padding: 40px;
+        text-align: center;
+        background: #F8FAFC;
+    }
+
+    /* Toast Notification for quick actions */
+    #msgActionToast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 1090;
+        background: #0F172A;
+        color: #FFFFFF;
+        padding: 12px 20px;
+        border-radius: 10px;
+        font-size: 0.84rem;
+        font-weight: 600;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        display: none;
+        animation: toastIn 0.2s ease-out;
+    }
+
+    @keyframes toastIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="msg-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="msg-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Talent Communication &bull; Direct Messages</span>
+            </div>
+            <h2 class="msg-hero-title">
+                Project Communications &amp; Messages
+            </h2>
+            <p class="msg-hero-sub">
+                Coordinate with hired freelancers, request code updates, review deliverables, and use one-click standard client message templates.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_contracts' %}" class="btn btn-sm btn-outline-secondary py-2 px-3 fw-bold" style="border-radius: 8px;">
+                Active Contracts &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. CHAT APP WORKROOM CONTAINER
+     ========================================================================= -->
+<div class="msg-chat-container">
+    <!-- Left Sidebar: Conversations List -->
+    <div class="msg-chat-sidebar">
+        <div class="msg-sidebar-header">
+            <div class="d-flex align-items-center justify-content-between">
+                <span class="fw-bold text-dark small text-uppercase" style="letter-spacing: 0.06em;">All Conversations</span>
+                <span class="badge" style="background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD;">
+                    {{ conversations|length }}
+                </span>
+            </div>
+            <div class="msg-search-box">
+                <input
+                    type="text"
+                    id="searchChatsInput"
+                    class="msg-search-input"
+                    placeholder="Search contacts or projects..."
+                    autocomplete="off"
+                >
+            </div>
+        </div>
+
+        <div class="msg-conversations-list" id="convListContainer">
+            {% for conv in conversations %}
+                {% with other=conv.other_user|default:conv.get_other_participant %}
+                    <a href="{% url 'client_conversation_detail' conv.id %}" class="msg-conv-item {% if active_conversation and active_conversation.id == conv.id %}active{% endif %}" data-name="{{ other.get_full_name|default:other.username|lower }}" data-project="{{ conv.project.title|default:''|lower }}">
+                        <div class="msg-avatar">
+                            {{ other.first_name|default:other.username|default:"U"|slice:":2"|upper }}
+                        </div>
+                        <div class="overflow-hidden flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-bold text-dark text-truncate small" style="max-width: 130px;">
+                                    {{ other.get_full_name|default:other.username }}
+                                </span>
+                                <span class="text-muted" style="font-size: 0.68rem;">{{ conv.updated_at|date:"M d" }}</span>
+                            </div>
+                            {% if conv.project %}
+                                <div class="text-primary text-truncate mb-1" style="font-size: 0.7rem; font-weight: 600;">
+                                    {{ conv.project.title|truncatechars:28 }}
+                                </div>
+                            {% endif %}
+                            <div class="text-muted text-truncate" style="font-size: 0.74rem;">
+                                {% if conv.messages.last %}
+                                    {{ conv.messages.last.content|truncatechars:32 }}
+                                {% else %}
+                                    Direct project communication
+                                {% endif %}
+                            </div>
+                        </div>
+                    </a>
+                {% endwith %}
+            {% empty %}
+                <div class="p-4 text-center text-muted small">
+                    <p class="mb-0">No active conversations found. When contracts or proposals are accepted, chats appear here.</p>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Right Main Chat Panel -->
+    <div class="msg-chat-main">
+        {% if active_conversation %}
+            <!-- Chat Header -->
+            <div class="msg-main-header">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="msg-avatar" style="width: 40px; height: 40px; font-size: 0.9rem;">
+                        {{ other_user.first_name|default:other_user.username|slice:":2"|upper }}
+                    </div>
+                    <div>
+                        <div class="d-flex align-items-center gap-2">
+                            <h6 class="fw-bold mb-0" style="color: #0F172A; font-size: 0.96rem;">
+                                {{ other_user.get_full_name|default:other_user.username }}
+                            </h6>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle" style="font-size: 0.68rem;">
+                                Active Specialist
+                            </span>
+                        </div>
+                        <small class="text-muted" style="font-size: 0.74rem;">
+                            Direct Escrow Communications Room
+                        </small>
+                    </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <!-- Default Message Library Modal Trigger -->
+                    <button type="button" class="btn btn-sm btn-outline-primary fw-bold px-3 py-1" data-bs-toggle="modal" data-bs-target="#defaultMessagesModal" style="border-radius: 8px; font-size: 0.78rem;">
+                        ⚡ Default Message Templates
+                    </button>
+
+                    {% if contract %}
+                        <a href="{% url 'client_contract_detail' contract.id %}" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem; border-radius: 6px;">
+                            Contract #{{ contract.id }} &rarr;
+                        </a>
+                    {% elif active_conversation.project %}
+                        <a href="{% url 'project_detail' active_conversation.project.id %}" target="_blank" class="btn btn-sm btn-outline-secondary py-1 px-2" style="font-size: 0.75rem; border-radius: 6px;">
+                            Project: {{ active_conversation.project.title|truncatechars:18 }}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages Body -->
+            <div class="msg-body-scroll" id="msgScrollArea">
+                {% for msg in chat_messages %}
+                    <div class="msg-bubble-wrap {% if msg.sender == request.user %}outgoing{% else %}incoming{% endif %}">
+                        <div class="msg-bubble {% if msg.sender == request.user %}outgoing{% else %}incoming{% endif %}">
+                            {{ msg.content }}
+                            {% if msg.attachment %}
+                                <div class="mt-2 pt-2 border-top border-opacity-25">
+                                    <a href="{{ msg.attachment.url }}" target="_blank" download class="fw-bold text-decoration-none {% if msg.sender == request.user %}text-white{% else %}text-primary{% endif %}" style="font-size: 0.76rem;">
+                                        Download File: {{ msg.attachment.name|slice:"15:"|default:"Attachment" }} &darr;
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <span class="msg-time-tag">
+                            <span>{{ msg.created_at|date:"h:i A &bull; M d" }}</span>
+                            {% if msg.sender == request.user %}
+                                <span class="msg-double-check" title="Delivered">&#10003;&#10003;</span>
+                            {% endif %}
+                        </span>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5 text-muted small" id="noMessagesPlaceholder">
+                        <div class="fw-bold mb-1 text-dark">No messages exchanged yet</div>
+                        <span>Click any quick message below or type a message to initiate the discussion.</span>
+                    </div>
+                {% endfor %}
+            </div>
+
+            <!-- ─── QUICK REPLIES BAR (DIRECTLY ABOVE INPUT) ─── -->
+            <div class="msg-quick-bar" id="quickMessagesBar">
+                <span class="msg-quick-label">Quick Message:</span>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('👋 Hello! Could you please share a quick status update on today\'s progress?')">
+                    👋 Status Update
+                </button>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('📁 Could you please share the latest GitHub commit or live demo link for review?')">
+                    📁 Request Demo Link
+                </button>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('✅ I have reviewed the latest milestone deliverables. Everything looks fantastic!')">
+                    ✅ Looks Fantastic!
+                </button>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('📝 I have submitted revision notes on the milestone. Please review the adjustments.')">
+                    📝 Revision Notes
+                </button>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('⚡ Can we set up a brief 10-minute sync to align on the next project phase?')">
+                    ⚡ 10-Min Sync
+                </button>
+                <button type="button" class="msg-quick-chip" onclick="handleQuickClick('💳 Escrow milestone payment has been released. Great work on this milestone!')">
+                    💳 Escrow Released
+                </button>
+                <button type="button" class="msg-quick-chip btn-all-templates" data-bs-toggle="modal" data-bs-target="#defaultMessagesModal">
+                    ⚡ All Templates...
+                </button>
+            </div>
+
+            <!-- Input Footer Form -->
+            <div class="msg-input-footer">
+                <!-- Selected File Preview Badge -->
+                <div class="msg-attachment-preview" id="attachmentBadge">
+                    <span>Attached file: <strong id="attachmentName">filename.ext</strong></span>
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0 ms-2 text-decoration-none" onclick="clearAttachment()" style="font-size: 0.75rem;">
+                        Remove &times;
+                    </button>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data" class="d-flex gap-2" id="chatMessageForm">
+                    {% csrf_token %}
+                    <input
+                        type="text"
+                        name="content"
+                        id="chatContentInput"
+                        class="form-control msg-text-input flex-grow-1"
+                        placeholder="Type a message or click a default quick reply above..."
+                        required
+                        autofocus
+                        autocomplete="off"
+                    >
+                    <input type="file" name="attachment" id="chatFileInput" class="d-none">
+                    <label for="chatFileInput" class="btn btn-sm btn-outline-secondary d-flex align-items-center px-3" style="border-radius: 8px; cursor: pointer;" title="Attach file">
+                        File
+                    </label>
+                    <button type="submit" class="btn-msg-send" id="btnSendMessage">
+                        Send &rarr;
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <!-- Empty state when no conversation is selected -->
+            <div class="msg-empty-chat">
+                <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.1rem;">Select a Conversation</div>
+                <p class="text-muted small mb-0">Choose a communication thread from the left panel to message your hired freelancers or bidding specialists.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. DEFAULT MESSAGE SECTIONS MODAL (COMMON TEMPLATES)
+     ========================================================================= -->
+<div class="modal fade" id="defaultMessagesModal" tabindex="-1" aria-labelledby="defaultMessagesModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-navy text-white p-4">
+                <div>
+                    <h5 class="modal-title fs-6 fw-bold mb-1" id="defaultMessagesModalLabel">
+                        Default Message Templates (Common Client Messages)
+                    </h5>
+                    <small class="text-white-50">Click "Send Instantly" to dispatch directly to the freelancer, or "Insert &amp; Edit" to customize.</small>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 bg-light">
+                <!-- Section 1: Status & Progress Updates -->
+                <div class="mb-4">
+                    <div class="template-category-header">
+                        <span>1. Project Status &amp; Progress Inquiries</span>
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">Status</span>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Quick Daily Status Update</span>
+                        </div>
+                        <p class="template-card-text">"👋 Hello! Could you please share a quick status update on today's progress?"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('👋 Hello! Could you please share a quick status update on today\'s progress?')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('👋 Hello! Could you please share a quick status update on today\'s progress?')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Milestone Timeline &amp; ETA Check</span>
+                        </div>
+                        <p class="template-card-text">"⏱️ Hi there! What is the estimated completion date or timeline for the current milestone?"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('⏱️ Hi there! What is the estimated completion date or timeline for the current milestone?')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('⏱️ Hi there! What is the estimated completion date or timeline for the current milestone?')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Technical Blockers Check-in</span>
+                        </div>
+                        <p class="template-card-text">"💬 Just checking in—are you encountering any technical blockers, API issues, or questions about the specifications?"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('💬 Just checking in—are you encountering any technical blockers, API issues, or questions about the specifications?')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('💬 Just checking in—are you encountering any technical blockers, API issues, or questions about the specifications?')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Deliverables & Code Review -->
+                <div class="mb-4">
+                    <div class="template-category-header">
+                        <span>2. Deliverables &amp; Code Review</span>
+                        <span class="badge bg-info-subtle text-info border border-info-subtle small">Deliverables</span>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Request Preview Demo or Git Repo Link</span>
+                        </div>
+                        <p class="template-card-text">"📁 Could you please share the latest GitHub commit, preview demo, or deployment URL for review?"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('📁 Could you please share the latest GitHub commit, preview demo, or deployment URL for review?')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('📁 Could you please share the latest GitHub commit, preview demo, or deployment URL for review?')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Deliverables Approved &amp; Praised</span>
+                        </div>
+                        <p class="template-card-text">"✅ I have thoroughly reviewed the latest deliverables. Everything looks fantastic! Great job on this phase."</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('✅ I have thoroughly reviewed the latest deliverables. Everything looks fantastic! Great job on this phase.')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('✅ I have thoroughly reviewed the latest deliverables. Everything looks fantastic! Great job on this phase.')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Revision Feedback Notice</span>
+                        </div>
+                        <p class="template-card-text">"📝 I have submitted revision notes on the milestone. Please review the adjustments and let me know when updated."</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('📝 I have submitted revision notes on the milestone. Please review the adjustments and let me know when updated.')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('📝 I have submitted revision notes on the milestone. Please review the adjustments and let me know when updated.')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Discussion & Alignment -->
+                <div class="mb-4">
+                    <div class="template-category-header">
+                        <span>3. Alignment &amp; Discussions</span>
+                        <span class="badge bg-warning-subtle text-warning-emphasis border border-warning-subtle small">Meetings</span>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Brief 10-Minute Sync Request</span>
+                        </div>
+                        <p class="template-card-text">"⚡ Can we set up a brief 10-minute sync to align on the next project phase?"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('⚡ Can we set up a brief 10-minute sync to align on the next project phase?')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('⚡ Can we set up a brief 10-minute sync to align on the next project phase?')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Updated Scope Notification</span>
+                        </div>
+                        <p class="template-card-text">"📋 I have updated the project requirements details. Please take a look when you have a moment."</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('📋 I have updated the project requirements details. Please take a look when you have a moment.')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('📋 I have updated the project requirements details. Please take a look when you have a moment.')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Escrow & Milestone Payments -->
+                <div class="mb-2">
+                    <div class="template-category-header">
+                        <span>4. Escrow &amp; Milestone Releases</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle small">Escrow &amp; Pay</span>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Agreed Kickoff Advance Released</span>
+                        </div>
+                        <p class="template-card-text">"💳 The agreed 25% kickoff advance escrow payment has been successfully released. You are cleared to begin work!"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('💳 The agreed 25% kickoff advance escrow payment has been successfully released. You are cleared to begin work!')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('💳 The agreed 25% kickoff advance escrow payment has been successfully released. You are cleared to begin work!')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Milestone Escrow Payment Released</span>
+                        </div>
+                        <p class="template-card-text">"🎉 Milestone deliverables have been approved and payment has been released to escrow. Thank you!"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('🎉 Milestone deliverables have been approved and payment has been released to escrow. Thank you!')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('🎉 Milestone deliverables have been approved and payment has been released to escrow. Thank you!')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="template-card-item">
+                        <div class="template-card-title">
+                            <span>Final Project Handover &amp; Thank You</span>
+                        </div>
+                        <p class="template-card-text">"🤝 All project deliverables are verified and complete. Thank you for your exceptional collaboration!"</p>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn-template-send" onclick="sendQuickMessage('🤝 All project deliverables are verified and complete. Thank you for your exceptional collaboration!')">
+                                ⚡ Send Instantly &rarr;
+                            </button>
+                            <button type="button" class="btn-template-insert" onclick="insertQuickMessage('🤝 All project deliverables are verified and complete. Thank you for your exceptional collaboration!')">
+                                Insert into Input
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer bg-white p-3 border-top">
+                <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notice for Instant Messages -->
+<div id="msgActionToast">Message sent to freelancer!</div>
+
+<!-- =========================================================================
+     4. JAVASCRIPT: QUICK REPLIES, AJAX SENDING & REAL-TIME SEARCH
+     ========================================================================= -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const scrollArea = document.getElementById('msgScrollArea');
+        const form = document.getElementById('chatMessageForm');
+        const input = document.getElementById('chatContentInput');
+        const fileInput = document.getElementById('chatFileInput');
+        const badge = document.getElementById('attachmentBadge');
+        const badgeName = document.getElementById('attachmentName');
+        const searchInput = document.getElementById('searchChatsInput');
+        const convList = document.getElementById('convListContainer');
+        const toast = document.getElementById('msgActionToast');
+
+        // Scroll chat to bottom
+        function scrollToBottom() {
+            if (scrollArea) {
+                scrollArea.scrollTop = scrollArea.scrollHeight;
+            }
+        }
+        scrollToBottom();
+
+        // Show toast notification
+        window.showToast = function(text) {
+            if (!toast) return;
+            toast.textContent = text;
+            toast.style.display = 'block';
+            setTimeout(() => {
+                toast.style.display = 'none';
+            }, 2500);
+        };
+
+        // File attachment handler
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files && fileInput.files[0]) {
+                    badgeName.textContent = fileInput.files[0].name;
+                    badge.style.display = 'inline-flex';
+                } else {
+                    badge.style.display = 'none';
+                }
+            });
+        }
+
+        window.clearAttachment = function() {
+            if (fileInput) fileInput.value = '';
+            if (badge) badge.style.display = 'none';
+        };
+
+        // Real-time conversation search filter
+        if (searchInput && convList) {
+            searchInput.addEventListener('input', function() {
+                const q = searchInput.value.trim().toLowerCase();
+                const items = convList.querySelectorAll('.msg-conv-item');
+                items.forEach(item => {
+                    const name = item.getAttribute('data-name') || '';
+                    const proj = item.getAttribute('data-project') || '';
+                    if (!q || name.includes(q) || proj.includes(q)) {
+                        item.style.display = 'flex';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+        }
+
+        // Click on quick chip: populate input and focus
+        window.handleQuickClick = function(text) {
+            if (!input) return;
+            input.value = text;
+            input.focus();
+            showToast('Template copied into message box. Click Send or edit!');
+        };
+
+        // Insert from modal
+        window.insertQuickMessage = function(text) {
+            if (!input) return;
+            input.value = text;
+            input.focus();
+            const modalEl = document.getElementById('defaultMessagesModal');
+            if (modalEl) {
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
+            }
+            showToast('Template inserted into message box.');
+        };
+
+        // Send instantly via AJAX
+        window.sendQuickMessage = function(text) {
+            const modalEl = document.getElementById('defaultMessagesModal');
+            if (modalEl) {
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) modalInstance.hide();
+            }
+            submitMessageAjax(text);
+        };
+
+        // Append outgoing message bubble to chat
+        function appendOutgoingBubble(content, timeStr) {
+            const placeholder = document.getElementById('noMessagesPlaceholder');
+            if (placeholder) placeholder.remove();
+
+            const bubbleWrap = document.createElement('div');
+            bubbleWrap.className = 'msg-bubble-wrap outgoing';
+            bubbleWrap.innerHTML = `
+                <div class="msg-bubble outgoing">
+                    ${escapeHtml(content)}
+                </div>
+                <span class="msg-time-tag">
+                    <span>${escapeHtml(timeStr)}</span>
+                    <span class="msg-double-check" title="Delivered">&#10003;&#10003;</span>
+                </span>
+            `;
+            scrollArea.appendChild(bubbleWrap);
+            scrollToBottom();
+        }
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        }
+
+        // AJAX Message Dispatch
+        async function submitMessageAjax(content, attachmentFile = null) {
+            if (!content && !attachmentFile) return;
+
+            const formData = new FormData();
+            formData.append('content', content);
+            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            if (attachmentFile) {
+                formData.append('attachment', attachmentFile);
+            }
+
+            try {
+                const res = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'ok') {
+                        appendOutgoingBubble(data.content, data.time || 'Just now');
+                        if (input) input.value = '';
+                        clearAttachment();
+                        showToast('Message sent to specialist!');
+                    } else {
+                        // Fallback submit
+                        form.submit();
+                    }
+                } else {
+                    form.submit();
+                }
+            } catch (err) {
+                // If fetch fails, submit normally
+                form.submit();
+            }
+        }
+
+        // Intercept form submit for instant AJAX sending
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                const content = input.value.trim();
+                const attachmentFile = fileInput && fileInput.files ? fileInput.files[0] : null;
+
+                if (!content && !attachmentFile) {
+                    e.preventDefault();
+                    return;
+                }
+
+                // If no file attachment, use smooth AJAX sending
+                if (!attachmentFile) {
+                    e.preventDefault();
+                    submitMessageAjax(content, null);
+                }
+                // If there is a file, regular form submit handles upload securely
+            });
+        }
+    });
+</script>
+{% endblock %}

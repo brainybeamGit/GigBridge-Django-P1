@@ -1,0 +1,660 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Profile &amp; Settings{% endblock %}
+{% block dashboard_title %}Account Profile &amp; Settings{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Client Profile - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    html {
+        scroll-behavior: smooth;
+    }
+
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .pro-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 20px;
+    }
+
+    .pro-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .pro-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .pro-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .pro-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. STICKY / QUICK NAV PILLS ─── */
+    .pro-nav-bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 8px 12px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+
+    .pro-nav-link {
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        color: #475569;
+        text-decoration: none;
+        padding: 6px 14px;
+        border-radius: 8px;
+        transition: all 0.15s ease;
+    }
+
+    .pro-nav-link:hover {
+        background: #F0F9FF;
+        color: #0284C7;
+    }
+
+    .pro-nav-link.active-pill {
+        background: #0284C7;
+        color: #FFFFFF;
+    }
+
+    .pro-nav-link.danger-pill:hover {
+        background: #FEF2F2;
+        color: #DC2626;
+    }
+
+    /* ─── 3. PROFILE CARDS & INPUTS ─── */
+    .pro-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 28px 32px;
+        box-shadow: 0 2px 14px rgba(15, 23, 42, 0.03);
+        margin-bottom: 24px;
+        scroll-margin-top: 90px;
+    }
+
+    .pro-card-sticky {
+        position: sticky;
+        top: 90px;
+    }
+
+    .pro-avatar-large {
+        width: 82px;
+        height: 82px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.9rem;
+        margin: 0 auto 16px;
+        box-shadow: 0 8px 24px rgba(2, 132, 199, 0.28);
+    }
+
+    .pro-section-title {
+        font-size: 1.05rem;
+        font-weight: 800;
+        color: #0F172A;
+        margin-bottom: 18px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid #F1F5F9;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .form-label {
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 6px;
+    }
+
+    .form-control, .form-select {
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 0.88rem;
+        color: #0F172A;
+        background-color: #FFFFFF;
+        transition: all 0.15s ease;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+        outline: none;
+    }
+
+    /* Action Buttons */
+    .btn-pro-primary {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 10px 24px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-pro-primary:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+    }
+
+    .btn-pro-outline {
+        background: #FFFFFF;
+        color: #0F172A !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 600;
+        padding: 10px 22px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .btn-pro-outline:hover {
+        border-color: #0284C7;
+        color: #0284C7 !important;
+        background: #F0F9FF;
+    }
+
+    .btn-pro-danger {
+        background: #DC2626;
+        color: #FFFFFF !important;
+        border: 1px solid #DC2626;
+        border-radius: 8px;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 10px 22px;
+        display: inline-flex;
+        align-items: center;
+        box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+        transition: all 0.2s ease;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+    .btn-pro-danger:hover {
+        background: #B91C1C;
+        border-color: #B91C1C;
+        transform: translateY(-1px);
+    }
+
+    /* Danger Card */
+    .pro-card-danger {
+        border: 1px solid #FECACA;
+        background: #FFFDFD;
+    }
+
+    /* OTP Step Cards */
+    .pro-step-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 14px 16px;
+    }
+
+    .pro-step-num {
+        font-size: 0.72rem;
+        font-weight: 800;
+        color: #0284C7;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        margin-bottom: 2px;
+    }
+
+    .pro-step-title {
+        font-size: 0.88rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .pro-step-desc {
+        font-size: 0.78rem;
+        color: #64748B;
+        margin: 0;
+        line-height: 1.4;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="pro-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="pro-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Account Administration</span>
+            </div>
+            <h2 class="pro-hero-title">
+                Account Profile &amp; Settings
+            </h2>
+            <p class="pro-hero-sub">
+                Manage your corporate profile, hiring credentials, security authentications, and account controls.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_dashboard' %}" class="btn-pro-outline">
+                Dashboard Overview &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. QUICK IN-PAGE NAVIGATION (SMOOTH SCROLLING)
+     ========================================================================= -->
+<div class="pro-nav-bar">
+    <span class="text-muted small fw-bold px-2">Jump to:</span>
+    <a href="#profile-details" class="pro-nav-link">Profile Information</a>
+    <a href="#account-stats" class="pro-nav-link">Account Activity &amp; Stats</a>
+    <a href="#password-security" class="pro-nav-link">Password Reset (OTP)</a>
+    <a href="#danger-zone" class="pro-nav-link danger-pill">Delete Account</a>
+</div>
+
+<!-- =========================================================================
+     3. PROFILE EDIT & DETAILS GRID
+     ========================================================================= -->
+<div class="row g-4">
+    <!-- Left Column: Sticky Profile Summary Card -->
+    <div class="col-lg-4">
+        <div class="pro-card pro-card-sticky text-center">
+            <div class="pro-avatar-large">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" alt="{{ request.user.username }}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 18px;">
+                {% else %}
+                    {{ request.user.first_name|default:request.user.username|slice:":2"|upper }}
+                {% endif %}
+            </div>
+            <h5 class="fw-bold mb-1" style="color: #0F172A;">{{ request.user.get_full_name|default:request.user.username }}</h5>
+            <small class="text-muted d-block mb-2">{{ request.user.profile.title|default:"Client / Employer" }}</small>
+
+            <div class="d-flex justify-content-center gap-2 mb-3">
+                <span class="badge px-3 py-1" style="background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; font-size: 0.76rem; font-weight: 700;">
+                    Verified Client Account
+                </span>
+            </div>
+
+            <!-- Quick Profile Details Table -->
+            <div class="p-3 rounded-3 text-start small border mb-3" style="background: #F8FAFC;">
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Username:</span>
+                    <strong class="text-dark">{{ request.user.username }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Email:</span>
+                    <strong class="text-dark text-truncate" style="max-width: 155px;">{{ request.user.email }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Company:</span>
+                    <strong class="text-dark">{{ request.user.profile.company_name|default:"Not specified" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Phone:</span>
+                    <strong class="text-dark">{{ request.user.profile.phone|default:"Not provided" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                    <span class="text-muted">Location:</span>
+                    <strong class="text-dark">{{ request.user.profile.location|default:"Remote" }}</strong>
+                </div>
+                <div class="d-flex justify-content-between py-2">
+                    <span class="text-muted">Member Since:</span>
+                    <span class="text-dark">{{ request.user.date_joined|date:"M Y" }}</span>
+                </div>
+            </div>
+
+            <!-- In-page Quick Anchors -->
+            <div class="d-grid gap-2">
+                <a href="#password-security" class="btn btn-sm btn-outline-primary fw-bold py-2 rounded-3 text-decoration-none">
+                    Change Password via OTP &rarr;
+                </a>
+                <a href="#danger-zone" class="btn btn-sm btn-outline-danger fw-bold py-2 rounded-3 text-decoration-none">
+                    Delete Client Account...
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Structured Scrolling Forms & Settings -->
+    <div class="col-lg-8">
+        <!-- ── Section 1: Edit Profile Details ── -->
+        <div class="pro-card" id="profile-details">
+            <div class="pro-section-title">
+                <span>Profile &amp; Organization Information</span>
+                <span class="badge bg-light text-secondary border small">Basic Information</span>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="update_profile" value="1">
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                        <small class="text-muted" style="font-size: 0.72rem;">Used for OTP password changes and contract notifications.</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Phone Number</label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Company / Organization Name</label>
+                        {{ form.company_name }}
+                        {% if form.company_name.errors %}<div class="text-danger small mt-1">{{ form.company_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Professional Title / Headline</label>
+                        {{ form.title }}
+                        {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="row g-3 mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Location (City, Country)</label>
+                        {{ form.location }}
+                        {% if form.location.errors %}<div class="text-danger small mt-1">{{ form.location.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Website URL</label>
+                        {{ form.website }}
+                        {% if form.website.errors %}<div class="text-danger small mt-1">{{ form.website.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Bio / Company Overview</label>
+                    {{ form.bio }}
+                    {% if form.bio.errors %}<div class="text-danger small mt-1">{{ form.bio.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Profile Photo / Avatar Upload</label>
+                    {{ form.avatar }}
+                    {% if form.avatar.errors %}<div class="text-danger small mt-1">{{ form.avatar.errors.0 }}</div>{% endif %}
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
+                    <span class="text-muted small">All changes take effect immediately across your marketplace listings.</span>
+                    <button type="submit" class="btn-pro-primary">
+                        Save Profile Details &rarr;
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- ── Section 2: Account Activity & Statistics ── -->
+        <div class="pro-card" id="account-stats">
+            <div class="pro-section-title">
+                <span>Account Activity &amp; Hiring Metrics</span>
+                <span class="badge bg-light text-secondary border small">Platform Summary</span>
+            </div>
+
+            <div class="row g-3 mb-3">
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-dark mb-0">{{ projects_count }}</div>
+                        <small class="text-muted fw-semibold">Projects Posted</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-primary mb-0">{{ active_contracts_count }}</div>
+                        <small class="text-muted fw-semibold">Active Contracts</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-success mb-0">{{ completed_contracts_count }}</div>
+                        <small class="text-muted fw-semibold">Completed Hires</small>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <div class="p-3 rounded-3 border bg-light text-center">
+                        <div class="fw-bold fs-4 text-navy mb-0">&#8377;{{ total_spent|floatformat:2 }}</div>
+                        <small class="text-muted fw-semibold">Total Escrow Paid</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <div>
+                    <strong class="text-dark small d-block">Client Verification Status</strong>
+                    <span class="text-muted" style="font-size: 0.8rem;">Your account is approved for direct hiring and posting open proposals.</span>
+                </div>
+                <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 rounded-pill small">
+                    Verified &amp; Active
+                </span>
+            </div>
+        </div>
+
+        <!-- ── Section 3: Password & Security (OTP 2-Step Process) ── -->
+        <div class="pro-card" id="password-security">
+            <div class="pro-section-title">
+                <span>Password &amp; Security (OTP Verification)</span>
+                <span class="badge bg-primary-subtle text-primary border border-primary-subtle small">High Security</span>
+            </div>
+
+            <p class="text-secondary small mb-3">
+                To protect your client account and payments, password updates require verification via a <strong>6-digit cryptographic OTP code</strong> sent directly to your registered email address (<strong>{{ request.user.email }}</strong>).
+            </p>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-4">
+                    <div class="pro-step-box">
+                        <div class="pro-step-num">Step 1</div>
+                        <div class="pro-step-title">Confirm Email</div>
+                        <p class="pro-step-desc">Dispatches 6-digit verification code with 10-minute expiry.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pro-step-box">
+                        <div class="pro-step-num">Step 2</div>
+                        <div class="pro-step-title">Enter 6-Digit OTP</div>
+                        <p class="pro-step-desc">Enter numeric digits across secure validation boxes.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="pro-step-box">
+                        <div class="pro-step-num">Step 3</div>
+                        <div class="pro-step-title">New Password</div>
+                        <p class="pro-step-desc">Enter and repeat your new password (minimum 8 characters).</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 rounded-3 bg-light border d-flex align-items-center justify-content-between flex-wrap gap-3">
+                <div>
+                    <strong class="text-dark small d-block">Current Registered Email for Code Dispatch:</strong>
+                    <span class="text-muted" style="font-size: 0.82rem;">{{ request.user.email }}</span>
+                </div>
+                <a href="{% url 'forgot_password' %}" class="btn-pro-primary">
+                    Proceed to Change Password via OTP &rarr;
+                </a>
+            </div>
+        </div>
+
+        <!-- ── Section 4: Danger Zone - Delete Account ── -->
+        <div class="pro-card pro-card-danger" id="danger-zone">
+            <div class="pro-section-title text-danger border-bottom-0 pb-0">
+                <span>Danger Zone: Delete Client Account</span>
+                <span class="badge bg-danger-subtle text-danger border border-danger-subtle small">Irreversible</span>
+            </div>
+
+            <p class="text-muted small mt-2 mb-3">
+                Deleting your client profile will permanently remove your user credentials, company details, posted projects, and hiring history from the platform.
+                {% if has_active_contracts %}
+                    <br><strong class="text-danger">Notice:</strong> You currently have active ongoing contracts. Account deletion is restricted until all ongoing contracts are resolved.
+                {% endif %}
+            </p>
+
+            <div class="d-flex justify-content-between align-items-center pt-3 border-top border-danger border-opacity-25 flex-wrap gap-2">
+                <span class="text-danger small fw-semibold">This action cannot be undone once confirmed.</span>
+                <button type="button" class="btn-pro-danger" data-bs-toggle="modal" data-bs-target="#deleteProfileModal">
+                    Delete Account &amp; Profile...
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. DELETE PROFILE CONFIRMATION MODAL
+     ========================================================================= -->
+<div class="modal fade" id="deleteProfileModal" tabindex="-1" aria-labelledby="deleteProfileModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header bg-danger text-white p-4">
+                <h5 class="modal-title fs-6 fw-bold mb-0" id="deleteProfileModalLabel">
+                    Confirm Permanent Account Deletion
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <form method="POST" action="{% url 'client_delete_account' %}">
+                {% csrf_token %}
+                <div class="modal-body p-4">
+                    {% if has_active_contracts %}
+                        <div class="p-3 rounded-3 bg-danger-subtle text-danger border border-danger-subtle small mb-3">
+                            <strong>Action Blocked:</strong> You have active ongoing contracts with freelancers. Please complete or cancel all active contracts before deleting your account.
+                        </div>
+                    {% else %}
+                        <p class="text-dark small mb-3">
+                            Are you sure you want to permanently delete your client account and profile for <strong>{{ request.user.username }}</strong>?
+                        </p>
+                        <ul class="text-muted small mb-3 ps-3">
+                            <li>All your account details and profile information will be wiped.</li>
+                            <li>Your open and draft projects will be removed.</li>
+                            <li>You will be logged out immediately.</li>
+                        </ul>
+
+                        <div class="p-3 bg-light rounded-3 border mb-3">
+                            <label class="form-label small fw-bold text-dark mb-1">
+                                To confirm, please type your exact username: <span class="text-danger">{{ request.user.username }}</span>
+                            </label>
+                            <input
+                                type="text"
+                                name="confirm_username"
+                                class="form-control"
+                                placeholder="{{ request.user.username }}"
+                                required
+                                autocomplete="off"
+                            >
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="modal-footer bg-light p-3 border-top">
+                    <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
+                    {% if not has_active_contracts %}
+                        <button type="submit" class="btn btn-danger btn-sm fw-bold px-3">
+                            Yes, Permanently Delete My Account
+                        </button>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Client &amp; Freelancer Reviews | GigBridge{% endblock %}
+
+{% block content %}
+<section class="bg-navy py-5 text-white">
+    <div class="container text-center py-4">
+        <span class="badge bg-primary px-3 py-2 rounded-pill mb-3">AUTHENTIC FEEDBACK</span>
+        <h1 class="hero-title mb-2">Verified Community Reviews</h1>
+        <p class="hero-subtitle mx-auto mb-0">
+            Real feedback submitted by verified clients and freelancers upon completing qualifying milestone contracts.
+        </p>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <!-- Review Scorecard & Breakdown -->
+        <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 mb-5 bg-white">
+            <div class="row align-items-center g-4">
+                <!-- Average Score Column -->
+                <div class="col-md-4 text-center border-md-end">
+                    <div class="display-3 fw-bold text-navy mb-1">{{ avg_rating }}</div>
+                    <div class="rating-stars fs-4 mb-2">
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                        <i class="bi bi-star-fill text-warning"></i>
+                    </div>
+                    <p class="text-muted small mb-0">Based on {{ total_count }} verified contract review{{ total_count|pluralize }}</p>
+                </div>
+
+                <!-- Star Distribution Progress Bars -->
+                <div class="col-md-8 ps-md-4">
+                    <div class="d-flex flex-column gap-2">
+                        {% for star, data in star_breakdown.items %}
+                            <div class="d-flex align-items-center gap-3">
+                                <a href="{% url 'reviews' %}?rating={{ star }}" class="text-navy text-decoration-none small fw-semibold" style="width: 60px;">
+                                    {{ star }} Stars
+                                </a>
+                                <div class="progress flex-grow-1" style="height: 10px; background-color: #f1f5f9;">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: {{ data.pct }}%;" aria-valuenow="{{ data.pct }}" aria-valuemin="0" aria-valuemax="100"></div>
+                                </div>
+                                <span class="text-muted small" style="width: 45px; text-align: right;">{{ data.count }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Pills Bar -->
+        <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+            <h4 class="fw-bold text-navy mb-0">All Verified Reviews ({{ reviews.count }})</h4>
+            <div class="d-flex gap-2 align-items-center">
+                <span class="text-muted small">Filter by:</span>
+                <a href="{% url 'reviews' %}" class="btn btn-sm {% if not filter_rating %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                    All
+                </a>
+                <a href="{% url 'reviews' %}?rating=5" class="btn btn-sm {% if filter_rating == '5' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                    5 Stars
+                </a>
+                <a href="{% url 'reviews' %}?rating=4" class="btn btn-sm {% if filter_rating == '4' %}btn-primary{% else %}btn-outline-secondary{% endif %}">
+                    4 Stars
+                </a>
+            </div>
+        </div>
+
+        <!-- Reviews Grid -->
+        <div class="row g-4">
+            {% for review in reviews %}
+                <div class="col-lg-6">
+                    <div class="card border-0 shadow-sm rounded-4 p-4 h-100 bg-white">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="user-avatar-sm" style="width: 46px; height: 46px; font-size: 1.15rem; background: linear-gradient(135deg, #0a192f, #1e3a8a);">
+                                    {{ review.reviewer.first_name|default:review.reviewer.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-navy mb-0">{{ review.reviewer.get_full_name|default:review.reviewer.username }}</h6>
+                                    <small class="text-muted">{{ review.reviewer.profile.company_name|default:"Verified Client" }}</small>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <div class="rating-stars small">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="bi bi-star-fill text-warning"></i>
+                                        {% else %}
+                                            <i class="bi bi-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">{{ review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                        </div>
+
+                        <!-- Review Text -->
+                        <p class="text-secondary mb-3 flex-grow-1" style="line-height: 1.7;">
+                            "{{ review.comment }}"
+                        </p>
+
+                        <!-- Project & Freelancer Tag -->
+                        <div class="p-3 rounded-3 bg-light d-flex justify-content-between align-items-center small">
+                            <div>
+                                <span class="text-muted d-block" style="font-size: 0.75rem;">Completed Project:</span>
+                                <a href="{% url 'project_detail' review.project.id %}" class="fw-semibold text-navy text-decoration-none">
+                                    {{ review.project.title|truncatechars:45 }}
+                                </a>
+                            </div>
+                            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                <i class="bi bi-check-circle me-1"></i> Freelancer: {{ review.reviewee.first_name|default:review.reviewee.username }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12 text-center py-5">
+                    <div class="card border-0 shadow-sm rounded-4 p-5">
+                        <i class="bi bi-chat-square-quote display-4 text-muted mb-3"></i>
+                        <h4 class="fw-bold text-navy">No Reviews Yet</h4>
+                        <p class="text-muted mx-auto mb-0" style="max-width: 450px;">
+                            Reviews are automatically populated once clients complete qualifying contracts with verified freelancers.
+                        </p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endblock %}

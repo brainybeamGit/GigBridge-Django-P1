@@ -1,0 +1,365 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GigBridge - Freelance Marketplace. Find the Right Talent. Bring Your Ideas to Life.">
+    <title>{% block title %}GigBridge | Freelance Marketplace{% endblock %}</title>
+
+    <!-- Google Fonts: Plus Jakarta Sans (Global Platform Font) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- GigBridge Master CSS -->
+    <link rel="stylesheet" href="{% static 'css/gigbridge.css' %}">
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="gb-body-light">
+
+{% block navbar %}
+    <!-- Main Navigation Bar (Clean White Navbar) -->
+    <nav class="navbar navbar-expand-lg gb-navbar-white sticky-top" id="mainNavbar">
+        <div class="container">
+            <!-- Brand Logo -->
+            <a class="navbar-brand gb-brand-clean" href="{% url 'home' %}">
+                <span class="gb-brand-icon-clean">
+                    <i class="bi bi-briefcase-fill"></i>
+                </span>
+                <span class="gb-brand-text">GigBridge</span>
+            </a>
+
+            <!-- Mobile Toggler -->
+            <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent" aria-controls="navbarContent" aria-expanded="false" aria-label="Toggle navigation">
+                <i class="bi bi-list fs-2 text-dark"></i>
+            </button>
+
+            <!-- Navigation Links -->
+            <div class="collapse navbar-collapse" id="navbarContent">
+                <ul class="navbar-nav mx-auto mb-2 mb-lg-0">
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'project_list' %}active{% endif %}" href="{% url 'project_list' %}">Find Work</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'category_list' %}active{% endif %}" href="{% url 'category_list' %}">Categories</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'how_it_works' %}active{% endif %}" href="{% url 'how_it_works' %}">How It Works</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">About</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
+                    </li>
+                </ul>
+
+                <!-- Right Action Buttons -->
+                <div class="d-flex align-items-center gap-2">
+                    {% if user.is_authenticated %}
+                        <!-- Quick Messages Icon Button -->
+                        {% if user.profile.role == 'freelancer' %}
+                            <a href="{% url 'freelancer_messages' %}" class="gb-nav-icon-badge text-decoration-none" title="Messages">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </a>
+                        {% else %}
+                            <a href="{% url 'client_messages' %}" class="gb-nav-icon-badge text-decoration-none" title="Messages">
+                                <i class="bi bi-chat-dots-fill"></i>
+                            </a>
+                        {% endif %}
+
+                        <!-- User Profile Dropdown -->
+                        <div class="dropdown">
+                            <a href="#" class="gb-user-menu dropdown-toggle text-decoration-none" id="userMenuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <div class="gb-avatar-circle">
+                                    {{ user.first_name|default:user.username|slice:":1"|upper }}
+                                </div>
+                                <div class="d-none d-md-flex flex-column text-start" style="line-height: 1.2;">
+                                    <span class="fw-bold text-dark small">{{ user.first_name|default:user.username }}</span>
+                                    <span class="text-muted" style="font-size: 0.7rem;">
+                                        {% if user.profile.role == 'client' %}Client{% elif user.profile.role == 'freelancer' %}Freelancer{% else %}Member{% endif %}
+                                    </span>
+                                </div>
+                                <i class="bi bi-chevron-down gb-user-menu-chevron ms-1"></i>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 mt-2 p-2" style="min-width: 240px;" aria-labelledby="userMenuDropdown">
+                                <li class="px-3 py-2 border-bottom mb-1 bg-light rounded-3">
+                                    <div class="fw-bold text-dark">{{ user.get_full_name|default:user.username }}</div>
+                                    <div class="text-muted small text-truncate">{{ user.email }}</div>
+                                    <div class="mt-1">
+                                        <span class="badge bg-primary-subtle text-primary" style="font-size: 0.725rem;">
+                                            <i class="bi bi-patch-check-fill me-1"></i> {{ user.profile.get_role_display|default:"Member" }}
+                                        </span>
+                                    </div>
+                                </li>
+                                {% if user.is_superuser or user.profile.role == 'admin' %}
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'adminpanel_dashboard' %}"><i class="bi bi-shield-lock-fill me-2 text-danger"></i> Admin Console</a></li>
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'admin:index' %}" target="_blank"><i class="bi bi-gear-fill me-2 text-secondary"></i> Django Admin</a></li>
+                                {% elif user.profile.role == 'client' %}
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'client_dashboard' %}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard</a></li>
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'client_projects' %}"><i class="bi bi-folder2-open me-2 text-primary"></i> My Projects</a></li>
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'client_proposals' %}"><i class="bi bi-envelope-paper me-2 text-primary"></i> Proposals</a></li>
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'client_profile' %}"><i class="bi bi-person-gear me-2 text-primary"></i> Profile Settings</a></li>
+                                {% else %}
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_dashboard' %}"><i class="bi bi-speedometer2 me-2 text-primary"></i> Dashboard</a></li>
+                                    <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_profile' %}"><i class="bi bi-person-gear me-2 text-primary"></i> Edit Profile</a></li>
+                                {% endif %}
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <form method="POST" action="{% url 'logout' %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item text-danger py-2 rounded-2 d-flex align-items-center">
+                                            <i class="bi bi-box-arrow-right me-2"></i> Log Out
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </div>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="btn gb-btn-ghost-sm">
+                            Log In
+                        </a>
+                        <button type="button" class="btn gb-btn-navy-sm" data-bs-toggle="modal" data-bs-target="#joinRoleModal">
+                            Join Now
+                        </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+{% endblock %}
+
+    <!-- Global Flash Messages Notification Container (Toast with Time & Close) -->
+    {% if messages %}
+        <div class="position-fixed top-0 end-0 p-3" style="z-index: 99999; max-width: 400px; width: 100%; pointer-events: none;" aria-live="polite" aria-atomic="true">
+            {% for message in messages %}
+                <div class="toast show shadow-lg border-0 mb-3 gb-custom-toast bg-white" role="alert" aria-live="assertive" aria-atomic="true" style="pointer-events: auto; border-left: 4px solid {% if message.tags == 'success' %}#15803d{% elif message.tags == 'error' or message.tags == 'danger' %}#b91c1c{% elif message.tags == 'warning' %}#b45309{% else %}#b08d57{% endif %} !important; border-radius: 4px;">
+                    <div class="toast-header d-flex align-items-center justify-content-between py-2 px-3 border-bottom bg-light">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="d-inline-block rounded-circle" style="width: 8px; height: 8px; background-color: {% if message.tags == 'success' %}#15803d{% elif message.tags == 'error' or message.tags == 'danger' %}#b91c1c{% elif message.tags == 'warning' %}#b45309{% else %}#b08d57{% endif %};"></span>
+                            <strong class="me-auto text-uppercase small fw-bold" style="font-size: 0.72rem; letter-spacing: 0.08em; color: #1e293b;">
+                                {% if message.tags == 'success' %}Success{% elif message.tags == 'error' or message.tags == 'danger' %}Notice{% elif message.tags == 'warning' %}Warning{% else %}GigBridge{% endif %}
+                            </strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <small class="text-muted gb-toast-time" style="font-size: 0.72rem;">just now</small>
+                            <button type="button" class="btn-close ms-1" aria-label="Close" onclick="this.closest('.toast').remove()"></button>
+                        </div>
+                    </div>
+                    <div class="toast-body py-2 px-3 small text-dark" style="line-height: 1.5;">
+                        {{ message }}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Page Content Slot -->
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+{% block footer %}
+    <!-- Footer (Dark Navy 5-Column matching reference image) -->
+    <footer class="gb-footer-exact">
+        <div class="container">
+            <div class="row g-4 pb-5">
+                <!-- Col 1: Brand & Info -->
+                <div class="col-lg-3 col-md-6">
+                    <a class="gb-brand-clean d-inline-flex align-items-center gap-2 mb-3 text-white text-decoration-none" href="{% url 'home' %}">
+                        <span class="gb-brand-icon-clean">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </span>
+                        <span class="gb-brand-text text-white">GigBridge</span>
+                    </a>
+                    <p class="gb-footer-desc">
+                        Connecting great ideas with skilled freelancers worldwide.
+                    </p>
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="#" class="gb-social-btn" aria-label="Facebook"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="gb-social-btn" aria-label="Twitter"><i class="bi bi-twitter-x"></i></a>
+                        <a href="#" class="gb-social-btn" aria-label="LinkedIn"><i class="bi bi-linkedin"></i></a>
+                        <a href="#" class="gb-social-btn" aria-label="Instagram"><i class="bi bi-instagram"></i></a>
+                    </div>
+                </div>
+
+                <!-- Col 2: Explore -->
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="gb-footer-heading">Explore</h6>
+                    <ul class="gb-footer-nav">
+                        <li><a href="{% url 'home' %}">Home</a></li>
+                        <li><a href="{% url 'project_list' %}">Find Work</a></li>
+                        <li><a href="{% url 'category_list' %}">Categories</a></li>
+                        <li><a href="{% url 'how_it_works' %}">How It Works</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 3: Company -->
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="gb-footer-heading">Company</h6>
+                    <ul class="gb-footer-nav">
+                        <li><a href="{% url 'about' %}">About Us</a></li>
+                        <li><a href="{% url 'contact' %}">Contact Us</a></li>
+                        <li><a href="{% url 'reviews' %}">Reviews</a></li>
+                        <li><a href="{% url 'how_it_works' %}">FAQs</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 4: Legal -->
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="gb-footer-heading">Legal</h6>
+                    <ul class="gb-footer-nav">
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Payment Disclaimer</a></li>
+                    </ul>
+                </div>
+
+                <!-- Col 5: Join Us -->
+                <div class="col-lg-3 col-md-3 col-6">
+                    <h6 class="gb-footer-heading">Join Us</h6>
+                    <ul class="gb-footer-nav">
+                        <li><a href="{% url 'login' %}">Client Login</a></li>
+                        <li><a href="#" data-bs-toggle="modal" data-bs-target="#joinRoleModal">Join as Freelancer or Client</a></li>
+                        <li><a href="{% url 'adminpanel_login' %}">Administrator Portal</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Footer Bottom Line -->
+            <div class="gb-footer-bottom">
+                <p class="mb-0">&copy; 2026 GigBridge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+{% endblock %}
+
+    <!-- Join Choice Modal: Freelancer vs Client -->
+    <div class="modal fade" id="joinRoleModal" tabindex="-1" aria-labelledby="joinRoleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden" style="font-family: 'Plus Jakarta Sans', sans-serif;">
+                <div class="modal-header border-0 pb-0 pt-4 px-4 px-md-5 d-flex justify-content-between align-items-start">
+                    <div>
+                        <div class="d-inline-flex align-items-center gap-2 mb-2">
+                            <span class="badge rounded-pill px-3 py-1 fw-bold text-uppercase" style="background: rgba(2, 132, 199, 0.1); color: #0284C7; font-size: 0.72rem; letter-spacing: 0.08em;">
+                                ✦ Choose Account Type
+                            </span>
+                        </div>
+                        <h3 class="modal-title fw-bolder text-dark mb-1" id="joinRoleModalLabel" style="letter-spacing: -0.02em;">
+                            Join GigBridge Marketplace
+                        </h3>
+                        <p class="text-muted small mb-0">
+                            Select how you want to use the platform. You can hire top talent or find high-paying contracts.
+                        </p>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4 px-md-5 pt-4">
+                    <div class="row g-4">
+                        <!-- Option 1: Freelancer -->
+                        <div class="col-md-6">
+                            <a href="{% url 'register' %}?role=freelancer" class="card h-100 p-4 border text-decoration-none role-picker-card" style="border-radius: 16px; border-color: #E2E8F0 !important; background: #FFFFFF; transition: all 0.2s ease;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 52px; height: 52px; background: rgba(2, 132, 199, 0.1); color: #0284C7; font-size: 1.5rem;">
+                                        <i class="bi bi-laptop"></i>
+                                    </div>
+                                    <span class="badge bg-light text-muted border px-2 py-1 small fw-semibold">For Talent</span>
+                                </div>
+                                <h4 class="fw-bold text-dark mb-2" style="font-size: 1.25rem;">I'm a Freelancer</h4>
+                                <p class="text-muted small mb-4" style="line-height: 1.55;">
+                                    Browse active client projects, submit proposals with your bids, collaborate through milestone escrow, and build a verified reputation.
+                                </p>
+                                <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
+                                    <span class="fw-bold" style="color: #0284C7; font-size: 0.9rem;">Join as Freelancer</span>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: #0284C7; color: #fff;">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Option 2: Client -->
+                        <div class="col-md-6">
+                            <a href="{% url 'register' %}?role=client" class="card h-100 p-4 border text-decoration-none role-picker-card" style="border-radius: 16px; border-color: #E2E8F0 !important; background: #FFFFFF; transition: all 0.2s ease;">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <div class="d-flex align-items-center justify-content-center rounded-3" style="width: 52px; height: 52px; background: rgba(15, 23, 42, 0.08); color: #0F172A; font-size: 1.5rem;">
+                                        <i class="bi bi-building-check"></i>
+                                    </div>
+                                    <span class="badge bg-light text-muted border px-2 py-1 small fw-semibold">For Employers</span>
+                                </div>
+                                <h4 class="fw-bold text-dark mb-2" style="font-size: 1.25rem;">I'm a Client / Employer</h4>
+                                <p class="text-muted small mb-4" style="line-height: 1.55;">
+                                    Post technical projects, receive bids from verified freelancers, inspect deliverables, and manage milestone payouts safely.
+                                </p>
+                                <div class="mt-auto d-flex align-items-center justify-content-between pt-2">
+                                    <span class="fw-bold" style="color: #0F172A; font-size: 0.9rem;">Join as Client</span>
+                                    <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 32px; height: 32px; background: #0F172A; color: #fff;">
+                                        <i class="bi bi-arrow-right"></i>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer border-0 bg-light py-3 px-4 px-md-5 justify-content-center">
+                    <span class="text-muted small">
+                        Already have an account?
+                        <a href="{% url 'login' %}" class="fw-bold text-decoration-underline" style="color: #0284C7;">Sign in here</a>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+    .role-picker-card:hover {
+        border-color: #0284C7 !important;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(2, 132, 199, 0.12) !important;
+    }
+    </style>
+
+    <!-- Bootstrap 5.3 Bundle JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- GigBridge Master JS -->
+    <script src="{% static 'js/gigbridge.js' %}"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const timeLabels = document.querySelectorAll('.gb-toast-time');
+            if (timeLabels.length > 0) {
+                const now = new Date();
+                const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                timeLabels.forEach(el => el.textContent = `just now • ${timeString}`);
+            }
+
+            const toasts = document.querySelectorAll('.gb-custom-toast');
+            toasts.forEach(toast => {
+                let timer = setTimeout(() => {
+                    toast.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(-8px)';
+                    setTimeout(() => toast.remove(), 320);
+                }, 6000);
+                toast.addEventListener('mouseenter', () => clearTimeout(timer));
+            });
+        });
+    </script>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

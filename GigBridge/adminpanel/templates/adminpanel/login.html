@@ -1,0 +1,537 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="GigBridge Platform Administration & Control Portal.">
+    <title>Administrator Sign In | GigBridge Command Center</title>
+
+    <!-- Global Font: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5.3 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* ═══════════════════════════════════════════════════════════════════
+           ADMIN LUXE AUTHENTICATION DESIGN SYSTEM (.admin-auth-luxe)
+           Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+           ═══════════════════════════════════════════════════════════════════ */
+        .admin-auth-luxe {
+            --bg-form: #FFFFFF;
+            --text-dark: #0F172A;
+            --text-muted: #64748B;
+            --text-sub: #475569;
+            --border-light: #E2E8F0;
+            --border-focus: #0284C7;
+            --primary: #0284C7;
+            --primary-hover: #0369A1;
+            --primary-navy: #0F172A;
+            --primary-navy-hover: #1E293B;
+
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text-dark);
+            background-color: var(--bg-form);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .admin-auth-luxe *,
+        .admin-auth-luxe *::before,
+        .admin-auth-luxe *::after {
+            box-sizing: border-box;
+        }
+
+        /* Screen Wrapper */
+        .admin-auth-luxe .auth-screen {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+            max-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* ─── LEFT PANEL: LUMINOUS SHINING ADMIN SHOWCASE ─── */
+        .admin-auth-luxe .auth-showcase-side {
+            flex: 0 0 52%;
+            background:
+                radial-gradient(circle at 85% 15%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.5) 30%, transparent 60%),
+                radial-gradient(circle at 15% 85%, rgba(56, 189, 248, 0.4) 0%, transparent 55%),
+                linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: clamp(32px, 5vh, 56px) clamp(36px, 5vw, 68px);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 80px rgba(255, 255, 255, 0.5);
+            border-right: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        .admin-auth-luxe .admin-brand-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #FFFFFF;
+            border: 1px solid #BAE6FD;
+            border-radius: 999px;
+            padding: 6px 16px;
+            font-size: 0.74rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #0369A1;
+            box-shadow: 0 2px 10px rgba(2, 132, 199, 0.08);
+            width: fit-content;
+        }
+
+        .admin-auth-luxe .admin-pulse-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #0284C7;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+        }
+
+        .admin-auth-luxe .showcase-hero-heading {
+            font-size: clamp(2rem, 3.6vw, 3rem);
+            font-weight: 800;
+            line-height: 1.15;
+            letter-spacing: -0.03em;
+            color: #0F172A;
+            margin: 20px 0 14px 0;
+        }
+
+        .admin-auth-luxe .showcase-hero-lead {
+            font-size: 1.05rem;
+            color: #334155;
+            line-height: 1.6;
+            max-width: 540px;
+            margin: 0 0 24px 0;
+        }
+
+        /* Admin Capability Highlights */
+        .admin-auth-luxe .admin-feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+            max-width: 540px;
+            margin-bottom: 24px;
+        }
+
+        .admin-auth-luxe .admin-feature-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.95);
+            border-radius: 14px;
+            padding: 14px 16px;
+            box-shadow: 0 4px 16px rgba(2, 132, 199, 0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .admin-auth-luxe .admin-feature-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(2, 132, 199, 0.12);
+        }
+
+        .admin-auth-luxe .admin-feature-index {
+            font-family: monospace;
+            font-size: 0.74rem;
+            font-weight: 800;
+            color: #0F172A;
+            background: #F1F5F9;
+            border: 1px solid #E2E8F0;
+            padding: 2px 7px;
+            border-radius: 6px;
+            width: fit-content;
+            margin-bottom: 6px;
+            letter-spacing: 0.05em;
+        }
+
+        .admin-auth-luxe .admin-feature-title {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: #0F172A;
+            margin-bottom: 2px;
+        }
+
+        .admin-auth-luxe .admin-feature-desc {
+            font-size: 0.75rem;
+            color: #64748B;
+            line-height: 1.4;
+            margin: 0;
+        }
+
+        /* Showcase Footer Meta */
+        .admin-auth-luxe .showcase-footer-meta {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 18px;
+            border-top: 1px solid rgba(186, 230, 253, 0.6);
+            font-size: 0.76rem;
+            color: #475569;
+        }
+
+        /* ─── RIGHT PANEL: PURE WHITE ADMIN FORM SIDE ─── */
+        .admin-auth-luxe .auth-form-side {
+            flex: 0 0 48%;
+            background-color: #FFFFFF;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: clamp(28px, 4.5vh, 48px) clamp(28px, 4.5vw, 64px);
+            position: relative;
+            overflow-y: auto;
+        }
+
+        .admin-auth-luxe .auth-form-wrap {
+            width: 100%;
+            max-width: 420px;
+            margin: auto;
+        }
+
+        .admin-auth-luxe .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 0.76rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 600;
+            margin-bottom: 22px;
+            transition: color 0.15s ease;
+        }
+
+        .admin-auth-luxe .back-link:hover {
+            color: var(--primary);
+        }
+
+        .admin-auth-luxe .auth-title {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1.15;
+            color: var(--text-dark);
+            margin: 0 0 8px 0;
+            letter-spacing: -0.025em;
+        }
+
+        .admin-auth-luxe .auth-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0 0 24px 0;
+            line-height: 1.5;
+        }
+
+        .admin-auth-luxe .form-group-item {
+            margin-bottom: 16px;
+        }
+
+        .admin-auth-luxe .form-label-custom {
+            display: block;
+            font-size: 0.74rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .admin-auth-luxe .form-control-custom {
+            width: 100%;
+            height: 46px;
+            background-color: #FFFFFF;
+            border: 1.5px solid var(--border-light);
+            border-radius: 8px;
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.925rem;
+            padding: 8px 14px;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        .admin-auth-luxe .form-control-custom:focus {
+            outline: none;
+            border-color: var(--border-focus);
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.14);
+        }
+
+        .admin-auth-luxe .pwd-input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .admin-auth-luxe .pwd-toggle-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: 4px;
+            transition: color 0.15s ease;
+        }
+
+        .admin-auth-luxe .pwd-toggle-btn:hover {
+            color: var(--text-dark);
+        }
+
+        .admin-auth-luxe .btn-submit-custom {
+            width: 100%;
+            height: 48px;
+            background-color: var(--primary-navy);
+            color: #FFFFFF;
+            border: 1px solid var(--primary-navy);
+            border-radius: 8px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.12);
+            margin-top: 10px;
+        }
+
+        .admin-auth-luxe .btn-submit-custom:hover {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            color: #FFFFFF;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(2, 132, 199, 0.25);
+        }
+
+        .admin-auth-luxe .admin-security-note {
+            background: #F8FAFC;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            padding: 12px 14px;
+            font-size: 0.74rem;
+            color: #64748B;
+            line-height: 1.45;
+            margin-top: 14px;
+            text-align: center;
+        }
+
+        /* Responsive Breakpoints */
+        @media (max-width: 991px) {
+            .admin-auth-luxe .auth-screen {
+                flex-direction: column;
+                height: auto;
+                max-height: none;
+                overflow-y: auto;
+            }
+            .admin-auth-luxe .auth-showcase-side {
+                flex: none;
+                width: 100%;
+                min-height: 380px;
+                padding: 32px 24px;
+            }
+            .admin-auth-luxe .auth-form-side {
+                flex: none;
+                width: 100%;
+                padding: 36px 24px;
+            }
+        }
+    </style>
+</head>
+<body class="admin-auth-luxe">
+
+<div class="auth-screen">
+    <!-- ═══════════════════════════════════════════════════════════
+         LEFT PANEL: LUMINOUS SHINING ADMIN SHOWCASE
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="auth-showcase-side">
+        <!-- Top Brand Wordmark -->
+        <div>
+            <a href="{% url 'home' %}" style="text-decoration:none;font-weight:800;font-size:1.75rem;color:#0F172A;display:inline-flex;align-items:center;gap:8px;line-height:1;">
+                GigBridge
+                <span style="width:8px;height:8px;background:#0284C7;border-radius:50%;display:inline-block;box-shadow:0 0 10px rgba(2, 132, 199, 0.6);"></span>
+            </a>
+            <div class="mt-3">
+                <div class="admin-brand-tag">
+                    <span class="admin-pulse-dot"></span>
+                    <span>ENTERPRISE GOVERNANCE &bull; COMMAND CENTER</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hero Content Specific to Admin Site -->
+        <div>
+            <h1 class="showcase-hero-heading">
+                Platform Operations &amp; System Administration.
+            </h1>
+            <p class="showcase-hero-lead">
+                Centralized command console for GigBridge marketplace governance, client provisioning, escrow financial supervision, and security oversight.
+            </p>
+
+            <!-- Admin Capabilities Feature Grid (Numbered 01 to 04 in Black) -->
+            <div class="admin-feature-grid">
+                <div class="admin-feature-card">
+                    <div class="admin-feature-index">01</div>
+                    <div class="admin-feature-title">Client Provisioning</div>
+                    <p class="admin-feature-desc">Authorize client accounts and assign industry classifications.</p>
+                </div>
+
+                <div class="admin-feature-card">
+                    <div class="admin-feature-index">02</div>
+                    <div class="admin-feature-title">Escrow Safeguards</div>
+                    <p class="admin-feature-desc">Real-time ledger audit, milestone release &amp; invoice tracking.</p>
+                </div>
+
+                <div class="admin-feature-card">
+                    <div class="admin-feature-index">03</div>
+                    <div class="admin-feature-title">Contract Handoffs</div>
+                    <p class="admin-feature-desc">Supervise 8-stage delivery lifecycles and milestone disputes.</p>
+                </div>
+
+                <div class="admin-feature-card">
+                    <div class="admin-feature-index">04</div>
+                    <div class="admin-feature-title">Access Governance</div>
+                    <p class="admin-feature-desc">Suspend, reactivate, or audit marketplace participants.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Showcase Footer Meta -->
+        <div class="showcase-footer-meta">
+            <div>&copy; 2026 GigBridge Administration &bull; Core Platform</div>
+            <div>Multi-Factor Protected &bull; Level-4 SSL Secured</div>
+        </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════
+         RIGHT PANEL: CLEAN PURE-WHITE LOGIN FORM
+         ═══════════════════════════════════════════════════════════ -->
+    <div class="auth-form-side">
+        <div class="auth-form-wrap">
+            <a href="{% url 'home' %}" class="back-link">
+                &larr; Back to marketplace
+            </a>
+
+            <h2 class="auth-title">Administrator Sign In</h2>
+            <p class="auth-subtitle">
+                Enter your administrative credentials to unlock the command suite.
+            </p>
+
+            <!-- Django Alert Messages -->
+            {% if messages %}
+                <div class="mb-3">
+                    {% for message in messages %}
+                        <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} border-0 rounded-3 p-3 small mb-2 shadow-sm" role="alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="POST" action="{% url 'adminpanel_login' %}" id="adminLoginForm">
+                {% csrf_token %}
+
+                <!-- Username or Email -->
+                <div class="form-group-item">
+                    <label class="form-label-custom" for="adminUsername">
+                        Administrator Username or Email <span class="text-danger">*</span>
+                    </label>
+                    <input
+                        type="text"
+                        name="username"
+                        id="adminUsername"
+                        class="form-control-custom"
+                        placeholder="Enter administrator username or email"
+                        required
+                        autocomplete="username"
+                        autofocus
+                    >
+                </div>
+
+                <!-- Password -->
+                <div class="form-group-item">
+                    <label class="form-label-custom" for="adminPassword">
+                        Password <span class="text-danger">*</span>
+                    </label>
+                    <div class="pwd-input-wrap">
+                        <input
+                            type="password"
+                            name="password"
+                            id="adminPassword"
+                            class="form-control-custom pe-5"
+                            placeholder="Enter administrative password"
+                            required
+                            autocomplete="current-password"
+                        >
+                        <button type="button" class="pwd-toggle-btn" id="btnTogglePwd" onclick="togglePasswordVisibility()">
+                            SHOW
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Utility Row: Remember Session & Forgot Password -->
+                <div class="d-flex align-items-center justify-content-between mb-3" style="font-size:0.84rem;">
+                    <label class="d-inline-flex align-items-center gap-2 m-0 text-muted" style="cursor:pointer;">
+                        <input type="checkbox" name="remember_me" class="form-check-input m-0" style="accent-color:#0284C7;cursor:pointer;">
+                        <span>Remember this device</span>
+                    </label>
+                    <a href="{% url 'forgot_password' %}" style="color:#0284C7;text-decoration:none;font-weight:600;">Forgot password?</a>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn-submit-custom" id="btnSubmitAdmin">
+                    Sign In to Command Center &rarr;
+                </button>
+            </form>
+
+            <hr style="border:0;border-top:1px solid #E2E8F0;margin:24px 0 16px 0;">
+
+            <div style="text-align:center;">
+                <p style="font-size:0.85rem;color:#64748B;margin:0 0 10px 0;">
+                    Non-administrative user?
+                    <a href="{% url 'login' %}" style="color:#0284C7;text-decoration:underline;text-underline-offset:3px;font-weight:600;">Sign in as Client or Freelancer</a>
+                </p>
+
+                <div class="admin-security-note">
+                    <strong>Administrative Access Policy:</strong> Access restricted to authorized platform personnel. All access attempts are cryptographically logged with IP telemetry.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function togglePasswordVisibility() {
+        const pwdInput = document.getElementById('adminPassword');
+        const btnToggle = document.getElementById('btnTogglePwd');
+        if (pwdInput.type === 'password') {
+            pwdInput.type = 'text';
+            btnToggle.textContent = 'HIDE';
+        } else {
+            pwdInput.type = 'password';
+            btnToggle.textContent = 'SHOW';
+        }
+    }
+
+    document.getElementById('adminLoginForm').addEventListener('submit', function() {
+        const btn = document.getElementById('btnSubmitAdmin');
+        btn.disabled = true;
+        btn.textContent = 'Authenticating Security Credentials...';
+    });
+</script>
+</body>
+</html>

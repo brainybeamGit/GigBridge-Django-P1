@@ -1,0 +1,448 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}How It Works | GigBridge Freelance Marketplace{% endblock %}
+
+{% block content %}
+<!-- ═══════════════════════════════════════════════════════════
+     HERO BANNER
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-how-hero">
+    <div class="container position-relative text-center" style="z-index: 2;">
+        <!-- Breadcrumb Navigation -->
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb justify-content-center mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">How It Works</li>
+            </ol>
+        </nav>
+
+        <div class="gb-hero-pill-badge mx-auto">
+            <i class="bi bi-shield-check"></i> Transparent &amp; Secure Marketplace Lifecycle
+        </div>
+
+        <h1 class="gb-how-hero-title">How GigBridge Works</h1>
+        <p class="gb-how-hero-subtitle mx-auto">
+            From initial project kickoff to final milestone payment, learn how GigBridge protects your time, deliverables, and capital every step of the journey.
+        </p>
+
+        <!-- Role Switcher Segmented Control -->
+        <div class="gb-role-switcher-wrap mt-2">
+            <button type="button" class="gb-role-switch-btn active" id="btnRoleClient" onclick="switchRole('client')">
+                <i class="bi bi-briefcase-fill"></i> For Clients &amp; Employers
+            </button>
+            <button type="button" class="gb-role-switch-btn" id="btnRoleFreelancer" onclick="switchRole('freelancer')">
+                <i class="bi bi-person-workspace"></i> For Freelancers &amp; Talent
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     PROCESS LIFECYCLE SECTION
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <!-- ─── 1. CLIENT LIFECYCLE (Default Visible) ─── -->
+        <div id="clientProcessSection">
+            <div class="text-center mb-5">
+                <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Hiring Lifecycle</span>
+                <h2 class="fw-bold text-navy">How Employers Hire on GigBridge</h2>
+                <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                    Follow these 4 structured steps to find verified specialists, manage deliverables, and release payments safely.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #2563eb, #1d4ed8);">
+                            1
+                        </div>
+                        <span class="gb-step-tag-pill bg-primary-subtle text-primary">Post &amp; Budget</span>
+                        <h3 class="gb-step-title">Post Your Project</h3>
+                        <p class="gb-step-desc">
+                            Outline your project goals, required technologies, deliverables, and timeline. Choose between fixed price or hourly billing.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-primary"></i> Free job posting in minutes</li>
+                            <li><i class="bi bi-check2 text-primary"></i> Specify required tech skills</li>
+                            <li><i class="bi bi-check2 text-primary"></i> Attach project scope documents</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #0284c7, #0ea5e9);">
+                            2
+                        </div>
+                        <span class="gb-step-tag-pill bg-info-subtle text-info">Review Bids</span>
+                        <h3 class="gb-step-title">Compare Proposals</h3>
+                        <p class="gb-step-desc">
+                            Receive competitive pitches from verified freelancers. Compare portfolio samples, proposed bid amounts, and delivery timelines.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-info"></i> Direct messaging with candidates</li>
+                            <li><i class="bi bi-check2 text-info"></i> Inspect verified ratings &amp; reviews</li>
+                            <li><i class="bi bi-check2 text-info"></i> Review past completed contracts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #10b981, #059669);">
+                            3
+                        </div>
+                        <span class="gb-step-tag-pill bg-success-subtle text-success">Hire &amp; Escrow</span>
+                        <h3 class="gb-step-title">Accept &amp; Fund Escrow</h3>
+                        <p class="gb-step-desc">
+                            Accept your preferred proposal with one click. Fund milestone escrow so the freelancer can begin with complete confidence.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-success"></i> Auto-generated legal Contract</li>
+                            <li><i class="bi bi-check2 text-success"></i> Milestone escrow protection</li>
+                            <li><i class="bi bi-check2 text-success"></i> Funds held securely until approved</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #7c3aed, #6366f1);">
+                            4
+                        </div>
+                        <span class="gb-step-tag-pill bg-purple-subtle text-purple" style="background: #f3e8ff; color: #7e22ce;">Approve &amp; Pay</span>
+                        <h3 class="gb-step-title">Inspect &amp; Release</h3>
+                        <p class="gb-step-desc">
+                            Inspect submitted code, designs, or articles. Approve work to release payments via Razorpay or request revisions anytime.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-purple"></i> Unlimited revision requests</li>
+                            <li><i class="bi bi-check2 text-purple"></i> Instant Razorpay payments</li>
+                            <li><i class="bi bi-check2 text-purple"></i> Downloadable tax invoices</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{% url 'client_project_create' %}" class="btn btn-primary rounded-pill px-5 py-3 fw-bold shadow-sm">
+                    <i class="bi bi-plus-circle me-1"></i> Post a Project on GigBridge
+                </a>
+            </div>
+        </div>
+
+        <!-- ─── 2. FREELANCER LIFECYCLE (Toggled via JS) ─── -->
+        <div id="freelancerProcessSection" class="d-none">
+            <div class="text-center mb-5">
+                <span class="badge bg-success-subtle text-success rounded-pill px-3 py-1 fw-bold mb-2">Freelancer Lifecycle</span>
+                <h2 class="fw-bold text-navy">How Freelancers Work &amp; Earn</h2>
+                <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                    Bid on high-paying projects, collaborate with verified clients, and build your career with guaranteed milestone payouts.
+                </p>
+            </div>
+
+            <div class="row g-4">
+                <!-- Step 1 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #059669, #10b981);">
+                            1
+                        </div>
+                        <span class="gb-step-tag-pill bg-success-subtle text-success">Browse</span>
+                        <h3 class="gb-step-title">Discover Opportunities</h3>
+                        <p class="gb-step-desc">
+                            Browse through hundreds of open gigs. Filter by categories, tech stack, budget ranges, and project duration to find your perfect fit.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-success"></i> Filter by fixed price or hourly</li>
+                            <li><i class="bi bi-check2 text-success"></i> Real-time keyword search</li>
+                            <li><i class="bi bi-check2 text-success"></i> View verified client history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                            2
+                        </div>
+                        <span class="gb-step-tag-pill bg-primary-subtle text-primary">Pitch</span>
+                        <h3 class="gb-step-title">Submit Proposals</h3>
+                        <p class="gb-step-desc">
+                            Submit tailored pitches directly to employers. Detail your approach, quote your rate, estimate your delivery timeframe, and attach samples.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-primary"></i> Stand out with custom cover letters</li>
+                            <li><i class="bi bi-check2 text-primary"></i> Specify your estimated timeline</li>
+                            <li><i class="bi bi-check2 text-primary"></i> Attach portfolio PDFs or repos</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                            3
+                        </div>
+                        <span class="gb-step-tag-pill bg-warning-subtle text-warning">Collaborate</span>
+                        <h3 class="gb-step-title">Work with Protection</h3>
+                        <p class="gb-step-desc">
+                            Once hired, begin work with total peace of mind knowing the employer has funded milestone escrow. Communicate directly via private chat.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-warning"></i> Dedicated contract workspace</li>
+                            <li><i class="bi bi-check2 text-warning"></i> Encrypted direct messaging</li>
+                            <li><i class="bi bi-check2 text-warning"></i> Guaranteed funds in escrow</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="gb-step-card-modern">
+                        <div class="gb-step-num-circle" style="background: linear-gradient(135deg, #7c3aed, #a855f7);">
+                            4
+                        </div>
+                        <span class="gb-step-tag-pill bg-purple-subtle text-purple" style="background: #f3e8ff; color: #7e22ce;">Get Paid</span>
+                        <h3 class="gb-step-title">Deliver &amp; Get Paid</h3>
+                        <p class="gb-step-desc">
+                            Submit your completed deliverables per milestone. Upon client approval, payments are automatically credited with verified reviews.
+                        </p>
+                        <ul class="gb-step-feature-list">
+                            <li><i class="bi bi-check2 text-purple"></i> Razorpay test payouts</li>
+                            <li><i class="bi bi-check2 text-purple"></i> 5-star public reviews</li>
+                            <li><i class="bi bi-check2 text-purple"></i> Build verified global reputation</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-5">
+                <a href="{% url 'project_list' %}" class="btn btn-success rounded-pill px-5 py-3 fw-bold shadow-sm">
+                    <i class="bi bi-search me-1"></i> Browse Open Projects &amp; Apply
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     TRUST & SECURITY PILLARS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white border-top border-bottom">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Safety Architecture</span>
+            <h2 class="fw-bold text-navy">Why Global Teams Trust GigBridge</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                Designed from the ground up to protect your capital, code, intellectual property, and professional reputation.
+            </p>
+        </div>
+
+        <div class="row g-4">
+            <!-- Pillar 1 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="gb-trust-pillar-card">
+                    <div class="gb-trust-icon-box bg-primary-subtle text-primary">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy mb-2 fs-5">Milestone Escrow Guarantee</h4>
+                    <p class="text-muted small mb-0" style="line-height:1.7;">
+                        Clients only pay for work they inspect and approve. Freelancers start projects knowing milestone funds are already secured in platform escrow.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 2 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="gb-trust-pillar-card">
+                    <div class="gb-trust-icon-box bg-success-subtle text-success">
+                        <i class="bi bi-chat-heart-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy mb-2 fs-5">Encrypted Direct Messaging</h4>
+                    <p class="text-muted small mb-0" style="line-height:1.7;">
+                        Keep conversations, files, code repositories, and milestone updates organized in one secure workspace without relying on fragmented third-party apps.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pillar 3 -->
+            <div class="col-lg-4 col-md-6">
+                <div class="gb-trust-pillar-card">
+                    <div class="gb-trust-icon-box bg-info-subtle text-info">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <h4 class="fw-bold text-navy mb-2 fs-5">Verified Transparent Reviews</h4>
+                    <p class="text-muted small mb-0" style="line-height:1.7;">
+                        Only clients and freelancers with completed, paid contracts can leave ratings. No fake reviews, spam endorsements, or unverified claims.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     FREQUENTLY ASKED QUESTIONS (FAQ)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Got Questions?</span>
+            <h2 class="fw-bold text-navy">Frequently Asked Questions</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                Everything you need to know about billing, contracts, revisions, and milestone payments.
+            </p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="accordion gb-faq-accordion" id="faqAccordion">
+                    <!-- FAQ 1 -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingOne">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                How does GigBridge milestone escrow protection work?
+                            </button>
+                        </h3>
+                        <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                When a client hires a freelancer, the agreed milestone amount is deposited into platform escrow via Razorpay. The funds remain locked and protected while the freelancer works. Once the deliverable is completed, the client reviews the submission and clicks "Approve Work" to release payment directly to the freelancer.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 2 -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingTwo">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                What if submitted work is incomplete or needs revisions?
+                            </button>
+                        </h3>
+                        <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Clients have full control. If the deliverable requires modifications, the client clicks <strong>Request Revision</strong> and provides detailed notes. The milestone automatically returns to "In Revision" status, and the freelancer is notified immediately to update the work before payment is authorized.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 3 -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingThree">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                How do clients and freelancers communicate?
+                            </button>
+                        </h3>
+                        <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Every proposal and contract establishes a dedicated, private conversation thread in the GigBridge Messages workspace. Both parties can send messages, share requirements, and exchange file attachments securely in real-time.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 4 -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingFour">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                Can I switch between Client and Freelancer roles?
+                            </button>
+                        </h3>
+                        <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! While your primary role is selected during registration (Client or Freelancer) to configure your initial dashboard, clients can easily browse projects, and freelancers can post project requirements at any time.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ 5 -->
+                    <div class="accordion-item">
+                        <h3 class="accordion-header" id="headingFive">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                Are invoice receipts generated for payments?
+                            </button>
+                        </h3>
+                        <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="headingFive" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">
+                                Yes! For every payment authorized through the platform, GigBridge automatically issues an official digital tax invoice containing a unique invoice reference ID, project title, milestone name, Razorpay payment ID, and timestamp. You can access all invoices under <strong>Client Dashboard &gt; Payments</strong>.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     DUAL CALL TO ACTION (CTA)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white border-top">
+    <div class="container py-4">
+        <div class="row g-4 justify-content-center">
+            <!-- CTA 1: For Employers -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card border-0 rounded-4 p-4 p-md-5 text-white shadow-lg h-100" style="background: linear-gradient(135deg, #0b132b 0%, #1e3a8a 100%);">
+                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-3 px-3 py-2 fw-semibold d-inline-block" style="width:fit-content;">For Employers</span>
+                    <h3 class="fw-bold mb-3 text-white">Ready to Hire Top Talent?</h3>
+                    <p class="text-white-50 mb-4" style="line-height:1.7;">
+                        Post your project for free, review competitive bids from certified specialists, and only pay when milestones are completed to your satisfaction.
+                    </p>
+                    <a href="{% url 'client_project_create' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap mt-auto">
+                        <i class="bi bi-plus-lg me-1"></i> Post a Project
+                    </a>
+                </div>
+            </div>
+
+            <!-- CTA 2: For Freelancers -->
+            <div class="col-lg-5 col-md-6">
+                <div class="card border-0 rounded-4 p-4 p-md-5 text-white shadow-lg h-100" style="background: linear-gradient(135deg, #0f172a 0%, #065f46 100%);">
+                    <span class="badge bg-success-subtle text-success rounded-pill mb-3 px-3 py-2 fw-semibold d-inline-block" style="width:fit-content;">For Freelancers</span>
+                    <h3 class="fw-bold mb-3 text-white">Ready to Start Earning?</h3>
+                    <p class="text-white-50 mb-4" style="line-height:1.7;">
+                        Explore hundreds of open projects across all domains, submit custom proposals, and build your career with guaranteed milestone payments.
+                    </p>
+                    <a href="{% url 'project_list' %}" class="btn btn-success rounded-pill px-4 py-2 fw-bold text-nowrap mt-auto">
+                        <i class="bi bi-search me-1"></i> Browse Open Projects
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function switchRole(role) {
+        const clientSec = document.getElementById('clientProcessSection');
+        const freeSec = document.getElementById('freelancerProcessSection');
+        const btnClient = document.getElementById('btnRoleClient');
+        const btnFree = document.getElementById('btnRoleFreelancer');
+
+        if (role === 'client') {
+            clientSec.classList.remove('d-none');
+            freeSec.classList.add('d-none');
+            btnClient.classList.add('active');
+            btnFree.classList.remove('active');
+        } else {
+            clientSec.classList.add('d-none');
+            freeSec.classList.remove('d-none');
+            btnFree.classList.add('active');
+            btnClient.classList.remove('active');
+        }
+    }
+</script>
+{% endblock %}

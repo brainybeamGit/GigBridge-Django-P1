@@ -1,0 +1,590 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Proposals{% endblock %}
+{% block dashboard_title %}Received Proposals &amp; Talent Submissions{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Proposals Dashboard - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .prop-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .prop-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .prop-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .prop-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .prop-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 660px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. EDITORIAL NUMBERED METRIC CARDS ─── */
+    .prop-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .prop-metric-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.1);
+    }
+
+    .prop-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #0284C7;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .prop-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .prop-metric-index {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .prop-metric-num {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .prop-metric-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .prop-metric-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+
+    /* ─── 3. FILTER & TOOLBAR STRIP ─── */
+    .prop-filter-bar {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+    }
+
+    .prop-filter-tab {
+        font-size: 0.8rem;
+        font-weight: 600;
+        letter-spacing: 0.02em;
+        padding: 7px 14px;
+        border-radius: 8px;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.15s ease;
+        border: 1px solid transparent;
+    }
+
+    .prop-filter-tab.active {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border-color: #0284C7;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.25);
+    }
+
+    .prop-filter-tab:not(.active) {
+        background: #F8FAFC;
+        color: #475569;
+        border-color: #E2E8F0;
+    }
+
+    .prop-filter-tab:not(.active):hover {
+        background: #E0F2FE;
+        color: #0284C7;
+        border-color: #BAE6FD;
+    }
+
+    /* ─── 4. PROPOSAL CARDS ─── */
+    .prop-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        margin-bottom: 18px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+    }
+
+    .prop-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 24px rgba(2, 132, 199, 0.08);
+    }
+
+    .prop-card-header {
+        background: #F8FAFC;
+        border-bottom: 1px solid #E2E8F0;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .prop-card-body {
+        padding: 22px 24px;
+    }
+
+    .prop-avatar-box {
+        width: 52px;
+        height: 52px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #0284C7, #0369A1);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        letter-spacing: 0.04em;
+    }
+
+    .prop-cover-letter {
+        background: #F8FAFC;
+        border: 1px solid #F1F5F9;
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 0.86rem;
+        color: #334155;
+        line-height: 1.6;
+        margin-top: 12px;
+    }
+
+    /* Text-first Action Buttons */
+    .btn-act-accept {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.03em;
+        padding: 8px 18px;
+        transition: all 0.15s ease;
+        cursor: pointer;
+    }
+
+    .btn-act-accept:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .btn-act-decline {
+        background: #FFFFFF;
+        color: #64748B !important;
+        border: 1px solid #E2E8F0;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 8px 16px;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .btn-act-decline:hover {
+        background: #FEF2F2;
+        border-color: #FECACA;
+        color: #DC2626 !important;
+    }
+
+    .btn-act-chat {
+        background: #F0F9FF;
+        color: #0284C7 !important;
+        border: 1px solid #BAE6FD;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        padding: 8px 16px;
+        transition: all 0.15s ease;
+        text-decoration: none;
+    }
+
+    .btn-act-chat:hover {
+        background: #E0F2FE;
+    }
+
+    /* Minimal Empty State */
+    .prop-empty-minimal {
+        text-align: center;
+        padding: 56px 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="prop-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="prop-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Proposal Review</span>
+            </div>
+            <h2 class="prop-hero-title">
+                Received Talent Proposals
+            </h2>
+            <p class="prop-hero-sub">
+                Evaluate incoming bids from verified specialists, compare compensation models and estimated delivery days, review cover letters, and hire freelancers.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_projects' %}" class="btn-act-chat py-2 px-3 fw-bold">
+                My Projects &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. FOUR EDITORIAL NUMBERED METRIC CARDS (ZERO NOISY ICONS)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Received -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="prop-metric-card">
+            <div class="prop-metric-index">01 / Volume</div>
+            <div>
+                <div class="prop-metric-num" style="color: #0F172A;">{{ total_count|default:0 }}</div>
+                <div class="prop-metric-label">Total Received</div>
+                <div class="prop-metric-sub">Lifetime incoming bids across all projects</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Pending Review -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="prop-metric-card">
+            <div class="prop-metric-index">02 / Decision Required</div>
+            <div>
+                <div class="prop-metric-num" style="color: #D97706;">{{ pending_count|default:0 }}</div>
+                <div class="prop-metric-label">Pending Review</div>
+                <div class="prop-metric-sub">Bids awaiting client acceptance or decline</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Accepted & Hired -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="prop-metric-card">
+            <div class="prop-metric-index">03 / Hired</div>
+            <div>
+                <div class="prop-metric-num" style="color: #059669;">{{ accepted_count|default:0 }}</div>
+                <div class="prop-metric-label">Accepted &amp; Hired</div>
+                <div class="prop-metric-sub">Converted into active project contracts</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Declined -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="prop-metric-card">
+            <div class="prop-metric-index">04 / Archived</div>
+            <div>
+                <div class="prop-metric-num" style="color: #64748B;">{{ rejected_count|default:0 }}</div>
+                <div class="prop-metric-label">Declined</div>
+                <div class="prop-metric-sub">Proposals not selected for contracts</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. FILTER & TOOLBAR STRIP
+     ========================================================================= -->
+<div class="prop-filter-bar">
+    <div class="row g-3 align-items-center">
+        <!-- Status Tabs -->
+        <div class="col-xl-7 col-lg-6">
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{% url 'client_proposals' %}{% if project_filter %}?project={{ project_filter }}{% endif %}" class="prop-filter-tab {% if not selected_status %}active{% endif %}">
+                    All Bids ({{ total_count }})
+                </a>
+                <a href="{% url 'client_proposals' %}?status=pending{% if project_filter %}&project={{ project_filter }}{% endif %}" class="prop-filter-tab {% if selected_status == 'pending' %}active{% endif %}">
+                    Pending Review ({{ pending_count }})
+                </a>
+                <a href="{% url 'client_proposals' %}?status=accepted{% if project_filter %}&project={{ project_filter }}{% endif %}" class="prop-filter-tab {% if selected_status == 'accepted' %}active{% endif %}">
+                    Accepted ({{ accepted_count }})
+                </a>
+                <a href="{% url 'client_proposals' %}?status=rejected{% if project_filter %}&project={{ project_filter }}{% endif %}" class="prop-filter-tab {% if selected_status == 'rejected' %}active{% endif %}">
+                    Declined ({{ rejected_count }})
+                </a>
+            </div>
+        </div>
+
+        <!-- Project Dropdown & Search Form -->
+        <div class="col-xl-5 col-lg-6">
+            <form action="{% url 'client_proposals' %}" method="GET">
+                {% if selected_status %}
+                    <input type="hidden" name="status" value="{{ selected_status }}">
+                {% endif %}
+                <div class="d-flex gap-2">
+                    <select name="project" class="form-select form-select-sm" style="max-width: 190px;" onchange="this.form.submit()">
+                        <option value="">All Projects</option>
+                        {% for proj in client_projects %}
+                            <option value="{{ proj.id }}" {% if project_filter|stringformat:"s" == proj.id|stringformat:"s" %}selected{% endif %}>
+                                {{ proj.title|truncatechars:24 }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control form-control-sm flex-grow-1" placeholder="Search talent or keywords...">
+                    <button type="submit" class="btn btn-sm btn-act-accept py-1 px-3">
+                        Filter
+                    </button>
+                    {% if search_query or project_filter %}
+                        <a href="{% url 'client_proposals' %}{% if selected_status %}?status={{ selected_status }}{% endif %}" class="btn btn-sm btn-outline-secondary py-1 px-2" title="Clear">
+                            Reset
+                        </a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     4. PROPOSAL CARDS LIST
+     ========================================================================= -->
+{% for prop in page_obj %}
+<div class="prop-card">
+    <!-- Card Header Ribbon -->
+    <div class="prop-card-header">
+        <div class="d-flex align-items-center gap-2">
+            <span class="small text-muted">Project:</span>
+            <a href="{% url 'project_detail' prop.project.id %}" class="fw-bold text-decoration-none" style="color: #0F172A;">
+                {{ prop.project.title }}
+            </a>
+            <span class="badge" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.72rem;">
+                {{ prop.project.category.name|default:"General" }}
+            </span>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <small class="text-muted" style="font-size: 0.76rem;">Submitted {{ prop.created_at|date:"M d, Y" }}</small>
+            <span class="badge {% if prop.status == 'accepted' %}badge-cd-in_progress{% elif prop.status == 'rejected' %}badge-cd-draft{% else %}badge-cd-open{% endif %}" style="font-size: 0.75rem;">
+                {{ prop.status|title }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Card Content -->
+    <div class="prop-card-body">
+        <div class="row g-4 align-items-start">
+            <!-- Left: Freelancer Profile -->
+            <div class="col-lg-3 col-md-4 border-end-md">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div class="prop-avatar-box">
+                        {{ prop.freelancer.first_name|default:prop.freelancer.username|slice:":2"|upper }}
+                    </div>
+                    <div>
+                        <h6 class="fw-bold mb-0" style="color: #0F172A; font-size: 0.95rem;">
+                            {{ prop.freelancer.get_full_name|default:prop.freelancer.username }}
+                        </h6>
+                        <small class="text-muted d-block" style="font-size: 0.76rem;">
+                            @{{ prop.freelancer.username }}
+                        </small>
+                    </div>
+                </div>
+
+                <div class="mt-2 text-muted small" style="font-size: 0.78rem;">
+                    <div>Rating &bull; <strong class="text-dark">{{ prop.freelancer.profile.average_rating|default:"5.0" }}</strong> / 5.0</div>
+                    {% if prop.freelancer.profile.hourly_rate %}
+                        <div>Hourly &bull; ${{ prop.freelancer.profile.hourly_rate }}/hr</div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Center: Bid & Proposal Details -->
+            <div class="col-lg-6 col-md-5">
+                <div class="d-flex align-items-center gap-3 mb-2">
+                    <div>
+                        <span class="small text-muted d-block" style="font-size: 0.72rem;">Bid Amount</span>
+                        <span class="fw-bold" style="font-size: 1.25rem; color: #0284C7;">${{ prop.bid_amount|floatformat:0 }}</span>
+                    </div>
+                    <div class="border-start ps-3">
+                        <span class="small text-muted d-block" style="font-size: 0.72rem;">Estimated Delivery</span>
+                        <span class="fw-bold text-dark" style="font-size: 0.95rem;">{{ prop.delivery_days }} calendar days</span>
+                    </div>
+                </div>
+
+                <div class="prop-cover-letter">
+                    <div class="small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B;">Cover Letter Note</div>
+                    {{ prop.cover_letter|linebreaksbr|truncatewords:60 }}
+                </div>
+            </div>
+
+            <!-- Right: Decision Actions -->
+            <div class="col-lg-3 col-md-3 text-md-end d-flex flex-column gap-2 justify-content-center">
+                {% if prop.status == 'pending' %}
+                    <form method="POST" action="{% url 'client_proposal_accept' prop.id %}" class="d-block w-100">
+                        {% csrf_token %}
+                        <button type="submit" class="btn-act-accept w-100 py-2">
+                            Accept &amp; Hire &rarr;
+                        </button>
+                    </form>
+                    <a href="{% url 'client_proposal_reject' prop.id %}" class="btn-act-decline text-center w-100" onclick="return confirm('Are you sure you want to decline this proposal?');">
+                        Decline
+                    </a>
+                    <a href="{% url 'client_messages' %}" class="btn-act-chat text-center w-100">
+                        Message Talent
+                    </a>
+                {% elif prop.status == 'accepted' %}
+                    <span class="badge badge-cd-in_progress py-2 px-3 fw-bold" style="font-size: 0.8rem;">
+                        Contract Created
+                    </span>
+                    <a href="{% url 'client_contracts' %}" class="btn-act-chat text-center w-100 mt-1">
+                        View Workroom &rarr;
+                    </a>
+                {% else %}
+                    <span class="badge badge-cd-draft py-2 px-3 fw-bold" style="font-size: 0.8rem;">
+                        Declined
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% empty %}
+<div class="prop-empty-minimal">
+    <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.05rem;">No Proposals Found</div>
+    <p class="text-muted small mb-3">
+        {% if search_query or selected_status or project_filter %}
+            No proposals match your current filter parameters. Try clearing the filters.
+        {% else %}
+            You haven't received any bids on your postings yet. When freelancers submit proposals, they will appear here.
+        {% endif %}
+    </p>
+    <a href="{% url 'client_projects' %}" class="btn-act-accept py-2 px-3 text-decoration-none">
+        Manage Projects &rarr;
+    </a>
+</div>
+{% endfor %}
+
+<!-- Pagination -->
+{% if page_obj.has_other_pages %}
+    <div class="p-3 px-4 bg-white border rounded-3 mt-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+        <small class="text-muted" style="font-size: 0.8rem;">
+            Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+        </small>
+        <nav aria-label="Proposals pagination">
+            <ul class="pagination pagination-sm mb-0">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.previous_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">&larr; Previous</a>
+                    </li>
+                {% endif %}
+                {% for num in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                        <a class="page-link" style="{% if page_obj.number == num %}background:#0284C7;border-color:#0284C7;color:#FFFFFF;{% else %}color:#0284C7;{% endif %} border-radius: 6px; margin: 0 2px;" href="?page={{ num }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.next_page_number }}{% if selected_status %}&status={{ selected_status }}{% endif %}{% if project_filter %}&project={{ project_filter }}{% endif %}{% if search_query %}&q={{ search_query|urlencode }}{% endif %}">Next &rarr;</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+    </div>
+{% endif %}
+{% endblock %}

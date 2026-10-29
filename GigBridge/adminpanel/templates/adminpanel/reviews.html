@@ -1,0 +1,245 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Reviews & Ratings{% endblock %}
+{% block page_title %}All Reviews &amp; Ratings{% endblock %}
+{% block page_subtitle %}Monitor platform client &amp; talent feedback, reputation scores, comments, and moderate reviews.{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            REPUTATION &bull; FEEDBACK AUDIT
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">Ratings &amp; Testimonial Moderation</h2>
+        <p class="text-secondary small mb-0">Oversee customer satisfaction ratings, delivery evaluations, feedback comments, and quality moderation.</p>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Reviews</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_reviews }}</div>
+            <p class="adm-kpi-caption">Verified testimonials</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Average Score</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ avg_rating }} <span class="fs-6 text-muted">/ 5.0</span></div>
+            <p class="adm-kpi-caption">Community satisfaction</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">5-Star Deliveries</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ five_star_count }}</div>
+            <p class="adm-kpi-caption">Exceptional deliverables</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Low Ratings (1-2)</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ low_star_count }}</div>
+            <p class="adm-kpi-caption">Flagged for inspection</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_reviews' %}" class="row g-2 align-items-center">
+        <div class="col-md-6">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by reviewer, reviewee, project title, or comment keywords...">
+        </div>
+        <div class="col-md-4">
+            <select name="rating" class="form-select">
+                <option value="">All Star Ratings</option>
+                <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 Stars (Exceptional)</option>
+                <option value="4" {% if rating_filter == '4' %}selected{% endif %}>4 Stars (Very Good)</option>
+                <option value="3" {% if rating_filter == '3' %}selected{% endif %}>3 Stars (Good)</option>
+                <option value="2" {% if rating_filter == '2' %}selected{% endif %}>2 Stars (Fair)</option>
+                <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 Star (Poor)</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or rating_filter %}
+                <a href="{% url 'adminpanel_reviews' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Reviews Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Customer &amp; Freelancer Reviews ({{ reviews|length }})</span>
+        <span class="text-muted small">Quality feedback entries</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Reviewer</th>
+                    <th>Reviewee</th>
+                    <th>Project</th>
+                    <th>Rating</th>
+                    <th>Comment Summary</th>
+                    <th>Date</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for r in reviews %}
+                <tr>
+                    <td class="ps-4">
+                        <span class="fw-semibold text-dark">{{ r.reviewer.username }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ r.reviewee.username }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark small">{{ r.project.title|truncatechars:32 }}</span>
+                    </td>
+                    <td>
+                        <span class="fw-bold text-dark">{{ r.rating }}.0 / 5.0</span>
+                    </td>
+                    <td>
+                        <span class="text-muted small">{{ r.comment|truncatechars:55 }}</span>
+                    </td>
+                    <td class="text-muted small">{{ r.created_at|date:"M d, Y" }}</td>
+                    <td class="text-end pe-4">
+                        <!-- Converted multi-button into Actions Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewReviewModal{{ r.id }}">
+                                        View Full Written Feedback
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteReviewModal{{ r.id }}">
+                                        Delete Review
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        No reviews match your query.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for r in reviews %}
+<!-- View Full Review Modal -->
+<div class="modal fade" id="viewReviewModal{{ r.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-3">
+                <h6 class="modal-title fw-bold mb-0 text-dark">Review: {{ r.project.title|truncatechars:35 }}</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded-3 border">
+                    <div>
+                        <span class="text-muted small d-block">Reviewer</span>
+                        <strong class="text-dark">{{ r.reviewer.get_full_name|default:r.reviewer.username }} (@{{ r.reviewer.username }})</strong>
+                    </div>
+                    <div>&rarr;</div>
+                    <div>
+                        <span class="text-muted small d-block">Reviewee</span>
+                        <strong class="text-dark">{{ r.reviewee.get_full_name|default:r.reviewee.username }} (@{{ r.reviewee.username }})</strong>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border mb-3 text-center">
+                    <span class="text-muted small d-block mb-1">Rating Score</span>
+                    <h3 class="fw-bold text-dark mb-0">{{ r.rating }}.0 / 5.0</h3>
+                    <small class="text-muted">{{ r.get_rating_display }}</small>
+                </div>
+
+                <div class="p-3 bg-light rounded-3 border">
+                    <span class="text-muted small d-block mb-2">Written Feedback</span>
+                    <p class="mb-0 text-secondary small" style="white-space:pre-line;">{{ r.comment }}</p>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-4" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Review Modal -->
+<div class="modal fade" id="deleteReviewModal{{ r.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3">
+                <h6 class="modal-title fw-bold mb-0">Confirm Delete Review</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h5 class="fw-bold text-dark">Remove review by "{{ r.reviewer.username }}"?</h5>
+                <p class="text-muted small mb-0">This review and rating will be permanently deleted from the reviewee's public profile.</p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_review_delete' r.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-4 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

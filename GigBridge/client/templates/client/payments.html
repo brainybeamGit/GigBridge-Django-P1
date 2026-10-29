@@ -1,0 +1,414 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+
+{% block breadcrumb_current %}Payments &amp; Invoices{% endblock %}
+{% block dashboard_title %}Payments, Billing &amp; Invoices{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Payments Dashboard - Minimalist Editorial & Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-hover: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-sky-300: #7DD3FC;
+        --cd-text-dark: #0F172A;
+        --cd-text-muted: #64748B;
+        --cd-border: #E2E8F0;
+        --cd-radius: 14px;
+    }
+
+    /* ─── 1. HERO BANNER ─── */
+    .pay-hero-banner {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .pay-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .pay-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .pay-hero-title {
+        font-size: 1.8rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 6px;
+        line-height: 1.2;
+    }
+
+    .pay-hero-sub {
+        font-size: 0.92rem;
+        color: #334155;
+        max-width: 660px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ─── 2. EDITORIAL NUMBERED METRIC CARDS ─── */
+    .pay-metric-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 20px 22px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .pay-metric-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.1);
+    }
+
+    .pay-metric-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: #0284C7;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+    }
+
+    .pay-metric-card:hover::after {
+        opacity: 1;
+    }
+
+    .pay-metric-index {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+    }
+
+    .pay-metric-num {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .pay-metric-label {
+        font-size: 0.86rem;
+        font-weight: 700;
+        color: #0F172A;
+        margin-bottom: 2px;
+    }
+
+    .pay-metric-sub {
+        font-size: 0.75rem;
+        color: #64748B;
+    }
+
+    /* ─── 3. TABLE CARD ─── */
+    .pay-table-card {
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        overflow: hidden;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+    }
+
+    .pay-table {
+        margin-bottom: 0;
+    }
+
+    .pay-table th {
+        background: #F8FAFC;
+        font-size: 0.74rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 700;
+        color: #64748B;
+        padding: 14px 18px;
+        border-bottom: 1px solid #E2E8F0;
+        white-space: nowrap;
+    }
+
+    .pay-table td {
+        padding: 16px 18px;
+        border-bottom: 1px solid #F1F5F9;
+        font-size: 0.86rem;
+        vertical-align: middle;
+    }
+
+    .pay-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .pay-table tr:hover td {
+        background: #F8FAFC;
+    }
+
+    /* Action Buttons */
+    .btn-pay-action {
+        background: #0284C7;
+        color: #FFFFFF !important;
+        border: 1px solid #0284C7;
+        border-radius: 6px;
+        font-size: 0.76rem;
+        font-weight: 700;
+        padding: 5px 12px;
+        text-decoration: none;
+        display: inline-block;
+        transition: all 0.15s ease;
+    }
+
+    .btn-pay-action:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+    }
+
+    .pay-empty-minimal {
+        text-align: center;
+        padding: 56px 20px;
+        border: 1px dashed #CBD5E1;
+        border-radius: 12px;
+        margin: 20px;
+        background: #F8FAFC;
+    }
+</style>
+
+<!-- =========================================================================
+     1. LUMINOUS SHINING HERO BANNER
+     ========================================================================= -->
+<div class="pay-hero-banner">
+    <div class="row align-items-center g-3">
+        <div class="col-xl-9 col-lg-8">
+            <div class="pay-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Financial Transactions</span>
+            </div>
+            <h2 class="pay-hero-title">
+                Payments, Billing &amp; Invoices
+            </h2>
+            <p class="pay-hero-sub">
+                Review verified milestone transactions, download tax invoices, track escrow payments, and audit all platform payment history.
+            </p>
+        </div>
+        <div class="col-xl-3 col-lg-4 text-lg-end">
+            <a href="{% url 'client_contracts' %}" class="btn btn-sm btn-outline-secondary py-2 px-3 fw-bold" style="border-radius: 8px;">
+                Active Contracts &rarr;
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     2. FOUR EDITORIAL NUMBERED METRIC CARDS (ZERO NOISY ICONS)
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Card 1: Total Paid -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="pay-metric-card">
+            <div class="pay-metric-index">01 / Volume</div>
+            <div>
+                <div class="pay-metric-num" style="color: #0F172A;">${{ total_spent|floatformat:0 }}</div>
+                <div class="pay-metric-label">Total Volume Paid</div>
+                <div class="pay-metric-sub">Verified payments released to talent</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 2: Completed Transactions -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="pay-metric-card">
+            <div class="pay-metric-index">02 / Transactions</div>
+            <div>
+                <div class="pay-metric-num" style="color: #059669;">{{ completed_count|default:0 }}</div>
+                <div class="pay-metric-label">Verified Payouts</div>
+                <div class="pay-metric-sub">Completed milestone disbursements</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 3: Invoices Generated -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="pay-metric-card">
+            <div class="pay-metric-index">03 / Invoices</div>
+            <div>
+                <div class="pay-metric-num" style="color: #0284C7;">{{ total_count|default:0 }}</div>
+                <div class="pay-metric-label">Invoices Issued</div>
+                <div class="pay-metric-sub">Tax and payment receipts available</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Card 4: Gateway -->
+    <div class="col-xl-3 col-sm-6">
+        <div class="pay-metric-card">
+            <div class="pay-metric-index">04 / Gateway</div>
+            <div>
+                <div class="pay-metric-num" style="color: #4F46E5; font-size: 1.45rem; line-height: 1.4;">Razorpay Test</div>
+                <div class="pay-metric-label">Escrow Gateway</div>
+                <div class="pay-metric-sub">Active &amp; verified payment rail</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. PAYMENTS & INVOICES TABLE
+     ========================================================================= -->
+<div class="pay-table-card">
+    <div class="p-3 px-4 border-bottom d-flex align-items-center justify-content-between">
+        <h5 class="fw-bold mb-0" style="color: #0F172A; font-size: 1.05rem;">
+            Payment History &amp; Invoices
+            <span class="badge ms-2" style="background: #F1F5F9; color: #475569; border: 1px solid #E2E8F0; font-size: 0.72rem;">
+                {{ total_count }} transaction{{ total_count|pluralize }}
+            </span>
+        </h5>
+        <span class="text-muted small">All transactions secured by Milestone Escrow</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table pay-table align-middle">
+            <thead>
+                <tr>
+                    <th>Invoice Number</th>
+                    <th>Project / Contract</th>
+                    <th>Specialist</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Transaction Ref</th>
+                    <th>Status</th>
+                    <th>Date Paid</th>
+                    <th class="text-end">Invoice</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in payments %}
+                    <tr>
+                        <td>
+                            <strong class="font-monospace text-dark d-block" style="font-size: 0.88rem;">{{ p.invoice_number }}</strong>
+                            {% if p.milestone %}
+                                <small class="text-muted d-inline-block text-truncate" style="max-width: 140px;">{{ p.milestone.title }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <a href="{% url 'client_contract_detail' p.contract.id %}" class="fw-semibold text-decoration-none" style="color: #0F172A;" title="{{ p.contract.project.title }}">
+                                {{ p.contract.project.title|truncatechars:30 }}
+                            </a>
+                        </td>
+                        <td>
+                            <span class="fw-semibold text-dark">{{ p.freelancer.get_full_name|default:p.freelancer.username }}</span>
+                        </td>
+                        <td>
+                            <strong style="color: #0284C7; font-size: 0.95rem;">${{ p.amount }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge" style="background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0;">
+                                {{ p.payment_method }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="font-monospace text-muted small" style="font-size: 0.76rem;">
+                                {{ p.razorpay_payment_id|default:"pay_verified" }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge {% if p.status == 'completed' %}bg-success-subtle text-success border border-success-subtle{% elif p.status == 'failed' %}bg-danger-subtle text-danger{% else %}bg-warning-subtle text-warning{% endif %}" style="font-size: 0.74rem;">
+                                {{ p.get_status_display }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="text-muted small">{{ p.created_at|date:"M d, Y" }}</span>
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'client_invoice_detail' p.id %}" class="btn-pay-action" title="View & Download Invoice">
+                                Invoice &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="9" class="p-0">
+                            <div class="pay-empty-minimal">
+                                <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.05rem;">No Payment Transactions Found</div>
+                                <p class="text-muted small mb-0">Payments and invoices will be issued automatically when you approve and release milestone escrow payments.</p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+        <div class="p-3 px-4 bg-white border-top d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <small class="text-muted" style="font-size: 0.8rem;">
+                Showing page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </small>
+            <nav aria-label="Payments pagination">
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.previous_page_number }}">&larr; Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" style="{% if page_obj.number == num %}background:#0284C7;border-color:#0284C7;color:#FFFFFF;{% else %}color:#0284C7;{% endif %} border-radius: 6px; margin: 0 2px;" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" style="color: #0284C7; border-radius: 6px; margin: 0 2px;" href="?page={{ page_obj.next_page_number }}">Next &rarr;</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

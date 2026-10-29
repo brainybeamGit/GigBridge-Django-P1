@@ -1,0 +1,305 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Freelancers Management{% endblock %}
+{% block page_title %}Freelancers Directory{% endblock %}
+{% block page_subtitle %}Inspect freelancer talent profiles, skills, hourly rates, client ratings, and manage specialist access.{% endblock %}
+
+{% block content %}
+<style>
+    .adm-sub-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 22px 28px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15);
+        margin-bottom: 22px;
+    }
+</style>
+
+<!-- Hero Banner -->
+<div class="adm-sub-hero d-flex flex-wrap align-items-center justify-content-between gap-3">
+    <div>
+        <span class="badge mb-2" style="background:#FFFFFF;color:#0369A1;border:1px solid #BAE6FD;font-weight:700;">
+            SPECIALIST TALENT &bull; FREELANCER POOL
+        </span>
+        <h2 class="fw-bold text-dark mb-1" style="font-size:1.6rem;">Freelancer Talent Registry</h2>
+        <p class="text-secondary small mb-0">Marketplace developer profiles, skills verification, hourly quotations, and account status controls.</p>
+    </div>
+</div>
+
+<!-- Metrics Row (Icon-Free) -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Total Freelancers</span>
+                <span class="adm-kpi-index">01</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_freelancers }}</div>
+            <p class="adm-kpi-caption">Registered specialists</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Active Freelancers</span>
+                <span class="adm-kpi-index">02</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ active_freelancers }}</div>
+            <p class="adm-kpi-caption">Actively bidding on jobs</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Suspended Accounts</span>
+                <span class="adm-kpi-index">03</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ suspended_freelancers }}</div>
+            <p class="adm-kpi-caption">Temporarily restricted</p>
+        </div>
+    </div>
+    <div class="col-xl-3 col-sm-6">
+        <div class="stat-card-pro">
+            <div class="d-flex justify-content-between align-items-baseline mb-1">
+                <span class="adm-kpi-label">Proposals Placed</span>
+                <span class="adm-kpi-index">04</span>
+            </div>
+            <div class="adm-kpi-value text-dark">{{ total_proposals_submitted }}</div>
+            <p class="adm-kpi-caption">Quotations submitted</p>
+        </div>
+    </div>
+</div>
+
+<!-- Search & Filters -->
+<div class="admin-card p-3 mb-4">
+    <form method="GET" action="{% url 'adminpanel_freelancers' %}" class="row g-2 align-items-center">
+        <div class="col-md-7">
+            <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by name, username, email, title, skills, or location...">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Suspended</option>
+            </select>
+        </div>
+        <div class="col-md-2 d-flex gap-2">
+            <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
+            {% if search_query or status_filter %}
+                <a href="{% url 'adminpanel_freelancers' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+<!-- Freelancers Table Card -->
+<div class="admin-card">
+    <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
+        <span class="fw-bold text-dark">Registered Freelancers ({{ freelancers|length }})</span>
+        <span class="text-muted small">Specialists registered via public portal</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table align-middle mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Freelancer</th>
+                    <th>Specialization</th>
+                    <th>Key Skills</th>
+                    <th>Rate</th>
+                    <th>Rating</th>
+                    <th>Proposals</th>
+                    <th>Status</th>
+                    <th>Joined</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in freelancers %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold text-dark">{{ f.get_full_name|default:f.username }}</div>
+                        <span class="text-muted small">@{{ f.username }}</span>
+                    </td>
+                    <td>
+                        <span class="badge bg-light text-dark border px-2 py-1">
+                            {{ f.profile.title|default:"Freelance Specialist" }}
+                        </span>
+                        <div class="text-muted small mt-1">{{ f.profile.location|default:"Remote" }}</div>
+                    </td>
+                    <td>
+                        {% for skill in f.profile.skills_list|slice:":3" %}
+                            <span class="badge bg-light text-secondary border me-1 mb-1" style="font-size:0.72rem;">{{ skill }}</span>
+                        {% empty %}
+                            <span class="text-muted small">Not specified</span>
+                        {% endfor %}
+                    </td>
+                    <td>
+                        <span class="fw-bold text-dark">&#8377;{{ f.profile.hourly_rate|default:25|floatformat:0 }}/hr</span>
+                    </td>
+                    <td>
+                        <span class="fw-semibold text-dark">{{ f.profile.average_rating|default:5.0 }} / 5.0</span>
+                    </td>
+                    <td>
+                        <a href="{% url 'adminpanel_proposals' %}?q={{ f.username }}" class="badge bg-light text-dark border text-decoration-none px-2 py-1 rounded-pill">
+                            {{ f.prop_count }} Bids
+                        </a>
+                    </td>
+                    <td>
+                        {% if f.is_active %}
+                            <span class="badge bg-success-subtle text-success px-2 py-1 rounded-pill">Active</span>
+                        {% else %}
+                            <span class="badge bg-danger-subtle text-danger px-2 py-1 rounded-pill">Suspended</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-muted small">{{ f.date_joined|date:"M d, Y" }}</td>
+                    <td class="text-end pe-4">
+                        <!-- Converted multi-button into Actions Dropdown -->
+                        <div class="dropdown">
+                            <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                Actions
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewFreelancerModal{{ f.id }}">
+                                        View Profile Details
+                                    </button>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{% url 'adminpanel_freelancer_toggle_status' f.id %}" onsubmit="return confirm('{% if f.is_active %}Suspend{% else %}Activate{% endif %} freelancer {{ f.username }}?');">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item rounded-2 small py-2 {% if f.is_active %}text-warning{% else %}text-success{% endif %}">
+                                            {% if f.is_active %}Suspend Specialist{% else %}Activate Specialist{% endif %}
+                                        </button>
+                                    </form>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded-2 small py-2" href="{% url 'adminpanel_proposals' %}?q={{ f.username }}">
+                                        View Submitted Bids
+                                    </a>
+                                </li>
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <button class="dropdown-item rounded-2 small py-2 text-danger" type="button" data-bs-toggle="modal" data-bs-target="#deleteFreelancerModal{{ f.id }}">
+                                        Delete Specialist Account
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        No freelancers found matching the search criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_modals %}
+{% for f in freelancers %}
+<!-- View Freelancer Modal -->
+<div class="modal fade" id="viewFreelancerModal{{ f.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-light border-bottom p-4">
+                <div>
+                    <h5 class="modal-title fw-bold text-dark mb-0">{{ f.get_full_name|default:f.username }}</h5>
+                    <small class="text-muted">Specialist Portfolio &bull; @{{ f.username }}</small>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 bg-white">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Specialization Headline</span>
+                            <strong class="text-dark">{{ f.profile.title|default:"Freelance Specialist" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Hourly Rate</span>
+                            <strong class="text-dark">&#8377;{{ f.profile.hourly_rate|default:25|floatformat:2 }}/hr</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Email Address</span>
+                            <strong class="text-dark">{{ f.email|default:"Not specified" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block">Location</span>
+                            <strong class="text-dark">{{ f.profile.location|default:"Remote" }}</strong>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block mb-1">Skills Profile</span>
+                            {% for skill in f.profile.skills_list %}
+                                <span class="badge bg-light text-secondary border me-1 mb-1">{{ skill }}</span>
+                            {% empty %}
+                                <span class="text-muted small">No specific skills listed</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="p-3 bg-light rounded-3 border">
+                            <span class="text-muted small d-block mb-1">Bio / Overview</span>
+                            <p class="mb-0 small text-secondary">{{ f.profile.bio|default:"No bio provided yet."|linebreaksbr }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer bg-light p-3">
+                <a href="{% url 'adminpanel_proposals' %}?q={{ f.username }}" class="btn btn-outline-primary btn-sm rounded-3 px-3">
+                    View Proposals ({{ f.prop_count }}) &rarr;
+                </a>
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Freelancer Modal -->
+<div class="modal fade" id="deleteFreelancerModal{{ f.id }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header bg-danger text-white p-3">
+                <h6 class="modal-title fw-bold mb-0">Confirm Delete Freelancer</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <h5 class="fw-bold text-dark">Delete Freelancer "{{ f.username }}"?</h5>
+                <p class="text-muted small mb-0">
+                    Are you sure? This will remove the freelancer account, submitted proposals, reviews, and contract associations.
+                </p>
+            </div>
+            <div class="modal-footer bg-light p-3 d-flex justify-content-between">
+                <button type="button" class="btn btn-secondary btn-sm rounded-3 px-3" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel_freelancer_delete' f.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm rounded-3 px-3 fw-bold">
+                        Confirm Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
