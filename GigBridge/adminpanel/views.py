@@ -7,12 +7,19 @@ from django.db import transaction
 from django.db.models import Sum, Count, Q, Avg
 from django.http import JsonResponse
 from django.utils import timezone
+from django.core.paginator import Paginator
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.urls import reverse
 from datetime import timedelta
 import json
 from client.models import (
     UserProfile, Project, Proposal, Contract,
-    Payment, Review, ContactMessage, Category, Milestone, Conversation
+    Payment, Review, ContactMessage, ContactReply, Category, Milestone, Conversation
 )
+from .forms import ContactReplyForm
 
 
 def admin_required(view_func):
@@ -273,7 +280,8 @@ def dashboard_view(request):
     recent_projects = Project.objects.select_related('client', 'category').order_by('-created_at')[:8]
     clients_list = User.objects.filter(profile__role='client').select_related('profile').annotate(proj_count=Count('client_projects')).order_by('-date_joined')
     freelancers_list = User.objects.filter(profile__role='freelancer').select_related('profile').order_by('-date_joined')
-    recent_contact_messages = ContactMessage.objects.order_by('-created_at')[:6]
+    new_messages_count = ContactMessage.objects.filter(status='new').count()
+    recent_contact_messages = ContactMessage.objects.order_by('-created_at')[:5]
 
     # Pre-render initial real-time analytics for instant luxury visualization
     initial_analytics = get_analytics_payload('30d')
@@ -287,6 +295,7 @@ def dashboard_view(request):
         'open_projects': open_projects,
         'active_contracts': active_contracts,
         'total_revenue': total_revenue,
+        'new_messages_count': new_messages_count,
         'recent_projects': recent_projects,
         'clients_list': clients_list,
         'freelancers_list': freelancers_list,
@@ -933,63 +942,296 @@ def review_delete_view(request, review_id):
 
 
 # ─────────────────────────────────────────────────────────────
-# 9. CONTACT MESSAGES / INQUIRIES
+# 9. CONTACT MESSAGES / INQUIRIES & EMAIL REPLY MODULE
 # ─────────────────────────────────────────────────────────────
 
 @admin_required
-def contact_messages_view(request):
+def contact_messages_list_view(request):
+    """
+    Messages list page: /adminpanel/messages/
+    Displays all public contact submissions with summary cards, search, filters,
+    bulk operations, and pagination.
+    """
     q = request.GET.get('q', '').strip()
     status_filter = request.GET.get('status', '').strip()
+    topic_filter = request.GET.get('topic', '').strip()
+    date_filter = request.GET.get('date_range', '').strip()
 
-    msgs_qs = ContactMessage.objects.order_by('-created_at')
+    msgs_qs = ContactMessage.objects.all().order_by('-created_at')
 
+    # Search filter
     if q:
-        msgs_qs = msgs_qs.filter(
+        q_filter = (
             Q(name__icontains=q) |
             Q(email__icontains=q) |
             Q(subject__icontains=q) |
-            Q(message__icontains=q)
+            Q(message__icontains=q) |
+            Q(topic__icontains=q)
         )
+        ticket_clean = q.upper().strip()
+        if ticket_clean.startswith('GB-'):
+            num_part = ticket_clean.replace('GB-', '').lstrip('0') or '0'
+            if num_part.isdigit():
+                q_filter |= Q(id=int(num_part))
+        elif ticket_clean.isdigit():
+            q_filter |= Q(id=int(ticket_clean))
+        msgs_qs = msgs_qs.filter(q_filter)
 
-    if status_filter == 'resolved':
-        msgs_qs = msgs_qs.filter(is_resolved=True)
-    elif status_filter == 'pending':
-        msgs_qs = msgs_qs.filter(is_resolved=False)
+    # Status filter
+    if status_filter in ('new', 'read', 'replied', 'closed'):
+        msgs_qs = msgs_qs.filter(status=status_filter)
 
+    # Topic filter
+    if topic_filter:
+        msgs_qs = msgs_qs.filter(topic__iexact=topic_filter)
+
+    # Date range filter
+    now = timezone.now()
+    if date_filter == 'today':
+        msgs_qs = msgs_qs.filter(created_at__date=now.date())
+    elif date_filter == 'week':
+        msgs_qs = msgs_qs.filter(created_at__gte=now - timedelta(days=7))
+    elif date_filter == 'month':
+        msgs_qs = msgs_qs.filter(created_at__gte=now - timedelta(days=30))
+
+    # Summary metrics
     total_messages = ContactMessage.objects.count()
-    pending_count = ContactMessage.objects.filter(is_resolved=False).count()
-    resolved_count = ContactMessage.objects.filter(is_resolved=True).count()
-    resolution_rate = int((resolved_count / total_messages * 100)) if total_messages > 0 else 100
+    new_count = ContactMessage.objects.filter(status='new').count()
+    read_count = ContactMessage.objects.filter(status='read').count()
+    replied_count = ContactMessage.objects.filter(status='replied').count()
+    closed_count = ContactMessage.objects.filter(status='closed').count()
+
+    # Topic choices for filtering
+    available_topics = ContactMessage.objects.exclude(topic='').values_list('topic', flat=True).distinct().order_by('topic')
+
+    # Pagination: 15 per page
+    paginator = Paginator(msgs_qs, 15)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
 
     context = {
         'active_tab': 'messages',
-        'contact_msgs': msgs_qs,
+        'page_obj': page_obj,
+        'contact_msgs': page_obj.object_list,
         'total_messages': total_messages,
-        'pending_count': pending_count,
-        'resolved_count': resolved_count,
-        'resolution_rate': resolution_rate,
+        'new_count': new_count,
+        'read_count': read_count,
+        'replied_count': replied_count,
+        'closed_count': closed_count,
         'search_query': q,
         'status_filter': status_filter,
+        'topic_filter': topic_filter,
+        'date_filter': date_filter,
+        'available_topics': available_topics,
     }
     return render(request, 'adminpanel/contact_messages.html', context)
 
 
 @admin_required
-def contact_message_toggle_view(request, msg_id):
-    if request.method == 'POST':
-        msg = get_object_or_404(ContactMessage, id=msg_id)
-        msg.is_resolved = not msg.is_resolved
-        msg.save()
-        status_text = "marked as Resolved" if msg.is_resolved else "reopened as Pending"
-        messages.success(request, f"Inquiry from '{msg.name}' has been {status_text}.")
+def contact_message_detail_view(request, msg_id):
+    """
+    Message detail page: /adminpanel/messages/<id>/
+    Opening a 'new' message automatically marks it as 'read' and timestamps read_at.
+    Shows client details, message, reply history, and reply form.
+    """
+    msg = get_object_or_404(
+        ContactMessage.objects.prefetch_related('replies__replied_by'),
+        id=msg_id
+    )
+
+    # Auto-mark 'new' message as 'read'
+    if msg.status == 'new':
+        msg.status = 'read'
+        msg.read_at = timezone.now()
+        msg.save(update_fields=['status', 'read_at', 'updated_at'])
+
+    initial_subject = f"Re: {msg.subject} [{msg.ticket_number}]"
+    reply_form = ContactReplyForm(initial={'subject': initial_subject})
+
+    context = {
+        'active_tab': 'messages',
+        'msg': msg,
+        'replies': msg.replies.all().order_by('sent_at'),
+        'reply_form': reply_form,
+    }
+    return render(request, 'adminpanel/messages/detail.html', context)
+
+
+@admin_required
+@require_POST
+def contact_message_reply_view(request, msg_id):
+    """
+    Sends email reply to client with EmailMultiAlternatives (HTML + plain text).
+    Saves ContactReply and updates status to 'replied' on success.
+    Catches delivery failure, saves error log, and keeps status intact.
+    """
+    msg = get_object_or_404(ContactMessage, id=msg_id)
+    form = ContactReplyForm(request.POST)
+
+    if form.is_valid():
+        subject = form.cleaned_data['subject'].strip()
+        body = form.cleaned_data['body'].strip()
+
+        # Render plain text and HTML email contents
+        email_context = {
+            'ticket_number': msg.ticket_number,
+            'client_name': msg.name,
+            'client_email': msg.email,
+            'reply_body': body,
+            'replied_by_name': request.user.get_full_name() or request.user.username,
+            'original_subject': msg.subject,
+            'original_topic': msg.topic,
+            'original_date': msg.created_at.strftime("%B %d, %Y at %I:%M %p"),
+            'original_message': msg.message,
+        }
+
+        text_content = render_to_string('adminpanel/emails/contact_reply.txt', email_context)
+        html_content = render_to_string('adminpanel/emails/contact_reply.html', email_context)
+
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'GigBridge Support <support@gigbridge.com>')
+        reply_to_email = getattr(settings, 'SUPPORT_EMAIL', 'support@gigbridge.com')
+
+        try:
+            email_msg = EmailMultiAlternatives(
+                subject=subject,
+                body=text_content,
+                from_email=from_email,
+                to=[msg.email],
+                reply_to=[reply_to_email],
+            )
+            email_msg.attach_alternative(html_content, "text/html")
+            email_msg.send(fail_silently=False)
+
+            # Record success
+            ContactReply.objects.create(
+                message=msg,
+                replied_by=request.user,
+                subject=subject,
+                body=body,
+                email_sent=True,
+                error='',
+            )
+            msg.status = 'replied'
+            msg.save(update_fields=['status', 'updated_at'])
+            messages.success(request, f"Official reply sent to {msg.email} (Ticket #{msg.ticket_number}).")
+        except Exception as e:
+            # Record failure without crashing
+            error_str = str(e)
+            ContactReply.objects.create(
+                message=msg,
+                replied_by=request.user,
+                subject=subject,
+                body=body,
+                email_sent=False,
+                error=error_str,
+            )
+            messages.error(request, f"Email delivery failed: {error_str}. A draft record was saved in reply history.")
+    else:
+        messages.error(request, "Please enter both a subject and reply body.")
+
+    return redirect('adminpanel_message_detail', msg_id=msg.id)
+
+
+@admin_required
+@require_POST
+def contact_message_status_view(request, msg_id):
+    """
+    POST-only status toggle / updater for contact message (e.g. closed, read, new).
+    """
+    msg = get_object_or_404(ContactMessage, id=msg_id)
+    target_status = request.POST.get('status', '').strip().lower()
+
+    if target_status == 'closed':
+        msg.status = 'closed'
+        msg.is_resolved = True
+        msg.save(update_fields=['status', 'is_resolved', 'updated_at'])
+        messages.success(request, f"Ticket #{msg.ticket_number} marked as Closed.")
+    elif target_status == 'new':
+        msg.status = 'new'
+        msg.is_resolved = False
+        msg.read_at = None
+        msg.save(update_fields=['status', 'is_resolved', 'read_at', 'updated_at'])
+        messages.success(request, f"Ticket #{msg.ticket_number} marked as New.")
+    elif target_status == 'read':
+        msg.status = 'read'
+        if not msg.read_at:
+            msg.read_at = timezone.now()
+        msg.save(update_fields=['status', 'read_at', 'updated_at'])
+        messages.success(request, f"Ticket #{msg.ticket_number} marked as Read.")
+    elif target_status == 'reopen':
+        msg.status = 'read'
+        msg.is_resolved = False
+        msg.save(update_fields=['status', 'is_resolved', 'updated_at'])
+        messages.success(request, f"Ticket #{msg.ticket_number} has been reopened.")
+    else:
+        # Default toggle behavior
+        if msg.status == 'closed':
+            msg.status = 'read'
+            msg.is_resolved = False
+        else:
+            msg.status = 'closed'
+            msg.is_resolved = True
+        msg.save(update_fields=['status', 'is_resolved', 'updated_at'])
+        messages.success(request, f"Status for ticket #{msg.ticket_number} updated to {msg.get_status_display()}.")
+
+    # Redirect to referer if present, otherwise detail or list
+    next_url = request.META.get('HTTP_REFERER')
+    if next_url:
+        return redirect(next_url)
+    return redirect('adminpanel_message_detail', msg_id=msg.id)
+
+
+@admin_required
+@require_POST
+def contact_message_delete_view(request, msg_id):
+    """
+    POST-only deletion of a ContactMessage.
+    """
+    msg = get_object_or_404(ContactMessage, id=msg_id)
+    ticket_num = msg.ticket_number
+    sender_name = msg.name
+    msg.delete()
+    messages.success(request, f"Inquiry #{ticket_num} from '{sender_name}' was permanently deleted.")
     return redirect('adminpanel_messages')
 
 
 @admin_required
-def contact_message_delete_view(request, msg_id):
-    if request.method == 'POST':
-        msg = get_object_or_404(ContactMessage, id=msg_id)
-        sender_name = msg.name
-        msg.delete()
-        messages.success(request, f"Inquiry from '{sender_name}' was permanently deleted.")
+@require_POST
+def contact_messages_bulk_view(request):
+    """
+    POST-only bulk actions for messages list:
+    mark_read, mark_closed, delete.
+    """
+    action = request.POST.get('action', '').strip()
+    selected_ids = request.POST.getlist('selected_ids')
+
+    if not selected_ids:
+        messages.warning(request, "No messages were selected for bulk action.")
+        return redirect('adminpanel_messages')
+
+    # Convert to valid integers
+    valid_ids = [int(i) for i in selected_ids if i.isdigit()]
+    if not valid_ids:
+        messages.warning(request, "Invalid message selection.")
+        return redirect('adminpanel_messages')
+
+    qs = ContactMessage.objects.filter(id__in=valid_ids)
+
+    if action == 'mark_read':
+        count = qs.update(status='read', read_at=timezone.now(), updated_at=timezone.now())
+        messages.success(request, f"{count} message(s) marked as Read.")
+    elif action == 'mark_closed':
+        count = qs.update(status='closed', is_resolved=True, updated_at=timezone.now())
+        messages.success(request, f"{count} message(s) marked as Closed.")
+    elif action == 'delete':
+        count = qs.delete()[0]
+        messages.success(request, f"{count} message(s) permanently deleted.")
+    else:
+        messages.warning(request, "Unknown bulk action specified.")
+
     return redirect('adminpanel_messages')
+
+
+# Legacy aliases for backward compatibility
+contact_messages_view = contact_messages_list_view
+contact_message_toggle_view = contact_message_status_view

@@ -1,0 +1,22 @@
+GigBridge Support Desk - Ticket #{{ ticket_number }}
+
+Hello {{ client_name }},
+
+{{ reply_body }}
+
+Regards,
+{{ replied_by_name|default:"GigBridge Support Desk" }}
+GigBridge Customer Operations
+Ahmedabad, Gujarat, India
+https://gigbridge.com
+
+----------------------------------------------------------------------
+QUOTED INQUIRY (Ticket #{{ ticket_number }}):
+From: {{ client_name }} <{{ client_email }}>
+Subject: {{ original_subject }}
+{% if original_topic %}Topic: {{ original_topic }}{% endif %}
+Date Received: {{ original_date }}
+
+{{ original_message }}
+----------------------------------------------------------------------
+This email was sent in response to your inquiry submitted on GigBridge.

@@ -42,10 +42,19 @@ urlpatterns = [
     path('client/payments/checkout/<int:milestone_pk>/', views.client_payment_checkout_view, name='client_payment_checkout'),
     path('client/payments/create-order/', views.client_payment_create_order_view, name='client_payment_create_order'),
     path('client/payments/verify/', views.client_payment_verify_view, name='client_payment_verify'),
+    # ─── Messaging (Part A) ───
+    path('messages/', views.messages_inbox_view, name='messages_inbox'),
+    path('messages/<int:conversation_id>/', views.conversation_detail_view, name='conversation_detail'),
+    path('messages/<int:conversation_id>/send/', views.send_message_view, name='send_message'),
+    path('messages/<int:conversation_id>/fetch/', views.fetch_new_messages_view, name='fetch_new_messages'),
+    path('messages/<int:conversation_id>/delete/', views.conversation_delete_view, name='conversation_delete'),
     path('messages/start/', views.start_conversation_view, name='start_conversation'),
-    path('client/messages/', views.client_messages_view, name='client_messages'),
-    path('client/messages/<int:pk>/', views.client_conversation_detail_view, name='client_conversation_detail'),
-    path('client/messages/<int:pk>/delete/', views.client_conversation_delete_view, name='client_conversation_delete'),
+    path('client/messages/', views.messages_inbox_view, name='client_messages'),
+    path('client/messages/<int:pk>/', views.conversation_detail_view, name='client_conversation_detail'),
+    path('client/messages/<int:pk>/delete/', views.conversation_delete_view, name='client_conversation_delete'),
+
+    # ─── Freelancer Public Profile (Part B) ───
+    path('freelancers/<int:id>/', views.freelancer_public_profile_view, name='freelancer_public_profile'),
     path('client/reviews/', views.client_reviews_view, name='client_reviews'),
     path('client/reviews/create/<int:contract_pk>/', views.client_review_create_view, name='client_review_create'),
     path('client/profile/', views.client_profile_view, name='client_profile'),

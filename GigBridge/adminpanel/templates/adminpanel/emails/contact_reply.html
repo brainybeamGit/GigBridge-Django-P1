@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+</head>
+<body style="margin: 0; padding: 0; background-color: #f1f5f9; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; color: #1e293b;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background-color: #f1f5f9; padding: 30px 15px;">
+        <tr>
+            <td align="center">
+                <table role="presentation" width="100%" style="max-width: 620px; background-color: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08); border: 1px solid #e2e8f0;">
+                    <!-- Brand Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #0b132b 0%, #0f172a 50%, #1e3a8a 100%); padding: 28px 32px; text-align: left;">
+                            <table width="100%" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td>
+                                        <div style="font-size: 24px; font-weight: 800; color: #ffffff; letter-spacing: -0.5px;">
+                                            Gig<span style="color: #38bdf8;">Bridge</span>
+                                        </div>
+                                        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.7); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 4px;">
+                                            Official Support Desk
+                                        </div>
+                                    </td>
+                                    <td align="right">
+                                        <div style="display: inline-block; background: rgba(255, 255, 255, 0.12); border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 999px; padding: 6px 14px; font-size: 12px; font-weight: 700; color: #ffffff; font-family: monospace;">
+                                            Ticket #{{ ticket_number }}
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <!-- Body Content -->
+                    <tr>
+                        <td style="padding: 32px;">
+                            <p style="font-size: 15px; line-height: 1.5; color: #475569; margin-top: 0; margin-bottom: 20px;">
+                                Hello <strong>{{ client_name }}</strong>,
+                            </p>
+
+                            <!-- Admin Reply Text -->
+                            <div style="font-size: 15px; line-height: 1.7; color: #0f172a; margin-bottom: 28px; white-space: pre-wrap;">{{ reply_body }}</div>
+
+                            <!-- Support Officer Signature -->
+                            <div style="border-top: 1px solid #e2e8f0; padding-top: 16px; margin-bottom: 28px;">
+                                <p style="font-size: 14px; color: #475569; margin: 0; font-weight: 600;">
+                                    {{ replied_by_name|default:"GigBridge Support Desk" }}
+                                </p>
+                                <p style="font-size: 12px; color: #64748b; margin: 2px 0 0;">
+                                    GigBridge Customer Operations &bull; Ahmedabad, Gujarat, India
+                                </p>
+                            </div>
+
+                            <!-- Quoted Original Message -->
+                            <div style="background-color: #f8fafc; border-left: 4px solid #0284c7; border-radius: 0 8px 8px 0; padding: 16px 20px; margin-top: 24px;">
+                                <div style="font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: #0369a1; margin-bottom: 8px;">
+                                    Quoted Inquiry &bull; Ticket #{{ ticket_number }}
+                                </div>
+                                <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
+                                    <strong>From:</strong> {{ client_name }} &lt;{{ client_email }}&gt;
+                                </div>
+                                <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
+                                    <strong>Subject:</strong> {{ original_subject }}
+                                </div>
+                                {% if original_topic %}
+                                <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">
+                                    <strong>Topic:</strong> {{ original_topic }}
+                                </div>
+                                {% endif %}
+                                <div style="font-size: 13px; color: #64748b; margin-bottom: 8px;">
+                                    <strong>Date Received:</strong> {{ original_date }}
+                                </div>
+                                <div style="font-size: 13px; line-height: 1.6; color: #334155; border-top: 1px dashed #cbd5e1; padding-top: 8px; margin-top: 8px; white-space: pre-wrap;">{{ original_message }}</div>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f8fafc; border-top: 1px solid #e2e8f0; padding: 22px 32px; text-align: center;">
+                            <p style="font-size: 12px; color: #64748b; line-height: 1.5; margin: 0 0 8px;">
+                                You received this email in response to your inquiry submitted on <a href="https://gigbridge.com" style="color: #0284c7; text-decoration: none;">GigBridge</a>.
+                            </p>
+                            <p style="font-size: 11px; color: #94a3b8; margin: 0;">
+                                &copy; 2026 GigBridge Freelance Marketplace. All rights reserved.
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>

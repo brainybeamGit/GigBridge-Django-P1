@@ -5,13 +5,17 @@
 
 {% block content %}
 <!-- ═══════════════════════════════════════════════════════════
-     HERO BANNER
+     1. HERO BANNER (NAVY GRADIENT, FAINT DOT GRID & TRUST CHIPS)
      ═══════════════════════════════════════════════════════════ -->
 <section class="gb-about-hero">
-    <div class="container position-relative text-center" style="z-index: 2;">
+    <!-- Background glow blobs -->
+    <span class="gb-ab-blob gb-ab-blob-1" aria-hidden="true"></span>
+    <span class="gb-ab-blob gb-ab-blob-2" aria-hidden="true"></span>
+
+    <div class="container position-relative text-center gb-ab-hero-inner">
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-2 small text-white-50">
+            <ol class="breadcrumb justify-content-center mb-3 small text-white-50">
                 <li class="breadcrumb-item">
                     <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
                         <i class="bi bi-house-door me-1"></i> Home
@@ -21,13 +25,9 @@
             </ol>
         </nav>
 
-        <div class="gb-hero-pill-badge mx-auto">
-            <i class="bi bi-buildings"></i> The GigBridge Mission
-        </div>
-
         <h1 class="gb-about-hero-title">Connecting Ambition with World-Class Expertise</h1>
         <p class="gb-about-hero-subtitle mx-auto">
-            GigBridge was created to eliminate the friction, uncertainty, and risk in freelance hiring. We provide a transparent, milestone-protected ecosystem where verified talent and visionary companies build together.
+            GigBridge was created to eliminate the friction, uncertainty, and financial risk in freelance hiring. We provide a transparent, milestone-protected ecosystem where verified talent and visionary companies build together.
         </p>
 
         <!-- Hero Actions -->
@@ -40,22 +40,70 @@
             </a>
         </div>
     </div>
+
+    <!-- Bottom Wave Divider -->
+    <div class="gb-hero-wave-divider" aria-hidden="true">
+        <svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,24 C320,48 480,0 800,24 C1120,48 1280,12 1440,24 L1440,48 L0,48 Z" fill="#f8fafc"></path>
+        </svg>
+    </div>
+</section>
+<!-- ═══════════════════════════════════════════════════════════
+     2. SLIM TRUST BAR
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-about-trust-bar">
+    <div class="container">
+        <div class="row g-3 align-items-center justify-content-between">
+            <div class="col-lg-3 col-6">
+                <div class="gb-trust-item">
+                    <div class="gb-trust-item-icon">
+                        <i class="bi bi-shield-lock-fill"></i>
+                    </div>
+                    <span class="gb-trust-item-text">Milestone Escrow</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="gb-trust-item">
+                    <div class="gb-trust-item-icon">
+                        <i class="bi bi-credit-card-2-front-fill"></i>
+                    </div>
+                    <span class="gb-trust-item-text">Secure Razorpay Payments</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="gb-trust-item">
+                    <div class="gb-trust-item-icon">
+                        <i class="bi bi-headset"></i>
+                    </div>
+                    <span class="gb-trust-item-text">Dispute Resolution</span>
+                </div>
+            </div>
+            <div class="col-lg-3 col-6">
+                <div class="gb-trust-item">
+                    <div class="gb-trust-item-icon">
+                        <i class="bi bi-patch-check-fill"></i>
+                    </div>
+                    <span class="gb-trust-item-text">Verified Profiles</span>
+                </div>
+            </div>
+        </div>
+    </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     MISSION & LIVE PLATFORM STATISTICS
+     3. MISSION & LIVE PLATFORM STATISTICS
      ═══════════════════════════════════════════════════════════ -->
-<section class="py-5 bg-white">
-    <div class="container py-3">
+<section class="py-5 bg-white gb-scroll-reveal">
+    <div class="container py-4">
         <div class="row g-5 align-items-center">
             <!-- Left: Purpose Story & Feature Highlights -->
             <div class="col-lg-6">
                 <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Our Core Purpose</span>
-                <h2 class="fw-bold text-navy mb-4">Empowering the Future of Remote Work &amp; Technical Execution</h2>
-                <p class="text-secondary mb-3" style="line-height: 1.8;">
-                    Modern businesses move fast, and finding dependable, top-tier technical and design professionals shouldn't take weeks of guesswork. GigBridge bridges this gap by combining authentic portfolio verification, client testimonials, and milestone-based financial protection.
+                <h2 class="fw-bold text-navy mb-3">Empowering the Future of Remote Work &amp; Technical Execution</h2>
+                <p class="text-secondary mb-3 lh-lg">
+                    Modern businesses move fast, and finding dependable, top-tier technical and design professionals shouldn't take weeks of guesswork. GigBridge bridges this gap by combining authentic portfolio verification, verified client reviews, and milestone-based financial protection.
                 </p>
-                <p class="text-secondary mb-4" style="line-height: 1.8;">
+                <p class="text-secondary mb-4 lh-lg">
                     Whether you are an early-stage founder building an MVP or an established enterprise scaling capacity, GigBridge ensures you discover the right talent on fair, transparent terms.
                 </p>
 
@@ -63,33 +111,35 @@
                 <div class="row g-3">
                     <div class="col-sm-6">
                         <div class="gb-feature-highlight-tile">
-                            <h5 class="fw-bold text-navy mb-2 fs-6">
+                            <h3 class="fw-bold text-navy mb-2 fs-6">
                                 <i class="bi bi-shield-check text-success me-1"></i> Milestone Security
-                            </h5>
+                            </h3>
                             <p class="text-muted small mb-0">Funds are held in secure platform escrow and only released after client approval.</p>
                         </div>
                     </div>
                     <div class="col-sm-6">
-                        <div class="gb-feature-highlight-tile" style="border-left-color: #0284c7;">
-                            <h5 class="fw-bold text-navy mb-2 fs-6">
+                        <div class="gb-feature-highlight-tile">
+                            <h3 class="fw-bold text-navy mb-2 fs-6">
                                 <i class="bi bi-patch-check-fill text-primary me-1"></i> Verified Expertise
-                            </h5>
+                            </h3>
                             <p class="text-muted small mb-0">Authentic project track records with real ratings and completed contracts.</p>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: 4 Live Platform Metric Cards -->
+            <!-- Right: 4 Redesigned Live Platform Metric Cards -->
             <div class="col-lg-6">
-                <div class="row g-3">
+                <div class="row g-3" id="statsCounterWrap">
                     <!-- Stat 1: Projects Published -->
                     <div class="col-6">
                         <div class="gb-stat-box-modern">
-                            <div class="gb-stat-icon-circle bg-primary-subtle text-primary mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <div class="gb-stat-icon-box">
                                 <i class="bi bi-briefcase-fill"></i>
                             </div>
-                            <div class="gb-stat-number-lg text-primary">{{ stats.projects_count|default:total_projects }}</div>
+                            <div class="gb-stat-number-lg">
+                                <span class="stat-count" data-target="{{ stats.projects_count|default:total_projects|default:0 }}">{{ stats.projects_count|default:total_projects|default:0 }}</span><span class="stat-suffix">+</span>
+                            </div>
                             <div class="gb-stat-label-lg">Projects Published</div>
                         </div>
                     </div>
@@ -97,10 +147,12 @@
                     <!-- Stat 2: Verified Freelancers -->
                     <div class="col-6">
                         <div class="gb-stat-box-modern">
-                            <div class="gb-stat-icon-circle bg-success-subtle text-success mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <div class="gb-stat-icon-box">
                                 <i class="bi bi-person-check-fill"></i>
                             </div>
-                            <div class="gb-stat-number-lg text-success">{{ stats.freelancers_count|default:total_freelancers }}</div>
+                            <div class="gb-stat-number-lg">
+                                <span class="stat-count" data-target="{{ stats.freelancers_count|default:total_freelancers|default:0 }}">{{ stats.freelancers_count|default:total_freelancers|default:0 }}</span><span class="stat-suffix">+</span>
+                            </div>
                             <div class="gb-stat-label-lg">Verified Freelancers</div>
                         </div>
                     </div>
@@ -108,10 +160,12 @@
                     <!-- Stat 3: Registered Clients -->
                     <div class="col-6">
                         <div class="gb-stat-box-modern">
-                            <div class="gb-stat-icon-circle bg-warning-subtle text-warning mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <div class="gb-stat-icon-box">
                                 <i class="bi bi-building-fill"></i>
                             </div>
-                            <div class="gb-stat-number-lg text-warning">{{ stats.clients_count|default:total_clients }}</div>
+                            <div class="gb-stat-number-lg">
+                                <span class="stat-count" data-target="{{ stats.clients_count|default:total_clients|default:0 }}">{{ stats.clients_count|default:total_clients|default:0 }}</span><span class="stat-suffix">+</span>
+                            </div>
                             <div class="gb-stat-label-lg">Registered Clients</div>
                         </div>
                     </div>
@@ -119,10 +173,12 @@
                     <!-- Stat 4: Completed Milestones -->
                     <div class="col-6">
                         <div class="gb-stat-box-modern">
-                            <div class="gb-stat-icon-circle bg-info-subtle text-info mx-auto mb-2" style="width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+                            <div class="gb-stat-icon-box">
                                 <i class="bi bi-check-circle-fill"></i>
                             </div>
-                            <div class="gb-stat-number-lg text-info">{{ stats.completed_projects|default:completed_projects }}</div>
+                            <div class="gb-stat-number-lg">
+                                <span class="stat-count" data-target="{{ stats.completed_projects|default:completed_projects|default:0 }}">{{ stats.completed_projects|default:completed_projects|default:0 }}</span><span class="stat-suffix">+</span>
+                            </div>
                             <div class="gb-stat-label-lg">Completed Milestones</div>
                         </div>
                     </div>
@@ -133,9 +189,198 @@
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     OUR GUIDING VALUES
+     4. HOW IT WORKS (4 STEPS TIMELINE)
      ═══════════════════════════════════════════════════════════ -->
-<section class="py-5 bg-light">
+<section class="py-5 bg-light gb-scroll-reveal border-top">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Simple 4-Step Process</span>
+            <h2 class="fw-bold text-navy">How GigBridge Works</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                From listing requirements to milestone escrow payout, every step is built for transparency and security.
+            </p>
+        </div>
+
+        <div class="row g-4 gb-how-steps-row">
+            <!-- Desktop Connector Line -->
+            <div class="gb-steps-connector-line d-none d-lg-block" aria-hidden="true"></div>
+
+            <!-- Step 1 -->
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-step-card">
+                    <div class="gb-step-circle-wrap">
+                        <div class="gb-step-circle">
+                            <i class="bi bi-briefcase-fill"></i>
+                        </div>
+                        <span class="gb-step-badge-num">1</span>
+                    </div>
+                    <h3 class="gb-step-title">Post or Find a Gig</h3>
+                    <p class="gb-step-desc">
+                        Clients list project deliverables or freelancers discover curated, high-impact opportunities.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 2 -->
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-step-card">
+                    <div class="gb-step-circle-wrap">
+                        <div class="gb-step-circle">
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                        </div>
+                        <span class="gb-step-badge-num">2</span>
+                    </div>
+                    <h3 class="gb-step-title">Agree on Milestones</h3>
+                    <p class="gb-step-desc">
+                        Establish clear deliverables, completion dates, and funded escrow amounts before work begins.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 3 -->
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-step-card">
+                    <div class="gb-step-circle-wrap">
+                        <div class="gb-step-circle">
+                            <i class="bi bi-chat-left-dots-fill"></i>
+                        </div>
+                        <span class="gb-step-badge-num">3</span>
+                    </div>
+                    <h3 class="gb-step-title">Collaborate &amp; Deliver</h3>
+                    <p class="gb-step-desc">
+                        Coordinate via real-time messaging, exchange project files, and submit completed deliverables.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Step 4 -->
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-step-card">
+                    <div class="gb-step-circle-wrap">
+                        <div class="gb-step-circle">
+                            <i class="bi bi-wallet2"></i>
+                        </div>
+                        <span class="gb-step-badge-num">4</span>
+                    </div>
+                    <h3 class="gb-step-title">Approve &amp; Get Paid</h3>
+                    <p class="gb-step-desc">
+                        Clients approve the milestone work, and funds release immediately to the freelancer's wallet.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-4 pt-2">
+            <a href="{% url 'how_it_works' %}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold">
+                See full guide &amp; workflow <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     5. FOR CLIENTS vs FOR FREELANCERS
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-white gb-scroll-reveal border-top">
+    <div class="container py-3">
+        <div class="text-center mb-5">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Tailored Experience</span>
+            <h2 class="fw-bold text-navy">Built for Both Sides of the Marketplace</h2>
+            <p class="text-muted mx-auto mb-0" style="max-width: 580px;">
+                Whether hiring specialist talent or delivering high-value work, GigBridge gives you the tools to succeed.
+            </p>
+        </div>
+
+        <div class="row g-4 align-items-stretch">
+            <!-- Card 1: For Clients (Light Card) -->
+            <div class="col-lg-6">
+                <div class="gb-audience-card gb-card-client">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="gb-stat-icon-box m-0" style="width: 40px; height: 40px; font-size: 1.15rem;">
+                            <i class="bi bi-buildings"></i>
+                        </div>
+                        <span class="badge bg-primary-subtle text-primary fw-bold rounded-pill">Employers &amp; Startups</span>
+                    </div>
+                    <h3 class="fw-bold text-navy mb-2 fs-4">For Clients &amp; Companies</h3>
+                    <p class="text-secondary small mb-0">
+                        Hire vetted technical and design talent with complete milestone security and zero guesswork.
+                    </p>
+
+                    <ul class="gb-benefit-list">
+                        <li class="gb-benefit-item text-secondary">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Zero upfront risk: funds remain safely in escrow until you approve submitted work</span>
+                        </li>
+                        <li class="gb-benefit-item text-secondary">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Pre-vetted specialists with authentic ratings, reviews, and completed portfolios</span>
+                        </li>
+                        <li class="gb-benefit-item text-secondary">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Direct real-time messaging, file exchange, and automated milestone invoices</span>
+                        </li>
+                        <li class="gb-benefit-item text-secondary">
+                            <i class="bi bi-check-circle-fill text-success"></i>
+                            <span>Full intellectual property ownership automatically transferred upon approval</span>
+                        </li>
+                    </ul>
+
+                    <div>
+                        <a href="{% url 'register' %}?role=client" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100 shadow-sm">
+                            Hire Talent <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: For Freelancers (Dark Navy Card) -->
+            <div class="col-lg-6">
+                <div class="gb-audience-card gb-card-freelancer">
+                    <div class="d-flex align-items-center gap-2 mb-2">
+                        <div class="gb-stat-icon-box m-0 text-white" style="width: 40px; height: 40px; font-size: 1.15rem; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25);">
+                            <i class="bi bi-person-workspace"></i>
+                        </div>
+                        <span class="badge bg-white text-dark fw-bold rounded-pill">Independent Specialists</span>
+                    </div>
+                    <h3 class="fw-bold text-white mb-2 fs-4">For Freelancers &amp; Experts</h3>
+                    <p class="text-white-50 small mb-0">
+                        Work with high-caliber businesses and enjoy guaranteed milestone compensation on every job.
+                    </p>
+
+                    <ul class="gb-benefit-list">
+                        <li class="gb-benefit-item text-white-50">
+                            <i class="bi bi-check-circle-fill text-info"></i>
+                            <span class="text-white">Guaranteed payment protection on every funded project milestone</span>
+                        </li>
+                        <li class="gb-benefit-item text-white-50">
+                            <i class="bi bi-check-circle-fill text-info"></i>
+                            <span class="text-white">Direct withdrawals to Indian bank accounts and UPI via Razorpay</span>
+                        </li>
+                        <li class="gb-benefit-item text-white-50">
+                            <i class="bi bi-check-circle-fill text-info"></i>
+                            <span class="text-white">Build your professional reputation with public client feedback</span>
+                        </li>
+                        <li class="gb-benefit-item text-white-50">
+                            <i class="bi bi-check-circle-fill text-info"></i>
+                            <span class="text-white">Zero hidden deductions, clear contract terms, and full autonomy</span>
+                        </li>
+                    </ul>
+
+                    <div>
+                        <a href="{% url 'register' %}?role=freelancer" class="btn btn-light rounded-pill px-4 py-2 fw-bold text-navy w-100 shadow-sm">
+                            Find Work <i class="bi bi-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     6. OUR GUIDING VALUES
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light gb-scroll-reveal border-top">
     <div class="container py-3">
         <div class="text-center mb-5">
             <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">What Guides Us</span>
@@ -149,11 +394,11 @@
             <!-- Value 1 -->
             <div class="col-lg-3 col-md-6">
                 <div class="gb-value-card-v2">
-                    <div class="gb-value-icon-box" style="background: #eff6ff; color: #2563eb;">
+                    <div class="gb-value-icon-box">
                         <i class="bi bi-transparency"></i>
                     </div>
-                    <h4 class="fw-bold text-navy fs-5 mb-2">Radical Transparency</h4>
-                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                    <h3 class="fw-bold text-navy fs-5 mb-2">Radical Transparency</h3>
+                    <p class="text-muted small mb-0 lh-base">
                         Clear project scopes, honest pricing, and genuine client reviews. No hidden deductions or inflated claims.
                     </p>
                 </div>
@@ -162,11 +407,11 @@
             <!-- Value 2 -->
             <div class="col-lg-3 col-md-6">
                 <div class="gb-value-card-v2">
-                    <div class="gb-value-icon-box" style="background: #ecfdf5; color: #059669;">
+                    <div class="gb-value-icon-box">
                         <i class="bi bi-shield-lock-fill"></i>
                     </div>
-                    <h4 class="fw-bold text-navy fs-5 mb-2">Milestone Security</h4>
-                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                    <h3 class="fw-bold text-navy fs-5 mb-2">Milestone Security</h3>
+                    <p class="text-muted small mb-0 lh-base">
                         Clients inspect real deliverables before payment release; freelancers enjoy guaranteed compensation on approved milestones.
                     </p>
                 </div>
@@ -175,11 +420,11 @@
             <!-- Value 3 -->
             <div class="col-lg-3 col-md-6">
                 <div class="gb-value-card-v2">
-                    <div class="gb-value-icon-box" style="background: #fff7ed; color: #ea580c;">
+                    <div class="gb-value-icon-box">
                         <i class="bi bi-lightning-charge-fill"></i>
                     </div>
-                    <h4 class="fw-bold text-navy fs-5 mb-2">Speed &amp; Quality</h4>
-                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                    <h3 class="fw-bold text-navy fs-5 mb-2">Speed &amp; Quality</h3>
+                    <p class="text-muted small mb-0 lh-base">
                         Connect with qualified professionals within hours, backed by real-time messaging, file sharing, and live status updates.
                     </p>
                 </div>
@@ -188,11 +433,11 @@
             <!-- Value 4 -->
             <div class="col-lg-3 col-md-6">
                 <div class="gb-value-card-v2">
-                    <div class="gb-value-icon-box" style="background: #f5f3ff; color: #7c3aed;">
+                    <div class="gb-value-icon-box">
                         <i class="bi bi-award-fill"></i>
                     </div>
-                    <h4 class="fw-bold text-navy fs-5 mb-2">Fair Ownership</h4>
-                    <p class="text-muted small mb-0" style="line-height: 1.6;">
+                    <h3 class="fw-bold text-navy fs-5 mb-2">Fair Ownership</h3>
+                    <p class="text-muted small mb-0 lh-base">
                         Full intellectual property transfer upon milestone payment. Complete autonomy and ownership for clients and freelancers.
                     </p>
                 </div>
@@ -202,19 +447,84 @@
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
-     CALL TO ACTION (CTA)
+     7. FAQ TEASER
      ═══════════════════════════════════════════════════════════ -->
-<section class="py-5 bg-white border-top">
-    <div class="container text-center py-4">
-        <div class="card border-0 rounded-4 p-5 text-white shadow-lg mx-auto" style="background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%); max-width: 900px;">
+<section class="py-5 bg-white gb-scroll-reveal border-top">
+    <div class="container py-3" style="max-width: 820px;">
+        <div class="text-center mb-4">
+            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold mb-2">Common Questions</span>
+            <h2 class="fw-bold text-navy">Frequently Asked Questions</h2>
+            <p class="text-muted small mb-0">Quick answers about payments, milestones, and how GigBridge safeguards projects.</p>
+        </div>
+
+        <div class="accordion gb-about-faq-accordion" id="aboutFaqAccordion">
+            <!-- FAQ 1 -->
+            <div class="accordion-item">
+                <h3 class="accordion-header" id="headingFaq1">
+                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq1" aria-expanded="true" aria-controls="collapseFaq1">
+                        <i class="bi bi-shield-lock-fill text-primary me-2"></i> How does milestone escrow protect my payment?
+                    </button>
+                </h3>
+                <div id="collapseFaq1" class="accordion-collapse collapse show" aria-labelledby="headingFaq1" data-bs-parent="#aboutFaqAccordion">
+                    <div class="accordion-body">
+                        Funds for each milestone are held securely in GigBridge's escrow before work begins. Clients review the submitted deliverable first; funds are only released once explicitly approved. If any issue arises, either party can raise a dispute with our 24/7 resolution desk.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 2 -->
+            <div class="accordion-item">
+                <h3 class="accordion-header" id="headingFaq2">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq2" aria-expanded="false" aria-controls="collapseFaq2">
+                        <i class="bi bi-wallet2 text-primary me-2"></i> When and how do freelancers receive their payouts?
+                    </button>
+                </h3>
+                <div id="collapseFaq2" class="accordion-collapse collapse" aria-labelledby="headingFaq2" data-bs-parent="#aboutFaqAccordion">
+                    <div class="accordion-body">
+                        As soon as a milestone is approved by the client, funds are credited immediately to the freelancer's wallet balance. Withdrawals can be made directly to Indian bank accounts and UPI via Razorpay, typically processing within 24–48 business hours.
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ 3 -->
+            <div class="accordion-item">
+                <h3 class="accordion-header" id="headingFaq3">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFaq3" aria-expanded="false" aria-controls="collapseFaq3">
+                        <i class="bi bi-check-circle-fill text-primary me-2"></i> Is it free to join GigBridge?
+                    </button>
+                </h3>
+                <div id="collapseFaq3" class="accordion-collapse collapse" aria-labelledby="headingFaq3" data-bs-parent="#aboutFaqAccordion">
+                    <div class="accordion-body">
+                        Yes, creating an account on GigBridge is 100% free for both clients and freelancers. Freelancers can browse jobs and submit proposals, while clients can post projects and evaluate talent without any recurring subscription fees.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="text-center mt-3 pt-2">
+            <a href="{% url 'how_it_works' %}" class="small text-primary fw-semibold text-decoration-none">
+                View all FAQs &amp; Platform Guides <i class="bi bi-arrow-right ms-1"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     8. CALL TO ACTION (CTA WITH FIXED READABLE BADGE)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="py-5 bg-light gb-scroll-reveal border-top">
+    <div class="container text-center py-2" style="max-width: 960px;">
+        <div class="gb-about-cta-card mx-auto">
             <div class="row align-items-center g-4">
                 <div class="col-lg-8 text-lg-start">
-                    <span class="badge bg-primary-subtle text-primary rounded-pill mb-2 px-3 py-2 fw-semibold">Join GigBridge Today</span>
-                    <h3 class="fw-bold mb-2 text-white">Ready to Shape the Future of Work?</h3>
+                    <div class="gb-cta-pill-badge mb-3">
+                        <i class="bi bi-stars"></i> Join GigBridge Today
+                    </div>
+                    <h2 class="fw-bold mb-2 text-white fs-3">Ready to Shape the Future of Work?</h2>
                     <p class="text-white-50 mb-0">Join thousands of visionary businesses and top freelancers collaborating with confidence.</p>
                 </div>
                 <div class="col-lg-4 text-lg-end d-flex gap-2 justify-content-lg-end flex-wrap">
-                    <a href="{% url 'register' %}?role=client" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap">
+                    <a href="{% url 'register' %}?role=client" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap shadow-sm">
                         Hire Talent
                     </a>
                     <a href="{% url 'register' %}?role=freelancer" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold text-nowrap">
@@ -225,4 +535,87 @@
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // 1. Intersection Observer for Smooth Section Scroll Reveal
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const revealSections = document.querySelectorAll('.gb-scroll-reveal');
+
+        if ('IntersectionObserver' in window && !prefersReducedMotion) {
+            const revealObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('gb-in-view');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                root: null,
+                threshold: 0.12,
+                rootMargin: '0px 0px -40px 0px'
+            });
+
+            revealSections.forEach(section => revealObserver.observe(section));
+        } else {
+            revealSections.forEach(section => section.classList.add('gb-in-view'));
+        }
+
+        // 2. Count-Up Animation for Statistics Cards
+        const statCounters = document.querySelectorAll('.stat-count');
+        let counterAnimated = false;
+
+        function animateCountUp() {
+            if (counterAnimated) return;
+            counterAnimated = true;
+
+            statCounters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'), 10) || 0;
+                if (target === 0 || prefersReducedMotion) {
+                    counter.textContent = target;
+                    return;
+                }
+
+                const duration = 1400; // ms
+                const startTime = performance.now();
+
+                function step(currentTime) {
+                    const elapsed = currentTime - startTime;
+                    const progress = Math.min(elapsed / duration, 1);
+                    // Ease-out cubic
+                    const easedProgress = 1 - Math.pow(1 - progress, 3);
+                    const currentCount = Math.floor(easedProgress * target);
+
+                    counter.textContent = currentCount;
+
+                    if (progress < 1) {
+                        requestAnimationFrame(step);
+                    } else {
+                        counter.textContent = target;
+                    }
+                }
+
+                requestAnimationFrame(step);
+            });
+        }
+
+        const statsWrap = document.getElementById('statsCounterWrap');
+        if (statsWrap && 'IntersectionObserver' in window && !prefersReducedMotion) {
+            const statsObserver = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        animateCountUp();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.25 });
+
+            statsObserver.observe(statsWrap);
+        } else {
+            animateCountUp();
+        }
+    });
+</script>
 {% endblock %}

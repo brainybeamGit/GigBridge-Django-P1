@@ -1,0 +1,513 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+{% load messaging_tags %}
+
+{% block breadcrumb_current %}Freelancer Profile{% endblock %}
+{% block dashboard_title %}Freelancer Professional Profile{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Freelancer Public Profile - Minimalist Editorial & Luxury Light Blue Theme
+       ========================================================================== */
+    .fp-hero-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 20px;
+        padding: 32px 36px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+        position: relative;
+    }
+
+    .fp-avatar-lg {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2.2rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.28);
+        border: 4px solid #F0F9FF;
+    }
+
+    .fp-proposal-card {
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        border: 1.5px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 24px 28px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+    }
+
+    .fp-stat-box {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 20px 18px;
+        text-align: center;
+        height: 100%;
+        transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+    .fp-stat-box:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.1);
+    }
+
+    .fp-stat-num {
+        font-size: 1.85rem;
+        font-weight: 800;
+        color: #0F172A;
+        line-height: 1.1;
+        margin-bottom: 4px;
+    }
+
+    .fp-stat-label {
+        font-size: 0.76rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748B;
+    }
+
+    /* Skills chips */
+    .fp-skill-chip {
+        display: inline-block;
+        background: #F1F5F9;
+        color: #0F172A;
+        border: 1px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 4px 14px;
+        font-size: 0.78rem;
+        font-weight: 600;
+        margin: 3px 2px;
+        transition: all 0.15s ease;
+    }
+    .fp-skill-chip:hover {
+        background: #E0F2FE;
+        border-color: #BAE6FD;
+        color: #0284C7;
+    }
+
+    /* Rating Breakdown Bar */
+    .fp-rating-bar-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+        font-size: 0.82rem;
+    }
+    .fp-rating-bar-track {
+        flex: 1;
+        height: 8px;
+        border-radius: 999px;
+        background: #E2E8F0;
+        overflow: hidden;
+    }
+    .fp-rating-bar-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #F59E0B;
+    }
+
+    /* Work History Cards */
+    .fp-contract-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 14px;
+        transition: all 0.2s ease;
+    }
+    .fp-contract-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+    }
+
+    .fp-filter-pill {
+        display: inline-block;
+        padding: 6px 16px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-decoration: none;
+        color: #475569;
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        transition: all 0.18s ease;
+    }
+    .fp-filter-pill.active, .fp-filter-pill:hover {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+    }
+</style>
+
+<div class="mb-3">
+    <a href="javascript:history.back()" class="small text-decoration-none fw-semibold text-primary">
+        <i class="bi bi-arrow-left me-1"></i> Back
+    </a>
+</div>
+
+<!-- =========================================================================
+     1. PROPOSAL CONTEXT CARD (SHOWN WHEN OPENED FROM A PROPOSAL)
+     ========================================================================= -->
+{% if proposal_context %}
+<div class="fp-proposal-card">
+    <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold small">
+                    Proposal on Your Project
+                </span>
+                <span class="badge {% if proposal_context.status == 'accepted' %}bg-success{% elif proposal_context.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill px-2 py-1 small">
+                    Status: {{ proposal_context.get_status_display }}
+                </span>
+            </div>
+            <h4 class="fw-bold text-navy mb-1">{{ proposal_context.project.title }}</h4>
+            <div class="d-flex align-items-center gap-3 text-secondary small mb-2 flex-wrap">
+                <div>Bid: <strong class="text-primary fs-6">&#8377;{{ proposal_context.bid_amount|floatformat:0 }}</strong></div>
+                <div>&bull;</div>
+                <div>Delivery: <strong>{{ proposal_context.delivery_days }} calendar days</strong></div>
+                <div>&bull;</div>
+                <div>Submitted: {{ proposal_context.created_at|date:"M d, Y" }}</div>
+            </div>
+            <div class="p-3 bg-white rounded-3 border small text-secondary">
+                <div class="fw-bold text-dark mb-1 small text-uppercase" style="letter-spacing: 0.05em;">Cover Letter Note:</div>
+                {{ proposal_context.cover_letter|linebreaksbr }}
+            </div>
+        </div>
+
+        <div class="col-lg-4 text-lg-end d-flex flex-column gap-2 justify-content-center">
+            {% if proposal_context.status == 'pending' %}
+                <form method="POST" action="{% url 'client_proposal_accept' proposal_context.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100 shadow-sm">
+                        <i class="bi bi-check-circle-fill me-1"></i> Accept &amp; Hire Freelancer
+                    </button>
+                </form>
+                <a href="{% url 'client_proposal_reject' proposal_context.id %}" class="btn btn-outline-danger rounded-pill px-4 py-2 fw-semibold w-100" onclick="return confirm('Are you sure you want to decline this proposal?');">
+                    <i class="bi bi-x-circle me-1"></i> Decline Proposal
+                </a>
+            {% elif proposal_context.status == 'accepted' %}
+                <a href="{% url 'start_conversation' %}?user_id={{ freelancer_user.id }}&project_id={{ proposal_context.project.id }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold w-100 shadow-sm">
+                    <i class="bi bi-chat-dots-fill me-1"></i> Message Freelancer
+                </a>
+                {% if proposal_context.project.contract %}
+                    <a href="{% url 'client_contract_detail' proposal_context.project.contract.id %}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold w-100">
+                        View Active Contract &rarr;
+                    </a>
+                {% endif %}
+            {% else %}
+                <span class="badge bg-secondary p-2 text-center rounded-pill">Proposal Archived</span>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- =========================================================================
+     2. FREELANCER HERO HEADER CARD
+     ========================================================================= -->
+<div class="fp-hero-card">
+    <div class="row align-items-center g-4">
+        <!-- Avatar & Basic Details -->
+        <div class="col-lg-8">
+            <div class="d-flex align-items-start gap-4 flex-wrap flex-sm-nowrap">
+                <div class="fp-avatar-lg">
+                    {% if profile.avatar %}
+                        <img src="{{ profile.avatar.url }}" alt="{{ freelancer_user.username }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                    {% else %}
+                        {{ freelancer_user.first_name|default:freelancer_user.username|slice:":2"|upper }}
+                    {% endif %}
+                </div>
+                <div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <h2 class="fw-bold mb-0 text-navy fs-3">
+                            {{ freelancer_user.get_full_name|default:freelancer_user.username }}
+                        </h2>
+                        {% if profile.is_approved %}
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-3 py-1 fw-bold small">
+                                <i class="bi bi-patch-check-fill me-1"></i> Verified Talent
+                            </span>
+                        {% endif %}
+                        {% if is_new_talent %}
+                            <span class="badge bg-info-subtle text-info-emphasis rounded-pill px-3 py-1 fw-bold small">
+                                <i class="bi bi-stars me-1"></i> New Talent
+                            </span>
+                        {% endif %}
+                    </div>
+                    <div class="text-secondary fw-semibold mt-1 fs-6">
+                        {{ profile.title|default:"Independent Specialist & Technical Freelancer" }}
+                    </div>
+                    <div class="d-flex align-items-center gap-3 text-muted small mt-2 flex-wrap">
+                        <span><i class="bi bi-geo-alt-fill text-primary me-1"></i>{{ profile.location|default:"Remote / Global" }}</span>
+                        <span>&bull;</span>
+                        <span><i class="bi bi-calendar3 me-1"></i>Member since {{ freelancer_user.date_joined|date:"M Y" }}</span>
+                        {% if profile.hourly_rate > 0 %}
+                            <span>&bull;</span>
+                            <span class="fw-bold text-dark">&#8377;{{ profile.hourly_rate|floatformat:0 }}/hr</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Skills Chips -->
+                    {% if profile.skills_list %}
+                        <div class="mt-3">
+                            {% for skill in profile.skills_list %}
+                                <span class="fp-skill-chip">{{ skill }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Contact & Direct Action Box -->
+        <div class="col-lg-4 text-lg-end">
+            <div class="p-3 bg-light rounded-4 border text-start">
+                <div class="small fw-bold text-uppercase text-muted mb-2" style="letter-spacing: 0.05em;">Contact &amp; Privacy</div>
+                {% if can_view_private %}
+                    <div class="small mb-1"><i class="bi bi-envelope text-primary me-2"></i>{{ freelancer_user.email }}</div>
+                    {% if profile.phone %}
+                        <div class="small mb-2"><i class="bi bi-telephone text-primary me-2"></i>{{ profile.phone }}</div>
+                    {% endif %}
+                {% else %}
+                    <div class="small text-muted mb-2">
+                        <i class="bi bi-shield-lock-fill text-warning me-1"></i> Direct contact info (email, phone) is private until a proposal is accepted.
+                    </div>
+                {% endif %}
+
+                {% if proposal_context and proposal_context.status == 'accepted' %}
+                    <a href="{% url 'start_conversation' %}?user_id={{ freelancer_user.id }}&project_id={{ proposal_context.project.id }}" class="btn btn-primary rounded-pill w-100 fw-bold py-2 mt-2 shadow-sm">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Message Freelancer
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- =========================================================================
+     3. LIVE DATABASE METRIC STATS ROW
+     ========================================================================= -->
+<div class="row g-3 mb-4">
+    <!-- Stat 1: Completed Projects -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="fp-stat-box">
+            <div class="fp-stat-num text-success">{{ completed_contracts_count }}</div>
+            <div class="fp-stat-label">Projects Completed</div>
+        </div>
+    </div>
+
+    <!-- Stat 2: Projects In Progress -->
+    <div class="col-xl-2 col-md-4 col-6">
+        <div class="fp-stat-box">
+            <div class="fp-stat-num text-primary">{{ in_progress_contracts_count }}</div>
+            <div class="fp-stat-label">In Progress</div>
+        </div>
+    </div>
+
+    <!-- Stat 3: Acceptance Rate -->
+    <div class="col-xl-3 col-md-4 col-6">
+        <div class="fp-stat-box">
+            <div class="fp-stat-num text-navy">{{ acceptance_rate }}%</div>
+            <div class="fp-stat-label">Proposal Acceptance Rate</div>
+            <small class="text-muted d-block" style="font-size: 0.7rem;">{{ accepted_proposals }} accepted of {{ total_proposals }} submitted</small>
+        </div>
+    </div>
+
+    <!-- Stat 4: Average Rating & Reviews -->
+    <div class="col-xl-3 col-md-6 col-6">
+        <div class="fp-stat-box">
+            <div class="fp-stat-num text-warning">
+                {% if total_reviews > 0 %}
+                    {{ avg_rating }} <span class="fs-6 text-muted">/ 5.0</span>
+                {% else %}
+                    <span class="fs-5 text-muted">No reviews yet</span>
+                {% endif %}
+            </div>
+            <div class="fp-stat-label">Client Rating ({{ total_reviews }} Review{{ total_reviews|pluralize }})</div>
+            {% if total_reviews > 0 %}
+                <div class="small mt-1">{% render_stars avg_rating %}</div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Stat 5: On-Time Delivery -->
+    <div class="col-xl-2 col-md-6 col-12">
+        <div class="fp-stat-box">
+            <div class="fp-stat-num text-info">
+                {% if on_time_rate is not None %}{{ on_time_rate }}%{% else %}100%{% endif %}
+            </div>
+            <div class="fp-stat-label">On-Time Delivery</div>
+        </div>
+    </div>
+</div>
+
+{% if is_new_talent %}
+<div class="alert alert-info border-0 rounded-4 p-3 mb-4 d-flex align-items-center gap-3">
+    <i class="bi bi-stars fs-3 text-info"></i>
+    <div>
+        <h6 class="fw-bold mb-0 text-dark">New on GigBridge!</h6>
+        <small class="text-muted">This specialist recently joined the marketplace and is building their initial project history. Review their bid and cover letter to evaluate fit.</small>
+    </div>
+</div>
+{% endif %}
+
+<div class="row g-4">
+    <!-- Left Column: About & Work History -->
+    <div class="col-lg-8">
+        <!-- About / Bio Section -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-navy mb-3"><i class="bi bi-person-lines-fill text-primary me-2"></i> About &amp; Technical Background</h5>
+            <div class="text-secondary lh-lg mb-0" style="font-size: 0.94rem;">
+                {{ profile.bio|default:"No bio description provided yet."|linebreaksbr }}
+            </div>
+        </div>
+
+        <!-- Work History Section -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <h5 class="fw-bold text-navy mb-0">
+                    <i class="bi bi-briefcase-fill text-primary me-2"></i> Contract &amp; Work History
+                </h5>
+                <div class="d-flex gap-2">
+                    <a href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}history_tab=all" class="fp-filter-pill {% if history_tab == 'all' %}active{% endif %}">
+                        All
+                    </a>
+                    <a href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}history_tab=completed" class="fp-filter-pill {% if history_tab == 'completed' %}active{% endif %}">
+                        Completed
+                    </a>
+                    <a href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}history_tab=in_progress" class="fp-filter-pill {% if history_tab == 'in_progress' %}active{% endif %}">
+                        In Progress
+                    </a>
+                </div>
+            </div>
+
+            {% for contract in history_page_obj %}
+                <div class="fp-contract-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                        <h6 class="fw-bold mb-0 text-dark fs-6">{{ contract.project.title }}</h6>
+                        <span class="badge {% if contract.status == 'completed' %}bg-success{% elif contract.status == 'active' %}bg-primary{% else %}bg-danger{% endif %} rounded-pill px-3 py-1">
+                            {% if contract.status == 'completed' %}Completed{% elif contract.status == 'active' %}In Progress{% else %}Cancelled{% endif %}
+                        </span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 text-muted small flex-wrap mb-2">
+                        <span><i class="bi bi-folder2-open me-1"></i>{{ contract.project.category.name|default:"General" }}</span>
+                        <span>&bull;</span>
+                        <span>Budget: <strong class="text-dark">&#8377;{{ contract.total_amount|floatformat:0 }}</strong></span>
+                        <span>&bull;</span>
+                        <span>Timeline: {{ contract.start_date|date:"M Y" }} &ndash; {% if contract.end_date %}{{ contract.end_date|date:"M Y" }}{% else %}Present{% endif %}</span>
+                    </div>
+
+                    <!-- Client Review if exists -->
+                    {% if contract.review %}
+                        <div class="p-3 bg-light rounded-3 mt-2 border-start border-warning border-3">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <div class="small fw-bold text-dark">
+                                    Client Feedback: {% render_stars contract.review.rating %}
+                                </div>
+                                <small class="text-muted">{{ contract.review.created_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-0 text-secondary small fst-italic">"{{ contract.review.comment }}"</p>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="text-center py-4 text-muted small">
+                    No contracts recorded under this filter.
+                </div>
+            {% endfor %}
+
+            <!-- History Pagination -->
+            {% if history_page_obj.has_other_pages %}
+                <nav class="d-flex justify-content-center mt-3">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if history_page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}history_tab={{ history_tab }}&history_page={{ history_page_obj.previous_page_number }}">&larr;</a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ history_page_obj.number }}</span></li>
+                        {% if history_page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}history_tab={{ history_tab }}&history_page={{ history_page_obj.next_page_number }}">&rarr;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Ratings Breakdown & Reviews -->
+    <div class="col-lg-4">
+        <!-- Rating Breakdown Card -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 mb-4 bg-white">
+            <h5 class="fw-bold text-navy mb-3"><i class="bi bi-bar-chart-fill text-warning me-2"></i> Rating Breakdown</h5>
+            <div class="text-center mb-3">
+                <div class="display-5 fw-bold text-dark">{{ avg_rating }}</div>
+                <div class="mb-1">{% render_stars avg_rating %}</div>
+                <div class="small text-muted">Based on {{ total_reviews }} verified review{{ total_reviews|pluralize }}</div>
+            </div>
+
+            {% for b in rating_breakdown %}
+                <div class="fp-rating-bar-row">
+                    <span class="small fw-semibold text-muted" style="width: 45px;">{{ b.star }} star</span>
+                    <div class="fp-rating-bar-track">
+                        <div class="fp-rating-bar-fill" style="width: {{ b.percent }}%;"></div>
+                    </div>
+                    <span class="small text-muted text-end" style="width: 32px;">{{ b.count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Verified Reviews List -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white">
+            <h5 class="fw-bold text-navy mb-3"><i class="bi bi-chat-quote-fill text-primary me-2"></i> Client Reviews</h5>
+            {% for r in reviews_page_obj %}
+                <div class="border-bottom pb-3 mb-3">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <div>{% render_stars r.rating %}</div>
+                        <small class="text-muted" style="font-size: 0.72rem;">{{ r.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="small text-dark mb-1">"{{ r.comment }}"</p>
+                    <small class="text-muted d-block" style="font-size: 0.72rem;">
+                        Project: {{ r.project.title|truncatechars:28 }}
+                    </small>
+                </div>
+            {% empty %}
+                <div class="text-center py-4 text-muted small">
+                    No client reviews recorded yet.
+                </div>
+            {% endfor %}
+
+            {% if reviews_page_obj.has_other_pages %}
+                <nav class="d-flex justify-content-center mt-2">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if reviews_page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}reviews_page={{ reviews_page_obj.previous_page_number }}">&larr;</a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ reviews_page_obj.number }}</span></li>
+                        {% if reviews_page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?{% if proposal_context %}proposal_id={{ proposal_context.id }}&{% endif %}reviews_page={{ reviews_page_obj.next_page_number }}">&rarr;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

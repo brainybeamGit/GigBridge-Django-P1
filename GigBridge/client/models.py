@@ -303,20 +303,29 @@ class Payment(models.Model):
 
 class Conversation(models.Model):
     participants = models.ManyToManyField(User, related_name='conversations')
-    project = models.ForeignKey(Project, on_delete=models.SET_NULL, null=True, blank=True, related_name='conversations')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, null=True, blank=True, related_name='conversations')
+    client = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='client_conversations')
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True, related_name='freelancer_conversations')
+    proposal = models.ForeignKey('Proposal', on_delete=models.SET_NULL, null=True, blank=True, related_name='conversations')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-updated_at']
+        unique_together = ('project', 'client', 'freelancer')
 
     def __str__(self):
-        return f"Conversation ({self.id})"
+        proj_title = self.project.title if self.project else 'General'
+        client_name = self.client.username if self.client else 'Client'
+        freelancer_name = self.freelancer.username if self.freelancer else 'Freelancer'
+        return f"Conversation #{self.id}: {client_name} & {freelancer_name} ({proj_title})"
 
     def get_other_participant(self, user=None):
         if user and hasattr(user, 'id'):
+            if self.client and self.freelancer:
+                return self.freelancer if user.id == self.client_id else self.client
             return self.participants.exclude(id=user.id).first()
-        return self.participants.first()
+        return self.freelancer or self.participants.first()
 
     def unread_count_for(self, user=None):
         if user and hasattr(user, 'id'):
@@ -324,22 +333,60 @@ class Conversation(models.Model):
         return self.messages.filter(is_read=False).count()
 
     @classmethod
-    def get_or_create_conversation(cls, user1, user2, project=None):
-        if user1 == user2:
+    def get_or_create_conversation(cls, client, freelancer, project=None, proposal=None):
+        if client == freelancer:
             return None, False
-        qs = cls.objects.filter(participants=user1).filter(participants=user2)
-        if project:
-            proj_conv = qs.filter(project=project).first()
-            if proj_conv:
-                return proj_conv, False
-        existing = qs.first()
-        if existing:
-            if project and not existing.project:
-                existing.project = project
-                existing.save(update_fields=['project'])
-            return existing, False
-        conv = cls.objects.create(project=project)
-        conv.participants.add(user1, user2)
+
+        # Normalize client vs freelancer
+        client_user = client
+        freelancer_user = freelancer
+        if project and project.client:
+            if freelancer == project.client:
+                client_user, freelancer_user = freelancer, client
+            else:
+                client_user = project.client
+                freelancer_user = freelancer if freelancer != client_user else client
+
+        if not proposal and project:
+            proposal = project.proposals.filter(freelancer=freelancer_user, status='accepted').first()
+
+        qs = cls.objects.filter(project=project, client=client_user, freelancer=freelancer_user)
+        conv = qs.first()
+        if not conv:
+            conv = cls.objects.filter(participants=client_user).filter(participants=freelancer_user)
+            if project:
+                conv = conv.filter(project=project)
+            conv = conv.first()
+
+        if conv:
+            updated = False
+            if not conv.client:
+                conv.client = client_user
+                updated = True
+            if not conv.freelancer:
+                conv.freelancer = freelancer_user
+                updated = True
+            if project and not conv.project:
+                conv.project = project
+                updated = True
+            if proposal and not conv.proposal:
+                conv.proposal = proposal
+                updated = True
+            if not conv.participants.filter(id=client_user.id).exists():
+                conv.participants.add(client_user)
+            if not conv.participants.filter(id=freelancer_user.id).exists():
+                conv.participants.add(freelancer_user)
+            if updated:
+                conv.save()
+            return conv, False
+
+        conv = cls.objects.create(
+            project=project,
+            client=client_user,
+            freelancer=freelancer_user,
+            proposal=proposal
+        )
+        conv.participants.add(client_user, freelancer_user)
         return conv, True
 
 
@@ -352,10 +399,18 @@ class Message(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ['created_at']
 
     def __str__(self):
-        return f"Message from {self.sender.username}"
+        return f"Message from {self.sender.username} at {self.created_at.strftime('%Y-%m-%d %H:%M')}"
+
+    @property
+    def body(self):
+        return self.content
+
+    @body.setter
+    def body(self, value):
+        self.content = value
 
 
 class Review(models.Model):
@@ -383,18 +438,50 @@ class Review(models.Model):
 
 
 class ContactMessage(models.Model):
+    STATUS_CHOICES = [
+        ('new', 'New'),
+        ('read', 'Read'),
+        ('replied', 'Replied'),
+        ('closed', 'Closed'),
+    ]
+
     name = models.CharField(max_length=100)
     email = models.EmailField()
     subject = models.CharField(max_length=200)
+    topic = models.CharField(max_length=100, blank=True, default='')
     message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='new')
+    ip_address = models.GenericIPAddressField(null=True, blank=True)
     is_resolved = models.BooleanField(default=False)
+    read_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Contact: {self.subject} from {self.name}"
+        return f"{self.ticket_number} - {self.subject} from {self.name}"
+
+    @property
+    def ticket_number(self):
+        return f"GB-{self.id:06d}"
+
+
+class ContactReply(models.Model):
+    message = models.ForeignKey(ContactMessage, on_delete=models.CASCADE, related_name='replies')
+    replied_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='contact_replies')
+    subject = models.CharField(max_length=255)
+    body = models.TextField()
+    sent_at = models.DateTimeField(auto_now_add=True)
+    email_sent = models.BooleanField(default=True)
+    error = models.TextField(blank=True, default='')
+
+    class Meta:
+        ordering = ['-sent_at']
+
+    def __str__(self):
+        return f"Reply to {self.message.ticket_number} ({self.subject})"
 
 
 class PasswordResetOTP(models.Model):
@@ -487,3 +574,23 @@ def handle_contract_pre_delete(sender, instance, **kwargs):
             instance.proposal.save(update_fields=['status'])
     except Exception:
         pass
+
+
+from django.db.models.signals import post_save
+
+@receiver(post_save, sender=Proposal)
+def create_conversation_on_proposal_accepted(sender, instance, **kwargs):
+    """
+    Automatically create a Conversation when a proposal is accepted.
+    Rule: Accepted-only messaging between client and freelancer.
+    """
+    if instance.status == 'accepted':
+        try:
+            Conversation.get_or_create_conversation(
+                client=instance.project.client,
+                freelancer=instance.freelancer,
+                project=instance.project,
+                proposal=instance
+            )
+        except Exception:
+            pass

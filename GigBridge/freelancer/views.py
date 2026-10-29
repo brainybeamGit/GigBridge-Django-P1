@@ -292,79 +292,12 @@ def contracts_view(request):
 
 @login_required
 def messages_view(request):
-    user = request.user
-    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
-        return redirect('client_messages')
-
-    conversations = Conversation.objects.filter(
-        participants=user
-    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at')
-
-    first_conv = conversations.first()
-    if first_conv:
-        return redirect('freelancer_conversation_detail', pk=first_conv.id)
-
-    context = {
-        'conversations': conversations,
-        'active_conversation': None,
-    }
-    return render(request, 'freelancer/messages.html', context)
+    return redirect('messages_inbox')
 
 
 @login_required
 def conversation_detail_view(request, pk):
-    conversation = Conversation.objects.filter(pk=pk).first()
-    if not conversation:
-        messages.info(request, "This conversation has been removed or no longer exists.")
-        return redirect('freelancer_messages')
-
-    if not conversation.participants.filter(id=request.user.id).exists():
-        messages.error(request, "You are not part of this conversation.")
-        return redirect('freelancer_messages')
-
-    # Mark client's messages as read
-    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
-
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        attachment = request.FILES.get('attachment')
-        if content or attachment:
-            msg = Message.objects.create(
-                conversation=conversation,
-                sender=request.user,
-                content=content,
-                attachment=attachment
-            )
-            conversation.updated_at = timezone.now()
-            conversation.save(update_fields=['updated_at'])
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == '1':
-                return JsonResponse({
-                    'status': 'ok',
-                    'id': msg.id,
-                    'content': msg.content,
-                    'time': msg.created_at.strftime('%I:%M %p'),
-                    'is_sender': True,
-                    'sender_name': request.user.first_name or request.user.username,
-                    'attachment_url': msg.attachment.url if msg.attachment else None,
-                    'attachment_name': msg.attachment.name.split('/')[-1] if msg.attachment else None,
-                })
-            return redirect('freelancer_conversation_detail', pk=pk)
-
-    conversations = list(Conversation.objects.filter(
-        participants=request.user
-    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at'))
-
-    for c in conversations:
-        c.other_user = c.get_other_participant(request.user)
-        c.unread_messages_count = c.unread_count_for(request.user)
-
-    context = {
-        'conversations': conversations,
-        'active_conversation': conversation,
-        'chat_messages': conversation.messages.select_related('sender').order_by('created_at'),
-        'other_user': conversation.get_other_participant(request.user),
-    }
-    return render(request, 'freelancer/messages.html', context)
+    return redirect('conversation_detail', conversation_id=pk)
 
 
 @login_required

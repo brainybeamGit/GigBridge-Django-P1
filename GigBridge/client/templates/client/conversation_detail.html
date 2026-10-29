@@ -1,0 +1,634 @@
+{% extends base_template|default:'client/dashboard_base.html' %}
+{% load static %}
+{% load messaging_tags %}
+
+{% block breadcrumb_current %}Chat{% endblock %}
+{% block dashboard_title %}Project Workroom Chat{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Conversation Detail / Chat UI - Modern & Responsive
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #0F172A, #64748B
+       ========================================================================== */
+    .chat-container-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 18px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        min-height: 620px;
+    }
+
+    /* Chat Header */
+    .chat-header-bar {
+        background: #F8FAFC;
+        border-bottom: 1.5px solid #E2E8F0;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+    }
+
+    .chat-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+    }
+
+    /* Message Stream */
+    .chat-message-stream {
+        flex: 1;
+        overflow-y: auto;
+        padding: 24px;
+        background: #FAFAFC;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        min-height: 380px;
+        max-height: 520px;
+        scroll-behavior: smooth;
+    }
+
+    .msg-row {
+        display: flex;
+        flex-direction: column;
+        max-width: 72%;
+    }
+
+    .msg-row-me {
+        align-self: flex-end;
+        align-items: flex-end;
+    }
+
+    .msg-row-other {
+        align-self: flex-start;
+        align-items: flex-start;
+    }
+
+    .msg-bubble {
+        padding: 12px 18px;
+        border-radius: 16px;
+        font-size: 0.92rem;
+        line-height: 1.5;
+        word-break: break-word;
+        box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+    }
+
+    .msg-bubble-me {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-bottom-right-radius: 4px;
+    }
+
+    .msg-bubble-other {
+        background: #FFFFFF;
+        color: #0F172A;
+        border: 1px solid #E2E8F0;
+        border-bottom-left-radius: 4px;
+    }
+
+    .msg-meta-time {
+        font-size: 0.72rem;
+        color: #94A3B8;
+        margin-top: 4px;
+        padding: 0 4px;
+    }
+
+    .msg-attachment-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        text-decoration: none;
+        margin-top: 8px;
+    }
+
+    .msg-attachment-me {
+        background: rgba(255, 255, 255, 0.2);
+        color: #FFFFFF;
+        border: 1px solid rgba(255, 255, 255, 0.35);
+    }
+    .msg-attachment-me:hover { color: #FFFFFF; background: rgba(255, 255, 255, 0.3); }
+
+    .msg-attachment-other {
+        background: #F1F5F9;
+        color: #0284C7;
+        border: 1px solid #BAE6FD;
+    }
+    .msg-attachment-other:hover { background: #E0F2FE; color: #0369A1; }
+
+    /* Online Status Indicators */
+    .chat-avatar-wrapper {
+        position: relative;
+        flex-shrink: 0;
+    }
+    .chat-avatar-status {
+        position: absolute;
+        bottom: 0px;
+        right: 0px;
+        width: 13px;
+        height: 13px;
+        border-radius: 50%;
+        background: #94A3B8;
+        border: 2px solid #FFFFFF;
+        transition: background 0.3s ease;
+    }
+    .chat-avatar-status.is-online {
+        background: #10B981;
+    }
+
+    .chat-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        display: inline-block;
+        background: #94A3B8;
+        transition: background 0.3s ease;
+    }
+    .chat-status-dot.dot-online {
+        background: #10B981;
+        box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+        animation: pulseStatusDot 2s infinite ease-in-out;
+    }
+    @keyframes pulseStatusDot {
+        0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+        70% { transform: scale(1.1); box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+        100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* WhatsApp Style Read Receipts */
+    .msg-read-status {
+        display: inline-flex;
+        align-items: center;
+        margin-left: 2px;
+        line-height: 1;
+    }
+    .tick-delivered {
+        color: #94A3B8;
+        font-size: 1.05rem;
+    }
+    .tick-read {
+        color: #0284C7 !important;
+        font-size: 1.15rem;
+        font-weight: 800;
+    }
+
+    /* Quick Reply Message Chips */
+    .chat-quick-replies-container {
+        padding: 0 0 10px 0;
+        border-bottom: 1px dashed #E2E8F0;
+        margin-bottom: 12px;
+    }
+    .chat-quick-chips-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+    .chat-quick-chips-wrapper::-webkit-scrollbar {
+        height: 4px;
+    }
+    .chat-quick-chips-wrapper::-webkit-scrollbar-thumb {
+        background: #CBD5E1;
+        border-radius: 999px;
+    }
+    .btn-chat-chip {
+        white-space: nowrap;
+        background: #F8FAFC;
+        border: 1px solid #BAE6FD;
+        color: #0369A1;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.77rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        flex-shrink: 0;
+    }
+    .btn-chat-chip:hover {
+        background: #0284C7;
+        color: #FFFFFF;
+        border-color: #0284C7;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.2);
+    }
+    .btn-chat-chip:active {
+        transform: scale(0.97);
+    }
+
+    /* Send Footer */
+    .chat-footer-bar {
+        background: #FFFFFF;
+        border-top: 1.5px solid #E2E8F0;
+        padding: 16px 20px;
+    }
+
+    .chat-input-box {
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 0.92rem;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        resize: none;
+    }
+
+    .chat-input-box:focus {
+        border-color: #0284C7;
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
+        outline: none;
+    }
+
+    .btn-chat-send {
+        background: #0284C7;
+        color: #FFFFFF;
+        border: 1px solid #0284C7;
+        border-radius: 10px;
+        padding: 9px 20px;
+        font-weight: 700;
+        font-size: 0.88rem;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .btn-chat-send:hover {
+        background: #0369A1;
+        border-color: #0369A1;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+</style>
+
+<div class="mb-3">
+    <a href="{% url 'messages_inbox' %}" class="small text-decoration-none fw-semibold text-primary">
+        <i class="bi bi-arrow-left me-1"></i> Back to Messages Inbox
+    </a>
+</div>
+
+<!-- Chat Card Container -->
+<div class="chat-container-card">
+    <!-- 1. Header Bar -->
+    <div class="chat-header-bar">
+        <div class="d-flex align-items-center gap-3">
+            <div class="chat-avatar-wrapper">
+                <div class="chat-avatar">
+                    {% if other_user.profile.avatar %}
+                        <img src="{{ other_user.profile.avatar.url }}" alt="{{ other_user.username }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                    {% else %}
+                        {{ other_user.first_name|default:other_user.username|slice:":2"|upper }}
+                    {% endif %}
+                </div>
+                <span class="chat-avatar-status {% if is_other_online %}is-online{% endif %}" id="chatAvatarDot" title="{% if is_other_online %}Online{% else %}Offline{% endif %}"></span>
+            </div>
+            <div>
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <h5 class="fw-bold mb-0 text-navy fs-6">
+                        {{ other_user.get_full_name|default:other_user.username }}
+                    </h5>
+                    <span class="badge bg-primary-subtle text-primary border small" style="font-size: 0.7rem;">
+                        {{ other_user.profile.get_role_display|default:"Member" }}
+                    </span>
+                    <div class="d-flex align-items-center gap-1 small ms-1" id="chatOnlineStatusContainer">
+                        <span class="chat-status-dot {% if is_other_online %}dot-online{% else %}dot-offline{% endif %}" id="chatStatusDot"></span>
+                        <span class="{% if is_other_online %}text-success fw-bold{% else %}text-muted{% endif %}" id="chatStatusText" style="font-size: 0.74rem;">
+                            {% if is_other_online %}Online{% else %}Offline{% endif %}
+                        </span>
+                    </div>
+                    {% if other_user.profile.role == 'freelancer' %}
+                        <a href="{% url 'freelancer_public_profile' other_user.id %}" class="btn btn-sm btn-outline-primary py-0 px-2 rounded-pill small" style="font-size: 0.72rem;">
+                            View Profile &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+                {% if conversation.project %}
+                    <div class="small text-muted mt-1">
+                        Project: <a href="{% url 'project_detail' conversation.project.id %}" class="text-primary fw-semibold text-decoration-none">{{ conversation.project.title }}</a>
+                        &bull; <span class="badge badge-cd-in_progress" style="font-size: 0.68rem;">Accepted / Active</span>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="d-flex align-items-center gap-2">
+            {% if contract %}
+                {% if request.user.profile.role == 'freelancer' %}
+                    <a href="{% url 'freelancer_contract_detail' contract.id %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-semibold px-3">
+                        <i class="bi bi-briefcase me-1"></i> View Contract
+                    </a>
+                {% else %}
+                    <a href="{% url 'client_contract_detail' contract.id %}" class="btn btn-sm btn-outline-secondary rounded-pill fw-semibold px-3">
+                        <i class="bi bi-briefcase me-1"></i> View Contract
+                    </a>
+                {% endif %}
+            {% endif %}
+            <form method="POST" action="{% url 'conversation_delete' conversation.id %}" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this conversation? This will delete all messages.');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-sm btn-outline-danger rounded-circle p-2" title="Delete Conversation">
+                    <i class="bi bi-trash3"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 2. Chat Message Stream -->
+    <div class="chat-message-stream" id="chatMessageStream">
+        {% for msg in chat_messages %}
+            <div class="msg-row {% if msg.sender == request.user %}msg-row-me{% else %}msg-row-other{% endif %}" data-msg-id="{{ msg.id }}">
+                <div class="msg-bubble {% if msg.sender == request.user %}msg-bubble-me{% else %}msg-bubble-other{% endif %}">
+                    {{ msg.content|linebreaksbr }}
+                    {% if msg.attachment %}
+                        <div>
+                            <a href="{{ msg.attachment.url }}" target="_blank" class="msg-attachment-pill {% if msg.sender == request.user %}msg-attachment-me{% else %}msg-attachment-other{% endif %}">
+                                <i class="bi bi-paperclip"></i>
+                                <span>Attachment</span>
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                <div class="msg-meta-time d-flex align-items-center gap-1">
+                    <span>{{ msg.created_at|time:"h:i A" }} &bull; {{ msg.created_at|date:"M d" }}</span>
+                    {% if msg.sender == request.user %}
+                        <span class="msg-read-status {% if msg.is_read %}is-read{% endif %}" data-status-msg-id="{{ msg.id }}">
+                            {% if msg.is_read %}
+                                <i class="bi bi-check-all tick-read" title="Seen by {{ other_user.first_name|default:other_user.username }}"></i>
+                            {% else %}
+                                <i class="bi bi-check tick-delivered" title="Delivered"></i>
+                            {% endif %}
+                        </span>
+                    {% endif %}
+                </div>
+            </div>
+        {% empty %}
+            <div class="text-center py-5 text-muted my-auto" id="noMessagesPlaceholder">
+                <i class="bi bi-chat-square-dots fs-1 text-primary-subtle d-block mb-2"></i>
+                <div class="fw-bold text-dark">This proposal is accepted!</div>
+                <div class="small text-muted">Send your first message to discuss deliverables, requirements, or schedules.</div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- 3. Send Message Form Footer -->
+    <div class="chat-footer-bar">
+        {% if default_quick_messages %}
+            <div class="chat-quick-replies-container">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <span class="small fw-bold text-uppercase text-muted" style="font-size: 0.7rem; letter-spacing: 0.05em;">
+                        <i class="bi bi-lightning-charge-fill text-warning me-1"></i> Quick Messages ({{ user_role|title }}):
+                    </span>
+                    <span class="text-muted" style="font-size: 0.7rem;">Click chip to insert</span>
+                </div>
+                <div class="chat-quick-chips-wrapper">
+                    {% for qm in default_quick_messages %}
+                        <button type="button" class="btn-chat-chip" data-msg="{{ qm }}" title="Click to insert into message box">
+                            <i class="bi bi-chat-text-fill text-primary" style="font-size: 0.75rem;"></i> {{ qm }}
+                        </button>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <form id="sendMessageForm" method="POST" action="{% url 'send_message' conversation.id %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="d-flex align-items-center gap-2">
+                <label for="attachmentInput" class="btn btn-outline-secondary rounded-circle p-2 flex-shrink-0" title="Attach file or code delivery" style="cursor: pointer;">
+                    <i class="bi bi-paperclip fs-5"></i>
+                    <input type="file" name="attachment" id="attachmentInput" class="d-none">
+                </label>
+                <div class="flex-grow-1 position-relative">
+                    <textarea name="body" id="messageInput" rows="1" class="form-control chat-input-box w-100" placeholder="Type your message here... (Enter to send, Shift+Enter for newline)"></textarea>
+                    <div id="attachmentFileName" class="small text-primary fw-semibold mt-1 d-none"></div>
+                </div>
+                <button type="submit" class="btn btn-chat-send flex-shrink-0" id="sendBtn">
+                    <span>Send</span> <i class="bi bi-send-fill"></i>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const stream = document.getElementById('chatMessageStream');
+        const form = document.getElementById('sendMessageForm');
+        const input = document.getElementById('messageInput');
+        const fileInput = document.getElementById('attachmentInput');
+        const fileNameDisplay = document.getElementById('attachmentFileName');
+        const sendBtn = document.getElementById('sendBtn');
+        const conversationId = "{{ conversation.id }}";
+        let latestMsgId = {{ latest_message_id|default:0 }};
+
+        // Scroll to bottom helper
+        function scrollToBottom() {
+            if (stream) {
+                stream.scrollTop = stream.scrollHeight;
+            }
+        }
+        scrollToBottom();
+
+        // Quick message chips click handler
+        document.querySelectorAll('.btn-chat-chip').forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                const text = this.getAttribute('data-msg');
+                if (input && text) {
+                    input.value = text;
+                    input.focus();
+                    input.style.borderColor = '#0284C7';
+                    setTimeout(() => { input.style.borderColor = ''; }, 600);
+                }
+            });
+        });
+
+        // Show attachment filename when selected
+        if (fileInput) {
+            fileInput.addEventListener('change', function () {
+                if (fileInput.files.length > 0) {
+                    fileNameDisplay.textContent = 'Attached: ' + fileInput.files[0].name;
+                    fileNameDisplay.classList.remove('d-none');
+                } else {
+                    fileNameDisplay.classList.add('d-none');
+                }
+            });
+        }
+
+        // Enter key to send (Shift+Enter for newline)
+        if (input) {
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    form.dispatchEvent(new Event('submit', { cancelable: true }));
+                }
+            });
+        }
+
+        // Helper to update online status header
+        function updateOnlineStatus(isOnline) {
+            const avatarDot = document.getElementById('chatAvatarDot');
+            const statusDot = document.getElementById('chatStatusDot');
+            const statusText = document.getElementById('chatStatusText');
+            if (isOnline) {
+                if (avatarDot) avatarDot.classList.add('is-online');
+                if (statusDot) {
+                    statusDot.classList.remove('dot-offline');
+                    statusDot.classList.add('dot-online');
+                }
+                if (statusText) {
+                    statusText.className = 'text-success fw-bold';
+                    statusText.textContent = 'Online';
+                }
+            } else {
+                if (avatarDot) avatarDot.classList.remove('is-online');
+                if (statusDot) {
+                    statusDot.classList.remove('dot-online');
+                    statusDot.classList.add('dot-offline');
+                }
+                if (statusText) {
+                    statusText.className = 'text-muted';
+                    statusText.textContent = 'Offline';
+                }
+            }
+        }
+
+        // Build HTML for a message bubble
+        function appendMessageBubble(msg) {
+            const placeholder = document.getElementById('noMessagesPlaceholder');
+            if (placeholder) placeholder.remove();
+
+            const isMe = msg.is_me;
+            const row = document.createElement('div');
+            row.className = `msg-row ${isMe ? 'msg-row-me' : 'msg-row-other'}`;
+            row.setAttribute('data-msg-id', msg.id);
+
+            let attachmentHtml = '';
+            if (msg.attachment_url) {
+                attachmentHtml = `
+                    <div>
+                        <a href="${msg.attachment_url}" target="_blank" class="msg-attachment-pill ${isMe ? 'msg-attachment-me' : 'msg-attachment-other'}">
+                            <i class="bi bi-paperclip"></i>
+                            <span>${msg.attachment_name || 'Attachment'}</span>
+                        </a>
+                    </div>
+                `;
+            }
+
+            let readStatusHtml = '';
+            if (isMe) {
+                if (msg.is_read) {
+                    readStatusHtml = `<span class="msg-read-status is-read" data-status-msg-id="${msg.id}"><i class="bi bi-check-all tick-read" title="Seen"></i></span>`;
+                } else {
+                    readStatusHtml = `<span class="msg-read-status" data-status-msg-id="${msg.id}"><i class="bi bi-check tick-delivered" title="Delivered"></i></span>`;
+                }
+            }
+
+            row.innerHTML = `
+                <div class="msg-bubble ${isMe ? 'msg-bubble-me' : 'msg-bubble-other'}">
+                    ${(msg.body || '').replace(/\n/g, '<br>')}
+                    ${attachmentHtml}
+                </div>
+                <div class="msg-meta-time d-flex align-items-center gap-1">
+                    <span>${msg.created_at_time} &bull; ${msg.created_at_date}</span>
+                    ${readStatusHtml}
+                </div>
+            `;
+            stream.appendChild(row);
+            scrollToBottom();
+            if (msg.id > latestMsgId) {
+                latestMsgId = msg.id;
+            }
+        }
+
+        // AJAX Form Send
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                e.preventDefault();
+                const text = input.value.trim();
+                const hasFile = fileInput.files && fileInput.files.length > 0;
+                if (!text && !hasFile) return;
+
+                const formData = new FormData(form);
+                sendBtn.disabled = true;
+
+                fetch("{% url 'send_message' conversation.id %}", {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(r => r.json())
+                .then(data => {
+                    sendBtn.disabled = false;
+                    if (data.status === 'ok') {
+                        input.value = '';
+                        fileInput.value = '';
+                        fileNameDisplay.classList.add('d-none');
+                        appendMessageBubble(data);
+                    } else {
+                        alert(data.message || 'Unable to send message.');
+                    }
+                })
+                .catch(err => {
+                    sendBtn.disabled = false;
+                    form.submit(); // fallback standard submit
+                });
+            });
+        }
+
+        // Polling: Auto-refresh with fetch every 5 seconds
+        setInterval(function () {
+            fetch(`{% url 'fetch_new_messages' conversation.id %}?last_id=${latestMsgId}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        // 1. Append new messages
+                        if (data.messages && data.messages.length > 0) {
+                            data.messages.forEach(msg => {
+                                if (!document.querySelector(`[data-msg-id="${msg.id}"]`)) {
+                                    appendMessageBubble(msg);
+                                }
+                            });
+                        }
+
+                        // 2. WhatsApp-style update: turn delivered checks to double blue seen checks
+                        if (data.read_message_ids && data.read_message_ids.length > 0) {
+                            data.read_message_ids.forEach(function (id) {
+                                const el = document.querySelector(`[data-status-msg-id="${id}"]`);
+                                if (el && !el.classList.contains('is-read')) {
+                                    el.classList.add('is-read');
+                                    el.innerHTML = '<i class="bi bi-check-all tick-read" title="Seen"></i>';
+                                }
+                            });
+                        }
+
+                        // 3. Online status update in real-time
+                        if (data.hasOwnProperty('other_user_online')) {
+                            updateOnlineStatus(data.other_user_online);
+                        }
+                    }
+                })
+                .catch(() => {});
+        }, 5000);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,426 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+
+{% block title %}Ticket #{{ msg.ticket_number }} - {{ msg.subject }} | Admin Console{% endblock %}
+{% block page_title %}Ticket #{{ msg.ticket_number }}{% endblock %}
+{% block page_subtitle %}Inquiry submitted by {{ msg.name }} &bull; {{ msg.created_at|date:"F d, Y at H:i" }}{% endblock %}
+
+{% block content %}
+<style>
+    .msg-badge-new {
+        background: #0284c7;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+    }
+    .msg-badge-read {
+        background: #e2e8f0;
+        color: #475569;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+    }
+    .msg-badge-replied {
+        background: #16a34a;
+        color: #ffffff;
+        font-weight: 700;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+    }
+    .msg-badge-closed {
+        background: #0f172a;
+        color: #ffffff;
+        font-weight: 600;
+        padding: 5px 12px;
+        border-radius: 999px;
+        font-size: 0.8rem;
+    }
+    .reply-thread-item {
+        border: 1px solid #e2e8f0;
+        border-radius: 14px;
+        padding: 18px 22px;
+        margin-bottom: 16px;
+        background: #ffffff;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+    .reply-thread-item.failed {
+        border-color: #fca5a5;
+        background: #fff5f5;
+    }
+    .client-info-sticky {
+        position: -webkit-sticky;
+        position: sticky;
+        top: 90px;
+        z-index: 80;
+    }
+</style>
+
+<!-- Top Breadcrumbs & Action Bar -->
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-0 small">
+            <li class="breadcrumb-item">
+                <a href="{% url 'adminpanel_dashboard' %}" class="text-decoration-none text-muted">Dashboard</a>
+            </li>
+            <li class="breadcrumb-item">
+                <a href="{% url 'adminpanel:messages' %}" class="text-decoration-none text-muted">Messages</a>
+            </li>
+            <li class="breadcrumb-item active fw-bold text-dark" aria-current="page">
+                {{ msg.ticket_number }}
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Top Action Buttons -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+        <a href="{% url 'adminpanel:messages' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
+            <i class="bi bi-arrow-left me-1"></i> All Messages
+        </a>
+
+        <!-- Status Action Button (POST with CSRF) -->
+        <form method="POST" action="{% url 'adminpanel:message_status' msg.id %}" class="m-0">
+            {% csrf_token %}
+            {% if msg.status != 'closed' %}
+                <button type="submit" name="status" value="closed" class="btn btn-dark btn-sm rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-check2-circle me-1"></i> Mark as Closed
+                </button>
+            {% else %}
+                <button type="submit" name="status" value="reopen" class="btn btn-outline-success btn-sm rounded-pill px-3 fw-semibold">
+                    <i class="bi bi-arrow-repeat me-1"></i> Reopen Ticket
+                </button>
+            {% endif %}
+        </form>
+
+        <!-- Delete Modal Button -->
+        <button type="button" class="btn btn-outline-danger btn-sm rounded-pill px-3 fw-semibold" data-bs-toggle="modal" data-bs-target="#deleteDetailModal">
+            <i class="bi bi-trash me-1"></i> Delete
+        </button>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- ──────────────────────────────────────────
+         LEFT COLUMN: Original Message & Reply Form
+         ────────────────────────────────────────── -->
+    <div class="col-lg-8">
+        <!-- Original Inquiry Card -->
+        <div class="admin-card mb-4">
+            <!-- Header -->
+            <div class="p-4 border-bottom bg-light d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div>
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="font-monospace fw-bold text-primary fs-6">{{ msg.ticket_number }}</span>
+                        {% if msg.status == 'new' %}
+                            <span class="msg-badge-new">New</span>
+                        {% elif msg.status == 'read' %}
+                            <span class="msg-badge-read">Read</span>
+                        {% elif msg.status == 'replied' %}
+                            <span class="msg-badge-replied">Replied</span>
+                        {% elif msg.status == 'closed' %}
+                            <span class="msg-badge-closed">Closed</span>
+                        {% endif %}
+                    </div>
+                    <h4 class="fw-bold text-dark mb-0 fs-5">{{ msg.subject }}</h4>
+                </div>
+                <div class="text-end">
+                    <span class="badge bg-white text-dark border px-3 py-2 rounded-pill small">
+                        <i class="bi bi-tag me-1 text-primary"></i> {{ msg.topic|default:"General Inquiry" }}
+                    </span>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="p-4">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-3 border-bottom">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="rounded-circle bg-primary-subtle text-primary fw-bold d-flex align-items-center justify-content-center" style="width: 42px; height: 42px;">
+                            {{ msg.name|slice:":2"|upper }}
+                        </div>
+                        <div>
+                            <div class="fw-bold text-dark">{{ msg.name }}</div>
+                            <a href="mailto:{{ msg.email }}" class="text-decoration-none text-muted small">
+                                {{ msg.email }}
+                            </a>
+                        </div>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="bi bi-clock me-1"></i> Received {{ msg.created_at|date:"F d, Y at H:i" }}
+                    </div>
+                </div>
+
+                <div class="text-dark fs-6" style="line-height: 1.7; white-space: pre-wrap;">{{ msg.message }}</div>
+            </div>
+        </div>
+
+        <!-- Reply History Section -->
+        <div class="admin-card mb-4">
+            <div class="p-3 px-4 border-bottom bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-chat-left-dots text-primary"></i>
+                    <h5 class="fw-bold text-dark mb-0 fs-6">Reply History &amp; Dispatches ({{ replies.count }})</h5>
+                </div>
+                <span class="text-muted small">Logs of all email communication sent to client</span>
+            </div>
+
+            <div class="p-4">
+                {% for reply in replies %}
+                <div class="reply-thread-item {% if not reply.email_sent %}failed{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2 pb-2 border-bottom">
+                        <div>
+                            <span class="fw-bold text-dark">
+                                <i class="bi bi-person-badge me-1 text-primary"></i>
+                                {{ reply.replied_by.get_full_name|default:reply.replied_by.username|default:"Support Administrator" }}
+                            </span>
+                            <span class="text-muted small ms-2">&bull; {{ reply.sent_at|date:"M d, Y at H:i" }}</span>
+                        </div>
+                        <div>
+                            {% if reply.email_sent %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill">
+                                    <i class="bi bi-check-circle-fill me-1"></i> Dispatched via Email
+                                </span>
+                            {% else %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill" title="{{ reply.error }}">
+                                    <i class="bi bi-exclamation-octagon-fill me-1"></i> Delivery Failed
+                                </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if not reply.email_sent and reply.error %}
+                    <div class="alert alert-danger py-2 px-3 small rounded-3 mb-2">
+                        <strong>Error details:</strong> {{ reply.error }}
+                    </div>
+                    {% endif %}
+
+                    <div class="fw-semibold text-secondary small mb-1">
+                        <strong>Subject:</strong> {{ reply.subject }}
+                    </div>
+                    <div class="text-dark small" style="line-height: 1.6; white-space: pre-wrap;">{{ reply.body }}</div>
+                </div>
+                {% empty %}
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-chat-square-text fs-2 d-block text-muted mb-2"></i>
+                    <p class="small mb-0">No email replies have been dispatched for this ticket yet.</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Reply Form Section -->
+        <div class="admin-card p-4" id="replySection">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="gb-contact-icon-box" style="width: 36px; height: 36px; border-radius: 10px; background: rgba(2, 132, 199, 0.1); color: #0284c7; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">
+                        <i class="bi bi-envelope-fill"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0 fs-6">Compose Email Reply</h5>
+                        <small class="text-muted">Sends branded email response to {{ msg.email }}</small>
+                    </div>
+                </div>
+
+                <!-- Fallback mailto link -->
+                <a href="mailto:{{ msg.email }}?subject={{ reply_form.subject.value|urlencode }}&body=%0A%0A---%20Original%20Message%20---%0A{{ msg.message|urlencode }}"
+                   class="btn btn-outline-secondary btn-sm rounded-pill px-3"
+                   title="Open in your default mail application">
+                    <i class="bi bi-envelope-arrow-up me-1"></i> Reply via your mail app
+                </a>
+            </div>
+
+            <form method="POST" action="{% url 'adminpanel:message_reply' msg.id %}" id="adminReplyForm">
+                {% csrf_token %}
+
+                <!-- Subject -->
+                <div class="mb-3">
+                    <label for="replySubject" class="form-label small fw-bold text-dark">Subject <span class="text-danger">*</span></label>
+                    {{ reply_form.subject }}
+                    {% if reply_form.subject.errors %}
+                        <div class="text-danger small mt-1">{{ reply_form.subject.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Body -->
+                <div class="mb-3">
+                    <label for="replyBody" class="form-label small fw-bold text-dark">Reply Body <span class="text-danger">*</span></label>
+                    {{ reply_form.body }}
+                    {% if reply_form.body.errors %}
+                        <div class="text-danger small mt-1">{{ reply_form.body.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                    <span class="text-muted small">
+                        <i class="bi bi-shield-check text-success me-1"></i>
+                        The client will receive this reply with GigBridge branding &amp; quoted context.
+                    </span>
+                    <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4 py-2" id="sendReplyBtn" style="background:#0284c7;border-color:#0284c7;">
+                        <i class="bi bi-send-fill me-1"></i> Send Reply
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ──────────────────────────────────────────
+         RIGHT COLUMN: Client Details & Ingestion Metadata
+         ────────────────────────────────────────── -->
+    <div class="col-lg-4">
+        <!-- Client Metadata Card (Sticky on Scroll) -->
+        <div class="admin-card p-4 client-info-sticky">
+            <h5 class="fw-bold text-dark mb-3 fs-6">Client Information</h5>
+
+            <div class="mb-3">
+                <span class="text-muted small d-block">Full Name</span>
+                <span class="fw-bold text-dark fs-6">{{ msg.name }}</span>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted small d-block">Email Address</span>
+                <div class="d-flex align-items-center justify-content-between">
+                    <a href="mailto:{{ msg.email }}" class="text-primary fw-semibold text-decoration-none font-monospace small">
+                        {{ msg.email }}
+                    </a>
+                    <button type="button" class="btn btn-sm btn-light border py-0 px-2 rounded" onclick="copyText('{{ msg.email }}')" title="Copy email">
+                        <i class="bi bi-clipboard"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted small d-block">Topic Category</span>
+                <span class="badge bg-light text-dark border fw-medium px-2 py-1">
+                    {{ msg.topic|default:"Not Specified" }}
+                </span>
+            </div>
+
+            <div class="mb-3">
+                <span class="text-muted small d-block">Sender IP Address</span>
+                <span class="font-monospace small text-dark">
+                    {{ msg.ip_address|default:"127.0.0.1 (Local / Unknown)" }}
+                </span>
+            </div>
+
+            <hr class="my-3">
+
+            <h5 class="fw-bold text-dark mb-3 fs-6">Timeline &amp; Telemetry</h5>
+
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Submitted:</span>
+                <span class="text-dark small fw-medium">{{ msg.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span class="text-muted small">First Opened / Read:</span>
+                <span class="text-dark small fw-medium">
+                    {% if msg.read_at %}{{ msg.read_at|date:"M d, Y H:i" }}{% else %}Unopened{% endif %}
+                </span>
+            </div>
+
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Last Activity:</span>
+                <span class="text-dark small fw-medium">{{ msg.updated_at|date:"M d, Y H:i" }}</span>
+            </div>
+
+            <div class="mb-2 d-flex justify-content-between align-items-center">
+                <span class="text-muted small">Resolution State:</span>
+                <span class="badge {% if msg.is_resolved %}bg-success-subtle text-success border border-success-subtle{% else %}bg-warning-subtle text-warning border border-warning-subtle{% endif %}">
+                    {% if msg.is_resolved %}Resolved{% else %}Open{% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteDetailModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+            <div class="modal-header p-4 bg-danger-subtle border-bottom border-danger-subtle">
+                <h5 class="modal-title fw-bold text-danger">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i> Delete Ticket #{{ msg.ticket_number }}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="text-dark mb-2">
+                    Are you sure you want to permanently delete ticket <strong>#{{ msg.ticket_number }}</strong>?
+                </p>
+                <div class="p-3 rounded-3 bg-light border mb-3">
+                    <div class="small text-muted mb-1"><strong>Sender:</strong> {{ msg.name }} ({{ msg.email }})</div>
+                    <div class="small text-muted mb-1"><strong>Subject:</strong> {{ msg.subject }}</div>
+                    <div class="small text-muted"><strong>Replies logged:</strong> {{ replies.count }}</div>
+                </div>
+                <p class="text-danger small mb-0">
+                    <i class="bi bi-info-circle me-1"></i> All conversation reply records will be permanently removed.
+                </p>
+            </div>
+            <div class="modal-footer p-3 bg-light border-top">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'adminpanel:message_delete' msg.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger rounded-pill px-4 fw-bold">
+                        Delete Inquiry
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast for Copy Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
+    <div id="adminCopyToast" class="toast align-items-center text-white bg-dark border-0 rounded-4 shadow" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body d-flex align-items-center gap-2">
+                <i class="bi bi-clipboard-check text-success fs-5"></i> Copied to clipboard!
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const replyForm = document.getElementById('adminReplyForm');
+        const sendBtn = document.getElementById('sendReplyBtn');
+
+        if (replyForm && sendBtn) {
+            replyForm.addEventListener('submit', function () {
+                if (replyForm.checkValidity()) {
+                    sendBtn.disabled = true;
+                    sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Dispatching Reply...';
+                }
+            });
+        }
+    });
+
+    function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(showToast);
+        } else {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast();
+        }
+    }
+
+    function showToast() {
+        const toastEl = document.getElementById('adminCopyToast');
+        if (toastEl && typeof bootstrap !== 'undefined') {
+            const toast = new bootstrap.Toast(toastEl, { delay: 2000 });
+            toast.show();
+        }
+    }
+</script>
+{% endblock %}

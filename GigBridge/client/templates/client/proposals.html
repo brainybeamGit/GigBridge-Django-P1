@@ -249,6 +249,57 @@
         margin-top: 12px;
     }
 
+    /* Interactive Cover Letter Preview Box */
+    .prop-cover-letter-box {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        margin-top: 12px;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+    }
+    .prop-cover-letter-box:hover {
+        background: #F0F9FF;
+        border-color: #BAE6FD;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.08);
+    }
+    .prop-cover-letter-tag {
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748B;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+    .prop-cover-letter-open-link {
+        font-size: 0.74rem;
+        font-weight: 700;
+        color: #0284C7;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        transition: color 0.15s ease;
+    }
+    .prop-cover-letter-box:hover .prop-cover-letter-open-link {
+        color: #0369A1;
+        text-decoration: underline;
+    }
+    .prop-cover-letter-snippet {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.5;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
     /* Text-first Action Buttons */
     .btn-act-accept {
         background: #0284C7;
@@ -473,17 +524,27 @@
             <!-- Left: Freelancer Profile -->
             <div class="col-lg-3 col-md-4 border-end-md">
                 <div class="d-flex align-items-center gap-3 mb-2">
-                    <div class="prop-avatar-box">
-                        {{ prop.freelancer.first_name|default:prop.freelancer.username|slice:":2"|upper }}
-                    </div>
+                    <a href="{% url 'freelancer_public_profile' prop.freelancer.id %}?proposal_id={{ prop.id }}" class="text-decoration-none">
+                        <div class="prop-avatar-box">
+                            {{ prop.freelancer.first_name|default:prop.freelancer.username|slice:":2"|upper }}
+                        </div>
+                    </a>
                     <div>
                         <h6 class="fw-bold mb-0" style="color: #0F172A; font-size: 0.95rem;">
-                            {{ prop.freelancer.get_full_name|default:prop.freelancer.username }}
+                            <a href="{% url 'freelancer_public_profile' prop.freelancer.id %}?proposal_id={{ prop.id }}" class="text-decoration-none text-dark hover-primary">
+                                {{ prop.freelancer.get_full_name|default:prop.freelancer.username }}
+                            </a>
                         </h6>
                         <small class="text-muted d-block" style="font-size: 0.76rem;">
                             @{{ prop.freelancer.username }}
                         </small>
                     </div>
+                </div>
+
+                <div class="d-flex align-items-center gap-2 mt-2">
+                    <a href="{% url 'freelancer_public_profile' prop.freelancer.id %}?proposal_id={{ prop.id }}" class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold" style="font-size: 0.74rem;">
+                        <i class="bi bi-person-badge me-1"></i> View Profile
+                    </a>
                 </div>
 
                 <div class="mt-2 text-muted small" style="font-size: 0.78rem;">
@@ -507,9 +568,18 @@
                     </div>
                 </div>
 
-                <div class="prop-cover-letter">
-                    <div class="small fw-bold text-uppercase mb-1" style="font-size: 0.7rem; letter-spacing: 0.05em; color: #64748B;">Cover Letter Note</div>
-                    {{ prop.cover_letter|linebreaksbr|truncatewords:60 }}
+                <div class="prop-cover-letter-box" data-bs-toggle="modal" data-bs-target="#coverLetterModal{{ prop.id }}" role="button" title="Click to view full cover letter">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                        <span class="prop-cover-letter-tag">
+                            <i class="bi bi-chat-quote-fill text-primary"></i> Cover Letter Note
+                        </span>
+                        <span class="prop-cover-letter-open-link">
+                            <span>View Full Note</span> <i class="bi bi-arrows-angle-expand"></i>
+                        </span>
+                    </div>
+                    <div class="prop-cover-letter-snippet">
+                        "{{ prop.cover_letter|default:'No cover letter note provided.' }}"
+                    </div>
                 </div>
             </div>
 
@@ -525,13 +595,17 @@
                     <a href="{% url 'client_proposal_reject' prop.id %}" class="btn-act-decline text-center w-100" onclick="return confirm('Are you sure you want to decline this proposal?');">
                         Decline
                     </a>
-                    <a href="{% url 'client_messages' %}" class="btn-act-chat text-center w-100">
-                        Message Talent
-                    </a>
+                    <div class="p-2 bg-light rounded-3 text-center border text-muted small" title="Accept this proposal to initiate direct messaging with the freelancer.">
+                        <i class="bi bi-lock-fill me-1 text-secondary"></i>
+                        <span style="font-size: 0.74rem;">Accept proposal to chat</span>
+                    </div>
                 {% elif prop.status == 'accepted' %}
                     <span class="badge badge-cd-in_progress py-2 px-3 fw-bold" style="font-size: 0.8rem;">
-                        Contract Created
+                        <i class="bi bi-check-circle-fill me-1"></i> Proposal Accepted
                     </span>
+                    <a href="{% url 'start_conversation' %}?user_id={{ prop.freelancer.id }}&project_id={{ prop.project.id }}" class="btn-act-accept text-center w-100 py-2 shadow-sm">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Message Freelancer
+                    </a>
                     <a href="{% url 'client_contracts' %}" class="btn-act-chat text-center w-100 mt-1">
                         View Workroom &rarr;
                     </a>
@@ -540,6 +614,87 @@
                         Declined
                     </span>
                 {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Modal: Full Cover Letter & Details Popup -->
+    <div class="modal fade" id="coverLetterModal{{ prop.id }}" tabindex="-1" aria-labelledby="coverLetterModalLabel{{ prop.id }}" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 border-0 shadow-lg text-start">
+                <div class="modal-header border-bottom px-4 py-3 bg-light rounded-top-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <div class="prop-avatar-box" style="width: 44px; height: 44px; font-size: 1rem;">
+                            {{ prop.freelancer.first_name|default:prop.freelancer.username|slice:":2"|upper }}
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold text-navy mb-0" id="coverLetterModalLabel{{ prop.id }}">
+                                {{ prop.freelancer.get_full_name|default:prop.freelancer.username }} &ndash; Cover Letter
+                            </h5>
+                            <small class="text-muted">
+                                Submitted on {{ prop.created_at|date:"F d, Y \a\t h:i A" }}
+                            </small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <div class="modal-body p-4">
+                    <!-- Proposal Context Highlights Strip -->
+                    <div class="p-3 rounded-3 mb-3 border bg-light d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div>
+                            <small class="text-muted d-block" style="font-size: 0.72rem;">Project Posting</small>
+                            <strong class="text-dark">{{ prop.project.title }}</strong>
+                        </div>
+                        <div class="d-flex align-items-center gap-4 flex-wrap">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">Proposed Bid</small>
+                                <strong class="text-primary fs-6">${{ prop.bid_amount|floatformat:0 }}</strong>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">Delivery Time</small>
+                                <strong class="text-dark">{{ prop.delivery_days }} calendar days</strong>
+                            </div>
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.72rem;">Status</small>
+                                <span class="badge {% if prop.status == 'accepted' %}bg-success{% elif prop.status == 'rejected' %}bg-danger{% else %}bg-warning text-dark{% endif %} rounded-pill px-2 py-1 small">
+                                    {{ prop.get_status_display }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Full Cover Letter Content -->
+                    <div class="small fw-bold text-uppercase text-muted mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                        <i class="bi bi-file-earmark-text-fill text-primary me-1"></i> Full Proposal Statement:
+                    </div>
+                    <div class="p-3 rounded-3 border text-secondary lh-lg" style="background: #F8FAFC; white-space: pre-line; max-height: 380px; overflow-y: auto; font-size: 0.94rem;">
+                        {{ prop.cover_letter|default:"No cover letter provided." }}
+                    </div>
+                </div>
+
+                <div class="modal-footer border-top px-4 py-3 bg-light rounded-bottom-4 d-flex justify-content-between flex-wrap gap-2">
+                    <div>
+                        <a href="{% url 'freelancer_public_profile' prop.freelancer.id %}?proposal_id={{ prop.id }}" class="btn btn-outline-primary rounded-pill px-3 py-1 btn-sm fw-semibold">
+                            <i class="bi bi-person-badge me-1"></i> View Full Profile
+                        </a>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if prop.status == 'pending' %}
+                            <form method="POST" action="{% url 'client_proposal_accept' prop.id %}" class="d-inline">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-primary rounded-pill px-4 py-2 btn-sm fw-bold">
+                                    Accept &amp; Hire &rarr;
+                                </button>
+                            </form>
+                        {% elif prop.status == 'accepted' %}
+                            <a href="{% url 'start_conversation' %}?user_id={{ prop.freelancer.id }}&project_id={{ prop.project.id }}" class="btn btn-primary rounded-pill px-4 py-2 btn-sm fw-bold">
+                                <i class="bi bi-chat-dots-fill me-1"></i> Message Freelancer
+                            </a>
+                        {% endif %}
+                        <button type="button" class="btn btn-secondary rounded-pill px-3 py-2 btn-sm" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
             </div>
         </div>
     </div>

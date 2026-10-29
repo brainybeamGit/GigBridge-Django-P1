@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     UserProfile, Category, Project, Proposal,
     Contract, Milestone, Payment, Conversation,
-    Message, Review, ContactMessage
+    Message, Review, ContactMessage, ContactReply
 )
 
 
@@ -63,11 +63,21 @@ class ReviewAdmin(admin.ModelAdmin):
     list_filter = ('rating',)
 
 
+class ContactReplyInline(admin.TabularInline):
+    model = ContactReply
+    extra = 0
+    readonly_fields = ('replied_by', 'subject', 'body', 'sent_at', 'email_sent', 'error')
+    can_delete = False
+    show_change_link = True
+
+
 @admin.register(ContactMessage)
 class ContactMessageAdmin(admin.ModelAdmin):
-    list_display = ('name', 'email', 'subject', 'is_resolved', 'created_at')
-    list_filter = ('is_resolved',)
-    search_fields = ('name', 'email', 'subject')
+    list_display = ('ticket_number', 'name', 'email', 'subject', 'topic', 'status', 'created_at', 'read_at')
+    list_filter = ('status', 'topic', 'is_resolved', 'created_at')
+    search_fields = ('name', 'email', 'subject', 'message', 'topic', 'id')
+    readonly_fields = ('ticket_number', 'ip_address', 'created_at', 'updated_at', 'read_at')
+    inlines = [ContactReplyInline]
 
 
 @admin.register(Conversation)

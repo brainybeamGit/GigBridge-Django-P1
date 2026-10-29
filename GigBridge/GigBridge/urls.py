@@ -10,6 +10,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('freelancer/', include('freelancer.urls')),
     path('', include('client.urls')),
+    path('', include(('adminpanel.urls', 'adminpanel'), namespace='adminpanel')),
     path('', include('adminpanel.urls')),
 ]
 

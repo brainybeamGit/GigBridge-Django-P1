@@ -237,9 +237,14 @@
                 <span>Payments &amp; Invoices</span>
             </a>
 
-            <a href="{% url 'client_messages' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_messages' or request.resolver_match.url_name == 'client_conversation_detail' %}active{% endif %}">
+            <a href="{% url 'messages_inbox' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'messages_inbox' or request.resolver_match.url_name == 'conversation_detail' or request.resolver_match.url_name == 'client_messages' or request.resolver_match.url_name == 'client_conversation_detail' %}active{% endif %}">
                 <i class="bi bi-chat-dots"></i>
-                <span>Messages</span>
+                <span class="d-flex align-items-center justify-content-between flex-grow-1">
+                    <span>Messages</span>
+                    {% if unread_messages_count > 0 %}
+                        <span class="badge rounded-pill bg-danger" style="font-size: 0.7rem; padding: 2px 7px;">{{ unread_messages_count }}</span>
+                    {% endif %}
+                </span>
             </a>
 
             <a href="{% url 'client_reviews' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_reviews' %}active{% endif %}">

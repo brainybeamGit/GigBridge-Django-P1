@@ -69,15 +69,15 @@
                 <div class="d-flex align-items-center gap-2">
                     {% if user.is_authenticated %}
                         <!-- Quick Messages Icon Button -->
-                        {% if user.profile.role == 'freelancer' %}
-                            <a href="{% url 'freelancer_messages' %}" class="gb-nav-icon-badge text-decoration-none" title="Messages">
-                                <i class="bi bi-chat-dots-fill"></i>
-                            </a>
-                        {% else %}
-                            <a href="{% url 'client_messages' %}" class="gb-nav-icon-badge text-decoration-none" title="Messages">
-                                <i class="bi bi-chat-dots-fill"></i>
-                            </a>
-                        {% endif %}
+                        <a href="{% url 'messages_inbox' %}" class="gb-nav-icon-badge text-decoration-none position-relative" title="Messages">
+                            <i class="bi bi-chat-dots-fill"></i>
+                            {% if unread_messages_count > 0 %}
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger border border-light" style="font-size: 0.62rem; padding: 0.25em 0.45em;">
+                                    {{ unread_messages_count }}
+                                    <span class="visually-hidden">unread messages</span>
+                                </span>
+                            {% endif %}
+                        </a>
 
                         <!-- User Profile Dropdown -->
                         <div class="dropdown">

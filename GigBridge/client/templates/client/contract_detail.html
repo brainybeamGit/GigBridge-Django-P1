@@ -481,11 +481,17 @@
             </div>
 
             <div class="d-flex align-items-center gap-3">
-                <div class="user-avatar-sm" style="width: 58px; height: 58px; font-size: 1.4rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800;">
-                    {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
-                </div>
+                <a href="{% url 'freelancer_public_profile' contract.freelancer.id %}" class="text-decoration-none">
+                    <div class="user-avatar-sm" style="width: 58px; height: 58px; font-size: 1.4rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800;">
+                        {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
+                    </div>
+                </a>
                 <div>
-                    <h5 class="fw-bold text-navy mb-0">{{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h5>
+                    <h5 class="fw-bold text-navy mb-0">
+                        <a href="{% url 'freelancer_public_profile' contract.freelancer.id %}" class="text-decoration-none text-navy">
+                            {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                        </a>
+                    </h5>
                     <small class="text-muted d-block">{{ contract.freelancer.profile.title|default:"Full-Stack Independent Developer" }}</small>
                     <div class="d-flex align-items-center gap-2 mt-1">
                         <span class="badge bg-light text-dark border small">Rating: {{ contract.freelancer.profile.average_rating|default:"5.0" }} / 5.0</span>

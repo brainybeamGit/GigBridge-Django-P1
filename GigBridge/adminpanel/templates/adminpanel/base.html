@@ -13,6 +13,8 @@
 
     <!-- Bootstrap 5.3 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     <style>
         /* ═══════════════════════════════════════════════════════════════════
@@ -472,8 +474,13 @@
                 <span>Ratings &amp; Reviews</span>
                 <span class="admin-nav-index">09</span>
             </a>
-            <a href="{% url 'adminpanel_messages' %}" class="admin-nav-item {% if active_tab == 'messages' or request.resolver_match.url_name == 'adminpanel_messages' %}active{% endif %}">
-                <span>User Inquiries</span>
+            <a href="{% url 'adminpanel:messages' %}" class="admin-nav-item {% if active_tab == 'messages' or request.resolver_match.url_name == 'messages' or request.resolver_match.url_name == 'adminpanel_messages' or request.resolver_match.url_name == 'message_detail' or request.resolver_match.url_name == 'adminpanel_message_detail' %}active{% endif %}">
+                <span class="d-flex align-items-center gap-2">
+                    <span>Messages</span>
+                    {% if unread_messages_count %}
+                        <span class="badge rounded-pill bg-primary" style="font-size:0.68rem;padding:2px 7px;font-weight:700;">{{ unread_messages_count }}</span>
+                    {% endif %}
+                </span>
                 <span class="admin-nav-index">10</span>
             </a>
 

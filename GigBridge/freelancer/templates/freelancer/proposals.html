@@ -437,13 +437,29 @@
                                 {% endif %}
                             </td>
                             <td class="text-end">
-                                <div class="d-flex justify-content-end gap-2 flex-wrap">
-                                    <a href="{% url 'start_conversation' %}?user_id={{ proposal.project.client.id }}&project_id={{ proposal.project.id }}" class="prop-btn-action prop-btn-outline">
-                                        Client Chat
-                                    </a>
-                                    {% if proposal.contract %}
-                                        <a href="{% url 'freelancer_contract_detail' proposal.contract.id %}" class="prop-btn-action prop-btn-primary">
-                                            View Contract &rarr;
+                                <div class="d-flex justify-content-end align-items-center gap-2 flex-wrap">
+                                    {% if proposal.status == 'accepted' %}
+                                        <a href="{% url 'start_conversation' %}?user_id={{ proposal.project.client.id }}&project_id={{ proposal.project.id }}" class="prop-btn-action prop-btn-primary">
+                                            <i class="bi bi-chat-dots-fill me-1"></i> Message Client
+                                        </a>
+                                        {% if proposal.contract %}
+                                            <a href="{% url 'freelancer_contract_detail' proposal.contract.id %}" class="prop-btn-action prop-btn-outline">
+                                                Contract &rarr;
+                                            </a>
+                                        {% endif %}
+                                    {% elif proposal.status == 'pending' %}
+                                        <span class="badge bg-secondary-subtle text-secondary border px-3 py-2 rounded-pill small" style="font-size: 0.76rem;">
+                                            <i class="bi bi-clock-history me-1"></i> Awaiting client decision
+                                        </span>
+                                        <a href="{% url 'project_detail' proposal.project.pk %}" class="prop-btn-action prop-btn-outline">
+                                            Job Details
+                                        </a>
+                                    {% elif proposal.status == 'rejected' %}
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-3 py-2 rounded-pill small" style="font-size: 0.76rem;">
+                                            <i class="bi bi-x-circle me-1"></i> Not selected
+                                        </span>
+                                        <a href="{% url 'project_detail' proposal.project.pk %}" class="prop-btn-action prop-btn-outline">
+                                            Job Details
                                         </a>
                                     {% else %}
                                         <a href="{% url 'project_detail' proposal.project.pk %}" class="prop-btn-action prop-btn-outline">

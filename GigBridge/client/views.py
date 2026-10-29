@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db import transaction
 from django.db.models import Avg, Count, Sum, Q
 from django.core.paginator import Paginator
+from django.core.cache import cache
 from django.http import JsonResponse, HttpResponseForbidden
 from django.views.decorators.http import require_POST
 from django.utils import timezone
@@ -30,6 +31,7 @@ from .forms import (
     RegistrationForm, ProjectForm, ProposalForm,
     ReviewForm, ContactForm, UserProfileForm, MessageForm
 )
+from .helpers import can_message, can_message_conversation
 
 
 # ─────────────────────────── Helpers ───────────────────────────
@@ -608,12 +610,26 @@ def how_it_works_view(request):
 
 
 def contact_view(request):
+    sent_ticket = request.GET.get('sent', '').strip()
     if request.method == 'POST':
+        # Honeypot check: reject bots silently
+        if request.POST.get('website_url'):
+            return redirect('contact')
+
         form = ContactForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, "Thank you! Your message has been received. We'll get back to you within 24 hours.")
-            return redirect('contact')
+            contact_msg = form.save(commit=False)
+            contact_msg.status = 'new'
+            # Extract client IP address if available
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                contact_msg.ip_address = x_forwarded_for.split(',')[0].strip()
+            else:
+                contact_msg.ip_address = request.META.get('REMOTE_ADDR')
+            contact_msg.save()
+            ticket_no = contact_msg.ticket_number
+            messages.success(request, f"Message sent! We'll reply to your email within 4 hours. (Ticket #{ticket_no})")
+            return redirect(f"{reverse('contact')}?sent={ticket_no}")
         else:
             messages.error(request, "Please fix the errors below.")
     else:
@@ -624,7 +640,10 @@ def contact_view(request):
                 'email': request.user.email,
             }
         form = ContactForm(initial=initial)
-    return render(request, 'client/contact.html', {'form': form})
+    return render(request, 'client/contact.html', {
+        'form': form,
+        'sent_ticket': sent_ticket,
+    })
 
 
 def reviews_view(request):
@@ -1027,6 +1046,14 @@ def client_proposal_accept_view(request, proposal_id):
             amount=final_amount,
             status='pending',
             due_date=deadline_date,
+        )
+
+        # Create or link Conversation immediately for accepted proposal
+        Conversation.get_or_create_conversation(
+            client=request.user,
+            freelancer=proposal.freelancer,
+            project=project,
+            proposal=proposal
         )
 
     messages.success(
@@ -1437,26 +1464,301 @@ def client_payment_verify_view(request):
     return redirect('client_contract_detail', pk=contract.id)
 
 
+# ─────────────────────────── Accepted-Only Messaging & Chat (Part A) ───────────────────────────
+
+@login_required
+def messages_inbox_view(request):
+    """
+    Inbox page: /messages/ (name: messages_inbox)
+    Lists all accepted conversations with last message preview, unread count badge,
+    and project name, newest first.
+    """
+    user = request.user
+    all_convs = Conversation.objects.filter(
+        Q(participants=user) | Q(client=user) | Q(freelancer=user)
+    ).select_related('project', 'project__client', 'client', 'freelancer').prefetch_related('messages', 'participants').order_by('-updated_at').distinct()
+
+    valid_convs = []
+    for conv in all_convs:
+        if can_message_conversation(user, conv):
+            conv.other_user = conv.get_other_participant(user)
+            conv.unread_count = conv.unread_count_for(user)
+            conv.last_msg = conv.messages.order_by('-created_at').first()
+            valid_convs.append(conv)
+
+    search_query = request.GET.get('q', '').strip()
+    if search_query:
+        sq = search_query.lower()
+        valid_convs = [
+            c for c in valid_convs
+            if (c.project and sq in c.project.title.lower()) or
+               (c.other_user and (sq in c.other_user.username.lower() or sq in (c.other_user.get_full_name() or '').lower()))
+        ]
+
+    context = {
+        'conversations': valid_convs,
+        'search_query': search_query,
+    }
+    return render(request, 'client/messages_inbox.html', context)
+
+
+@login_required
+def conversation_detail_view(request, conversation_id):
+    """
+    Chat UI page: /messages/<conversation_id>/ (name: conversation_detail)
+    Server-side security verification: checks request user is client or freelancer
+    and proposal is accepted.
+    Header with project title & other user avatar.
+    Scrollable message list (blue on right for sender, grey on left for recipient).
+    Send box with optional file attachment.
+    """
+    conversation = get_object_or_404(
+        Conversation.objects.select_related('project', 'project__client', 'client', 'freelancer'),
+        id=conversation_id
+    )
+
+    if not can_message_conversation(request.user, conversation):
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'error', 'message': 'Messaging is restricted to accepted proposals.'}, status=403)
+        messages.error(request, "Messaging access denied. Clients and freelancers can only chat once a proposal is accepted.")
+        return redirect('messages_inbox')
+
+    # Record active user presence in cache for online status indicator
+    cache.set(f'user_last_seen_{request.user.id}', timezone.now().timestamp(), timeout=45)
+
+    # Automatically mark unread incoming messages as read upon opening
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+    other_user = conversation.get_other_participant(request.user)
+    contract = getattr(conversation.project, 'contract', None) if conversation.project else None
+
+    # Check other user online status
+    is_other_online = False
+    if other_user:
+        last_seen = cache.get(f'user_last_seen_{other_user.id}')
+        if last_seen and (timezone.now().timestamp() - last_seen) < 30:
+            is_other_online = True
+
+    # Role-based quick reply message suggestions
+    user_role = getattr(getattr(request.user, 'profile', None), 'role', 'freelancer')
+    if user_role == 'freelancer':
+        default_quick_messages = [
+            "Hi! I'm reviewing the project specifications now and ready to begin.",
+            "Working on the deliverables right now, everything is on schedule.",
+            "I've uploaded the milestone deliverables for your review.",
+            "Could you please clarify this requirement when you have a moment?",
+            "All requested revisions have been completed according to feedback.",
+        ]
+    else:
+        default_quick_messages = [
+            "Hello! Glad to have you on board. Let's make this project a great success.",
+            "Please share a quick progress update when convenient.",
+            "The latest deliverable looks great, thank you!",
+            "Could you make a minor adjustment or revision on this?",
+            "Milestone approved! Ready to proceed with the next phase.",
+        ]
+
+    # Handle standard form POST submission if JavaScript is disabled
+    if request.method == 'POST':
+        body = request.POST.get('body') or request.POST.get('content', '').strip()
+        attachment = request.FILES.get('attachment')
+        if body or attachment:
+            Message.objects.create(
+                conversation=conversation,
+                sender=request.user,
+                content=body,
+                attachment=attachment
+            )
+            conversation.updated_at = timezone.now()
+            conversation.save(update_fields=['updated_at'])
+            return redirect('conversation_detail', conversation_id=conversation.id)
+
+    chat_messages = conversation.messages.select_related('sender', 'sender__profile').order_by('created_at')
+
+    context = {
+        'conversation': conversation,
+        'other_user': other_user,
+        'chat_messages': chat_messages,
+        'contract': contract,
+        'latest_message_id': chat_messages.last().id if chat_messages.exists() else 0,
+        'is_other_online': is_other_online,
+        'default_quick_messages': default_quick_messages,
+        'user_role': user_role,
+    }
+    return render(request, 'client/conversation_detail.html', context)
+
+
+@login_required
+@require_POST
+def send_message_view(request, conversation_id):
+    """
+    Endpoint: /messages/<conversation_id>/send/ (name: send_message)
+    POST-only with CSRF.
+    Enforces server-side security. Returns JSON for AJAX fetch or redirects.
+    """
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+
+    if not can_message_conversation(request.user, conversation):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized chat access.'}, status=403)
+
+    # Keep sender active in cache
+    cache.set(f'user_last_seen_{request.user.id}', timezone.now().timestamp(), timeout=45)
+
+    body = request.POST.get('body') or request.POST.get('content', '').strip()
+    attachment = request.FILES.get('attachment')
+
+    if not body and not attachment:
+        return JsonResponse({'status': 'error', 'message': 'Message body or attachment required.'}, status=400)
+
+    msg = Message.objects.create(
+        conversation=conversation,
+        sender=request.user,
+        content=body,
+        attachment=attachment
+    )
+    conversation.updated_at = timezone.now()
+    conversation.save(update_fields=['updated_at'])
+
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest' or 'fetch' in request.META.get('HTTP_ACCEPT', '') or request.GET.get('ajax') == '1'
+    if is_ajax:
+        return JsonResponse({
+            'status': 'ok',
+            'id': msg.id,
+            'body': msg.content,
+            'sender_id': msg.sender_id,
+            'sender_name': msg.sender.first_name or msg.sender.username,
+            'is_me': True,
+            'is_read': msg.is_read,
+            'created_at_time': msg.created_at.strftime('%I:%M %p'),
+            'created_at_date': msg.created_at.strftime('%b %d, %Y'),
+            'attachment_url': msg.attachment.url if msg.attachment else None,
+            'attachment_name': msg.attachment.name.split('/')[-1] if msg.attachment else None,
+        })
+
+    return redirect('conversation_detail', conversation_id=conversation.id)
+
+
+@login_required
+def fetch_new_messages_view(request, conversation_id):
+    """
+    Endpoint: /messages/<conversation_id>/fetch/ (name: fetch_new_messages)
+    GET JSON endpoint for auto-refresh polling every 5 seconds.
+    Returns messages where id > last_id, updates seen receipts, and returns online status.
+    """
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+
+    if not can_message_conversation(request.user, conversation):
+        return JsonResponse({'status': 'error', 'message': 'Unauthorized chat access.'}, status=403)
+
+    # Keep request user active in cache
+    cache.set(f'user_last_seen_{request.user.id}', timezone.now().timestamp(), timeout=45)
+
+    try:
+        last_id = int(request.GET.get('last_id', 0))
+    except (ValueError, TypeError):
+        last_id = 0
+
+    new_messages = conversation.messages.filter(id__gt=last_id).select_related('sender').order_by('created_at')
+
+    # Mark incoming new messages as read
+    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
+
+    # All message IDs sent by request.user that are now marked as read
+    read_message_ids = list(
+        conversation.messages.filter(sender=request.user, is_read=True).values_list('id', flat=True)
+    )
+
+    # Check other user online status
+    other_user = conversation.get_other_participant(request.user)
+    is_other_online = False
+    if other_user:
+        last_seen = cache.get(f'user_last_seen_{other_user.id}')
+        if last_seen and (timezone.now().timestamp() - last_seen) < 30:
+            is_other_online = True
+
+    items = []
+    for msg in new_messages:
+        items.append({
+            'id': msg.id,
+            'body': msg.content,
+            'sender_id': msg.sender_id,
+            'sender_name': msg.sender.first_name or msg.sender.username,
+            'is_me': (msg.sender_id == request.user.id),
+            'is_read': msg.is_read,
+            'created_at_time': msg.created_at.strftime('%I:%M %p'),
+            'created_at_date': msg.created_at.strftime('%b %d, %Y'),
+            'attachment_url': msg.attachment.url if msg.attachment else None,
+            'attachment_name': msg.attachment.name.split('/')[-1] if msg.attachment else None,
+        })
+
+    return JsonResponse({
+        'status': 'ok',
+        'messages': items,
+        'read_message_ids': read_message_ids,
+        'other_user_online': is_other_online,
+    })
+
+
 @login_required
 def start_conversation_view(request):
+    """
+    Initiates or redirects to a conversation.
+    Strictly verifies can_message(user, project) before granting access.
+    """
     other_user_id = request.GET.get('user_id') or request.POST.get('user_id')
     project_id = request.GET.get('project_id') or request.POST.get('project_id')
     initial_message = request.POST.get('message', '').strip()
 
     if not other_user_id:
         messages.error(request, "No recipient specified.")
-        return redirect('home')
+        return redirect('messages_inbox')
 
     other_user = get_object_or_404(User, id=other_user_id)
     if other_user == request.user:
         messages.warning(request, "You cannot message yourself.")
-        return redirect('home')
+        return redirect('messages_inbox')
 
     project = None
     if project_id:
         project = Project.objects.filter(id=project_id).first()
 
-    conversation, _ = Conversation.get_or_create_conversation(request.user, other_user, project=project)
+    # Rule: Can only message if proposal is accepted or contract exists
+    if project:
+        if not can_message(request.user, project, other_user=other_user):
+            messages.warning(request, "Messaging is restricted. Clients and freelancers can only chat once a proposal is accepted on this project.")
+            return redirect('project_detail', pk=project.id)
+    else:
+        shares_accepted = Proposal.objects.filter(
+            Q(project__client=request.user, freelancer=other_user) |
+            Q(project__client=other_user, freelancer=request.user),
+            status='accepted'
+        ).exists()
+        shares_contract = Contract.objects.filter(
+            Q(client=request.user, freelancer=other_user) |
+            Q(client=other_user, freelancer=request.user)
+        ).exists()
+        if not (shares_accepted or shares_contract or request.user.is_superuser):
+            messages.warning(request, "Direct messaging is available only between clients and freelancers with an accepted proposal.")
+            return redirect('messages_inbox')
+
+    if project and project.client_id == request.user.id:
+        client_user = request.user
+        freelancer_user = other_user
+    elif project and project.client_id == other_user.id:
+        client_user = other_user
+        freelancer_user = request.user
+    elif getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        client_user = request.user
+        freelancer_user = other_user
+    else:
+        client_user = other_user
+        freelancer_user = request.user
+
+    conversation, _ = Conversation.get_or_create_conversation(
+        client=client_user,
+        freelancer=freelancer_user,
+        project=project
+    )
 
     if initial_message:
         Message.objects.create(
@@ -1467,108 +1769,172 @@ def start_conversation_view(request):
         conversation.updated_at = timezone.now()
         conversation.save(update_fields=['updated_at'])
 
-    if getattr(request.user, 'profile', None) and request.user.profile.role == 'freelancer':
-        return redirect('freelancer_conversation_detail', pk=conversation.id)
-    else:
-        return redirect('client_conversation_detail', pk=conversation.id)
+    return redirect('conversation_detail', conversation_id=conversation.id)
 
 
 @login_required
 def client_messages_view(request):
-    user = request.user
-    if getattr(user, 'profile', None) and user.profile.role == 'freelancer':
-        return redirect('freelancer_messages')
-    conversations = Conversation.objects.filter(
-        participants=user
-    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at')
-
-    first_conv = conversations.first()
-    if first_conv:
-        return redirect('client_conversation_detail', pk=first_conv.id)
-
-    context = {
-        'conversations': conversations,
-        'active_conversation': None,
-    }
-    return render(request, 'client/messages.html', context)
+    return redirect('messages_inbox')
 
 
 @login_required
 def client_conversation_detail_view(request, pk):
-    user = request.user
-    if getattr(user, 'profile', None) and user.profile.role == 'freelancer':
-        return redirect('freelancer_conversation_detail', pk=pk)
-    conversation = Conversation.objects.filter(pk=pk).first()
-    if not conversation:
-        messages.info(request, "This conversation has been removed or no longer exists.")
-        return redirect('client_messages')
-    if not conversation.participants.filter(id=request.user.id).exists():
-        messages.error(request, "You are not part of this conversation.")
-        return redirect('client_messages')
+    return redirect('conversation_detail', conversation_id=pk)
 
-    # Mark incoming messages as read
-    conversation.messages.filter(is_read=False).exclude(sender=request.user).update(is_read=True)
 
-    if request.method == 'POST':
-        content = request.POST.get('content', '').strip()
-        attachment = request.FILES.get('attachment')
-        if content or attachment:
-            msg = Message.objects.create(
-                conversation=conversation,
-                sender=request.user,
-                content=content,
-                attachment=attachment
-            )
-            conversation.updated_at = timezone.now()
-            conversation.save(update_fields=['updated_at'])
-            if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or request.GET.get('ajax') == '1':
-                return JsonResponse({
-                    'status': 'ok',
-                    'id': msg.id,
-                    'content': msg.content,
-                    'time': msg.created_at.strftime('%I:%M %p'),
-                    'date': msg.created_at.strftime('%b %d'),
-                    'is_sender': True,
-                    'sender_name': request.user.first_name or request.user.username,
-                    'attachment_url': msg.attachment.url if msg.attachment else None,
-                    'attachment_name': msg.attachment.name.split('/')[-1] if msg.attachment else None,
-                })
-            return redirect('client_conversation_detail', pk=pk)
-
-    conversations = list(Conversation.objects.filter(
-        participants=request.user
-    ).select_related('project').prefetch_related('participants', 'messages').order_by('-updated_at'))
-
-    for c in conversations:
-        c.other_user = c.get_other_participant(request.user)
-        c.unread_messages_count = c.unread_count_for(request.user)
-
-    msgs = conversation.messages.select_related('sender').order_by('created_at')
-    contract = getattr(conversation.project, 'contract', None) if conversation.project else None
-
-    context = {
-        'conversations': conversations,
-        'active_conversation': conversation,
-        'conversation': conversation,
-        'chat_messages': msgs,
-        'messages_list': msgs,
-        'other_user': conversation.get_other_participant(request.user),
-        'contract': contract,
-    }
-    return render(request, 'client/messages.html', context)
+@login_required
+def conversation_delete_view(request, conversation_id):
+    conversation = get_object_or_404(Conversation, id=conversation_id)
+    if not conversation.participants.filter(id=request.user.id).exists() and not request.user.is_superuser:
+        messages.error(request, "Unauthorized to delete this conversation.")
+        return redirect('messages_inbox')
+    conversation.messages.all().delete()
+    conversation.delete()
+    messages.success(request, "Conversation removed successfully.")
+    return redirect('messages_inbox')
 
 
 @login_required
 def client_conversation_delete_view(request, pk):
-    conversation = Conversation.objects.filter(pk=pk).first()
-    if conversation:
-        if not conversation.participants.filter(id=request.user.id).exists() and not request.user.is_superuser:
-            messages.error(request, "Unauthorized to delete this conversation.")
-            return redirect('client_messages')
-        conversation.messages.all().delete()
-        conversation.delete()
-        messages.success(request, "Conversation removed successfully.")
-    return redirect('client_messages')
+    return conversation_delete_view(request, conversation_id=pk)
+
+
+# ─────────────────────────── Freelancer Public Profile (Part B) ───────────────────────────
+
+@login_required
+def freelancer_public_profile_view(request, id):
+    """
+    Public freelancer profile page viewable by logged-in clients and admins.
+    URL: /freelancers/<id>/ (name: freelancer_public_profile)
+    Sections:
+    - Header: photo, name, title/headline, location, member since, verified badge, skills, hourly rate.
+    - Live calculated Stats: completed projects, in progress, proposals submitted, acceptance rate %,
+      average rating, review count, on-time delivery rate.
+    - Proposal Context Card (if opened from a proposal): project title, bid, delivery, cover letter,
+      Accept/Decline buttons and 'Message Freelancer' button if accepted.
+    - Work history with tabs (All / Completed / In Progress), status badges, client reviews.
+    - Reviews list & 5-to-1 rating breakdown percentage bars.
+    - Privacy: Hides email & phone until proposal is accepted.
+    """
+    freelancer_user = get_object_or_404(
+        User.objects.select_related('profile'),
+        id=id
+    )
+    profile = getattr(freelancer_user, 'profile', None)
+
+    # Optional proposal context if passed from client proposals list
+    proposal_id = request.GET.get('proposal_id')
+    proposal_context = None
+    if proposal_id:
+        proposal_context = Proposal.objects.filter(
+            id=proposal_id, freelancer=freelancer_user
+        ).select_related('project', 'project__category').first()
+        if proposal_context and proposal_context.project.client_id != request.user.id and not request.user.is_superuser:
+            proposal_context = None
+
+    # Privacy Protection: Email and phone hidden until proposal is accepted
+    can_view_private = False
+    if request.user.is_authenticated:
+        if request.user.id == freelancer_user.id or request.user.is_superuser:
+            can_view_private = True
+        else:
+            has_accepted_proposal = Proposal.objects.filter(
+                project__client=request.user,
+                freelancer=freelancer_user,
+                status='accepted'
+            ).exists()
+            has_contract = Contract.objects.filter(
+                client=request.user,
+                freelancer=freelancer_user
+            ).exists()
+            can_view_private = has_accepted_proposal or has_contract
+
+    # Check for existing conversation
+    existing_conversation = None
+    if proposal_context and proposal_context.status == 'accepted':
+        existing_conversation = Conversation.objects.filter(
+            project=proposal_context.project,
+            freelancer=freelancer_user
+        ).first()
+
+    # Live platform stats (using aggregate & annotate)
+    contracts_base = Contract.objects.filter(freelancer=freelancer_user)
+    completed_contracts_count = contracts_base.filter(status='completed').count()
+    in_progress_contracts_count = contracts_base.filter(status='active').count()
+
+    total_proposals = Proposal.objects.filter(freelancer=freelancer_user).count()
+    accepted_proposals = Proposal.objects.filter(freelancer=freelancer_user, status='accepted').count()
+    acceptance_rate = round((accepted_proposals / total_proposals) * 100) if total_proposals > 0 else 0
+
+    # Reviews & Ratings aggregation
+    reviews_qs = Review.objects.filter(reviewee=freelancer_user).select_related('reviewer', 'project', 'contract').order_by('-created_at')
+    total_reviews = reviews_qs.count()
+    avg_rating_raw = reviews_qs.aggregate(Avg('rating'))['rating__avg']
+    avg_rating = round(avg_rating_raw, 1) if avg_rating_raw else (5.0 if completed_contracts_count > 0 else 0.0)
+
+    # 5-Star to 1-Star Rating breakdown bars
+    rating_breakdown = []
+    for star in [5, 4, 3, 2, 1]:
+        star_count = reviews_qs.filter(rating=star).count()
+        star_pct = round((star_count / total_reviews) * 100) if total_reviews > 0 else 0
+        rating_breakdown.append({
+            'star': star,
+            'count': star_count,
+            'percent': star_pct,
+        })
+
+    # On-Time Delivery Rate
+    completed_with_deadlines = [
+        c for c in contracts_base.filter(status='completed').select_related('project')
+        if c.project and c.project.deadline and c.end_date
+    ]
+    if completed_with_deadlines:
+        on_time_count = sum(1 for c in completed_with_deadlines if c.end_date.date() <= c.project.deadline)
+        on_time_rate = round((on_time_count / len(completed_with_deadlines)) * 100)
+    else:
+        on_time_rate = 100 if completed_contracts_count > 0 else None
+
+    # Handle brand new freelancers gracefully with "New Talent" badge
+    is_new_talent = (completed_contracts_count == 0 and total_reviews == 0)
+
+    # Work History Filter Tabs
+    history_tab = request.GET.get('history_tab', 'all').strip()
+    history_qs = contracts_base.select_related('project', 'project__category', 'client', 'review').order_by('-created_at')
+    if history_tab == 'completed':
+        history_qs = history_qs.filter(status='completed')
+    elif history_tab == 'in_progress':
+        history_qs = history_qs.filter(status='active')
+
+    paginator_history = Paginator(history_qs, 6)
+    history_page_num = request.GET.get('history_page', 1)
+    history_page_obj = paginator_history.get_page(history_page_num)
+
+    # Reviews Pagination
+    paginator_reviews = Paginator(reviews_qs, 5)
+    reviews_page_num = request.GET.get('reviews_page', 1)
+    reviews_page_obj = paginator_reviews.get_page(reviews_page_num)
+
+    context = {
+        'freelancer_user': freelancer_user,
+        'profile': profile,
+        'proposal_context': proposal_context,
+        'can_view_private': can_view_private,
+        'existing_conversation': existing_conversation,
+        'completed_contracts_count': completed_contracts_count,
+        'in_progress_contracts_count': in_progress_contracts_count,
+        'total_proposals': total_proposals,
+        'accepted_proposals': accepted_proposals,
+        'acceptance_rate': acceptance_rate,
+        'total_reviews': total_reviews,
+        'avg_rating': avg_rating,
+        'rating_breakdown': rating_breakdown,
+        'on_time_rate': on_time_rate,
+        'is_new_talent': is_new_talent,
+        'history_tab': history_tab,
+        'history_page_obj': history_page_obj,
+        'reviews_page_obj': reviews_page_obj,
+    }
+    return render(request, 'client/freelancer_profile.html', context)
 
 
 @login_required

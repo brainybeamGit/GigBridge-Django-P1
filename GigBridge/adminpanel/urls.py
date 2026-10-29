@@ -56,8 +56,17 @@ urlpatterns = [
     path('adminpanel/reviews/', views.reviews_view, name='adminpanel_reviews'),
     path('adminpanel/reviews/<int:review_id>/delete/', views.review_delete_view, name='adminpanel_review_delete'),
 
-    # Messages
-    path('adminpanel/messages/', views.contact_messages_view, name='adminpanel_messages'),
-    path('adminpanel/messages/<int:msg_id>/toggle/', views.contact_message_toggle_view, name='adminpanel_message_toggle'),
+    # Messages (Full Contact Inquiries & Replies Module)
+    path('adminpanel/messages/', views.contact_messages_list_view, name='messages'),
+    path('adminpanel/messages/', views.contact_messages_list_view, name='adminpanel_messages'),
+    path('adminpanel/messages/<int:msg_id>/', views.contact_message_detail_view, name='message_detail'),
+    path('adminpanel/messages/<int:msg_id>/', views.contact_message_detail_view, name='adminpanel_message_detail'),
+    path('adminpanel/messages/<int:msg_id>/reply/', views.contact_message_reply_view, name='message_reply'),
+    path('adminpanel/messages/<int:msg_id>/reply/', views.contact_message_reply_view, name='adminpanel_message_reply'),
+    path('adminpanel/messages/<int:msg_id>/status/', views.contact_message_status_view, name='message_status'),
+    path('adminpanel/messages/<int:msg_id>/status/', views.contact_message_status_view, name='adminpanel_message_status'),
+    path('adminpanel/messages/<int:msg_id>/toggle/', views.contact_message_status_view, name='adminpanel_message_toggle'),
+    path('adminpanel/messages/<int:msg_id>/delete/', views.contact_message_delete_view, name='message_delete'),
     path('adminpanel/messages/<int:msg_id>/delete/', views.contact_message_delete_view, name='adminpanel_message_delete'),
+    path('adminpanel/messages/bulk/', views.contact_messages_bulk_view, name='messages_bulk_action'),
 ]

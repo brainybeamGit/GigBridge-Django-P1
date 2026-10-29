@@ -228,9 +228,14 @@
                 <span>Earnings &amp; Payouts</span>
             </a>
 
-            <a href="{% url 'freelancer_messages' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_messages' or request.resolver_match.url_name == 'freelancer_conversation_detail' %}active{% endif %}">
+            <a href="{% url 'messages_inbox' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'messages_inbox' or request.resolver_match.url_name == 'conversation_detail' or request.resolver_match.url_name == 'freelancer_messages' or request.resolver_match.url_name == 'freelancer_conversation_detail' %}active{% endif %}">
                 <i class="bi bi-chat-dots"></i>
-                <span>Client Messages</span>
+                <span class="d-flex align-items-center justify-content-between flex-grow-1">
+                    <span>Messages</span>
+                    {% if unread_messages_count > 0 %}
+                        <span class="badge rounded-pill bg-danger" style="font-size: 0.7rem; padding: 2px 7px;">{{ unread_messages_count }}</span>
+                    {% endif %}
+                </span>
             </a>
 
             <a href="{% url 'freelancer_profile' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_profile' %}active{% endif %}">
@@ -302,7 +307,7 @@
                         <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_proposals' %}"><i class="bi bi-envelope-paper me-2 text-primary"></i> My Proposals</a></li>
                         <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_contracts' %}"><i class="bi bi-file-earmark-check me-2 text-primary"></i> Active Contracts</a></li>
                         <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_earnings' %}"><i class="bi bi-wallet2 me-2 text-primary"></i> Earnings &amp; Payouts</a></li>
-                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_messages' %}"><i class="bi bi-chat-dots me-2 text-primary"></i> Messages</a></li>
+                        <li><a class="dropdown-item py-2 rounded-2" href="{% url 'messages_inbox' %}"><i class="bi bi-chat-dots me-2 text-primary"></i> Messages</a></li>
                         <li><a class="dropdown-item py-2 rounded-2" href="{% url 'freelancer_profile' %}"><i class="bi bi-person-gear me-2 text-primary"></i> Profile Settings</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li><a class="dropdown-item py-2 rounded-2" href="{% url 'home' %}"><i class="bi bi-house me-2 text-secondary"></i> Main Website</a></li>

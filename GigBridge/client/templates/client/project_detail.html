@@ -415,9 +415,21 @@
                     {% endif %}
 
                     {% if user.is_authenticated and not is_owner %}
-                        <a href="{% url 'start_conversation' %}?user_id={{ project.client.id }}&project_id={{ project.id }}" class="btn btn-outline-primary w-100 rounded-3 fw-bold py-2 mb-3 d-flex align-items-center justify-content-center gap-2">
-                            <i class="bi bi-chat-dots me-1"></i> Chat with Client
-                        </a>
+                        {% if user_proposal %}
+                            {% if user_proposal.status == 'accepted' %}
+                                <a href="{% url 'start_conversation' %}?user_id={{ project.client.id }}&project_id={{ project.id }}" class="btn btn-primary w-100 rounded-3 fw-bold py-2 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                    <i class="bi bi-chat-dots-fill me-1"></i> Message Client
+                                </a>
+                            {% elif user_proposal.status == 'pending' %}
+                                <div class="p-2 mb-3 bg-secondary-subtle text-secondary rounded-3 border text-center small fw-semibold">
+                                    <i class="bi bi-clock-history me-1"></i> Awaiting client decision
+                                </div>
+                            {% elif user_proposal.status == 'rejected' %}
+                                <div class="p-2 mb-3 bg-danger-subtle text-danger rounded-3 border border-danger-subtle text-center small fw-semibold">
+                                    <i class="bi bi-x-circle me-1"></i> Not selected
+                                </div>
+                            {% endif %}
+                        {% endif %}
                     {% endif %}
 
                     <!-- Specification Attributes -->

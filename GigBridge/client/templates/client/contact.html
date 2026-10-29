@@ -5,13 +5,17 @@
 
 {% block content %}
 <!-- ═══════════════════════════════════════════════════════════
-     HERO BANNER
+     HERO BANNER (COMPACT LUXE GRADIENT WITH GLASS STAT CARDS)
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-contact-hero">
-    <div class="container position-relative text-center" style="z-index: 2;">
+<section class="gb-contact-hero gb-fade-up">
+    <!-- Background glow blobs -->
+    <span class="gb-ct-blob gb-ct-blob-1" aria-hidden="true"></span>
+    <span class="gb-ct-blob gb-ct-blob-2" aria-hidden="true"></span>
+
+    <div class="container position-relative text-center gb-ct-hero-inner">
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-2 small text-white-50">
+            <ol class="breadcrumb justify-content-center mb-3 small text-white-50">
                 <li class="breadcrumb-item">
                     <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
                         <i class="bi bi-house-door me-1"></i> Home
@@ -21,204 +25,400 @@
             </ol>
         </nav>
 
-        <div class="gb-hero-pill-badge mx-auto">
-            <i class="bi bi-chat-dots-fill"></i> Specialized Support &amp; Partnerships
+        <div class="gb-hero-pill-badge mx-auto mb-2">
+            <i class="bi bi-chat-dots-fill me-1"></i> Specialized Support &amp; Inquiries
         </div>
 
         <h1 class="gb-contact-hero-title">Get in Touch with the GigBridge Team</h1>
         <p class="gb-contact-hero-subtitle mx-auto">
-            Have questions about client hiring, freelancer payments, milestone escrow, or platform partnerships? Reach out to our specialized support team.
+            Have questions about client hiring, milestone escrow, freelancer payouts, or platform partnerships? Our dedicated support team in India is here to assist you.
         </p>
 
-        <!-- Response Badges -->
-        <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap text-white-50 small mt-3">
-            <span class="d-inline-flex align-items-center gap-1 text-white">
-                <i class="bi bi-lightning-charge-fill text-warning"></i> Avg Response &lt; 4 Hours
-            </span>
-            <span>&bull;</span>
-            <span class="d-inline-flex align-items-center gap-1 text-white">
-                <i class="bi bi-shield-check text-success"></i> 24/7 Escrow Assistance
-            </span>
-            <span>&bull;</span>
-            <span class="d-inline-flex align-items-center gap-1 text-white">
-                <i class="bi bi-patch-check-fill text-info"></i> Direct Enterprise Support
-            </span>
+        <!-- 3 Glass Stat Cards -->
+        <div class="row g-3 justify-content-center mt-2 mx-auto gb-ct-stats">
+            <div class="col-md-4 col-sm-6 col-12">
+                <div class="gb-hero-glass-card">
+                    <div class="gb-glass-card-icon text-warning"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <div>
+                        <div class="gb-glass-card-val">4 hrs</div>
+                        <div class="gb-glass-card-lbl">Avg Response Time</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-12">
+                <div class="gb-hero-glass-card">
+                    <div class="gb-glass-card-icon text-info"><i class="bi bi-shield-check"></i></div>
+                    <div>
+                        <div class="gb-glass-card-val">24/7</div>
+                        <div class="gb-glass-card-lbl">Escrow Help</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 col-sm-6 col-12">
+                <div class="gb-hero-glass-card">
+                    <div class="gb-glass-card-icon text-primary-subtle"><i class="bi bi-patch-check-fill"></i></div>
+                    <div>
+                        <div class="gb-glass-card-val">Dedicated</div>
+                        <div class="gb-glass-card-lbl">Enterprise Support</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </section>
-
 <!-- ═══════════════════════════════════════════════════════════
-     CONTACT FORM & INFORMATION SIDEBAR
+     MAIN SECTION (FLOATING CARD OVER HERO GRADIENT)
      ═══════════════════════════════════════════════════════════ -->
-<section class="py-5 bg-light">
-    <div class="container py-3">
-        <div class="row g-5">
+<section class="py-5 bg-light gb-contact-overlap-wrap">
+    <div class="container py-2">
+        <div class="row g-4 align-items-start">
             <!-- ──────────────────────────────────────────
-                 LEFT COLUMN: Interactive Contact Form
+                 LEFT COLUMN: Form or Success Card + FAQ
                  ────────────────────────────────────────── -->
-            <div class="col-lg-7">
-                <div class="gb-contact-card">
-                    <div class="d-flex align-items-center gap-2 mb-2">
-                        <i class="bi bi-envelope-paper-heart-fill text-primary fs-4"></i>
-                        <h2 class="fw-bold text-navy mb-0 fs-4">Send Us a Message</h2>
+            <div class="col-lg-7 gb-fade-up-delay-1">
+                {% if sent_ticket %}
+                <!-- Success Card in place of form -->
+                <div class="gb-contact-card gb-success-card text-center p-4 p-md-5 mb-4" id="contactSuccessCard" role="alert">
+                    <div class="gb-success-icon-badge mx-auto mb-3 shadow-sm">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <h2 class="fw-bold text-navy mb-2 fs-3">Message Sent!</h2>
+                    <p class="text-muted mb-4 max-w-500 mx-auto" style="max-width: 480px;">
+                        Thank you for reaching out to GigBridge. We have recorded your request and our support desk will review and reply to your email within <strong>4 hours</strong>.
+                    </p>
+                    <div class="d-inline-flex align-items-center gap-2 px-4 py-2 rounded-pill bg-light border border-success-subtle mb-4 shadow-2xs">
+                        <span class="text-muted small fw-medium">Ticket Reference:</span>
+                        <span class="fw-bold text-success font-monospace fs-6">{{ sent_ticket }}</span>
+                    </div>
+                    <div>
+                        <a href="{% url 'contact' %}" class="btn btn-outline-primary rounded-pill px-4 py-2 fw-semibold">
+                            <i class="bi bi-arrow-counterclockwise me-1"></i> Send Another Message
+                        </a>
+                    </div>
+                </div>
+                {% else %}
+                <!-- Contact Form Card -->
+                <div class="gb-contact-card" id="contactFormCard">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="gb-contact-icon-box" style="width: 38px; height: 38px; font-size: 1.15rem;">
+                                <i class="bi bi-envelope-fill"></i>
+                            </div>
+                            <h2 class="fw-bold text-navy mb-0 fs-4">Send Us a Message</h2>
+                        </div>
+                        <span class="text-muted small"><span class="text-danger">*</span> Required fields</span>
                     </div>
                     <p class="text-muted small mb-3">
-                        Fill out the form below and our team will get back to you promptly. Select a topic shortcut for faster routing.
+                        Choose a topic shortcut below or describe your request directly. We route your message directly to the appropriate desk.
                     </p>
 
-                    <!-- Quick Topic Shortcuts -->
-                    <div class="mb-3">
-                        <span class="text-muted small fw-semibold d-block mb-1">Select a topic:</span>
-                        <div class="gb-topic-pills-wrap">
-                            <span class="gb-topic-pill" onclick="setSubject('Hiring & Post a Project Inquiry')">
-                                <i class="bi bi-briefcase me-1"></i> Hiring &amp; Jobs
-                            </span>
-                            <span class="gb-topic-pill" onclick="setSubject('Freelancer Bidding & Profile Help')">
-                                <i class="bi bi-person-workspace me-1"></i> Freelancer Help
-                            </span>
-                            <span class="gb-topic-pill" onclick="setSubject('Milestone Escrow & Payment Issue')">
-                                <i class="bi bi-shield-lock me-1"></i> Payments &amp; Escrow
-                            </span>
-                            <span class="gb-topic-pill" onclick="setSubject('Partnership & Enterprise Inquiry')">
-                                <i class="bi bi-buildings me-1"></i> Enterprise
-                            </span>
-                            <span class="gb-topic-pill" onclick="setSubject('Technical Bug / Website Feedback')">
-                                <i class="bi bi-bug me-1"></i> Bug / Feedback
-                            </span>
+                    <!-- Topic Chips -->
+                    <div class="mb-4">
+                        <label class="form-label text-navy fw-semibold small mb-2 d-block">
+                            Select Topic Shortcut:
+                        </label>
+                        <div class="gb-topic-chips-wrap" role="group" aria-label="Topic Selection Chips">
+                            <button type="button" class="gb-topic-chip" data-topic="Hiring &amp; Projects" data-subject="Hiring &amp; Post a Project Inquiry">
+                                <i class="bi bi-briefcase"></i> Hiring &amp; Projects
+                            </button>
+                            <button type="button" class="gb-topic-chip" data-topic="Freelancer Help" data-subject="Freelancer Bidding &amp; Profile Help">
+                                <i class="bi bi-person-workspace"></i> Freelancer Help
+                            </button>
+                            <button type="button" class="gb-topic-chip" data-topic="Payments &amp; Escrow" data-subject="Milestone Escrow &amp; Payment Issue">
+                                <i class="bi bi-shield-lock"></i> Payments &amp; Escrow
+                            </button>
+                            <button type="button" class="gb-topic-chip" data-topic="Enterprise &amp; Partnerships" data-subject="Enterprise &amp; Partnership Inquiry">
+                                <i class="bi bi-buildings"></i> Enterprise
+                            </button>
+                            <button type="button" class="gb-topic-chip" data-topic="Bug / Feedback" data-subject="Technical Bug / Website Feedback">
+                                <i class="bi bi-bug"></i> Bug / Feedback
+                            </button>
                         </div>
                     </div>
 
-                    <form method="POST" action="{% url 'contact' %}">
+                    <form method="POST" action="{% url 'contact' %}" id="contactForm" novalidate>
                         {% csrf_token %}
 
-                        <div class="row g-3 mb-3">
+                        <!-- Hidden Honeypot Field (Silently Rejected if filled) -->
+                        <div class="d-none" aria-hidden="true">
+                            <label for="id_website_url">Website URL (leave blank)</label>
+                            <input type="text" name="website_url" id="id_website_url" tabindex="-1" autocomplete="off">
+                        </div>
+
+                        <!-- Hidden Topic Field -->
+                        <input type="hidden" name="topic" id="contact_topic" value="{{ form.topic.value|default:'' }}">
+
+                        <div class="row g-3 mb-1">
+                            <!-- Full Name (Floating Label) -->
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-navy">
-                                    Your Full Name <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-person"></i></span>
-                                    {{ form.name }}
+                                <div class="form-floating mb-3">
+                                    <input type="text"
+                                           name="name"
+                                           class="form-control {% if form.name.errors %}is-invalid{% endif %}"
+                                           id="contact_name"
+                                           placeholder="Your Full Name"
+                                           value="{{ form.name.value|default:'' }}"
+                                           required
+                                           aria-required="true">
+                                    <label for="contact_name">
+                                        <i class="bi bi-person me-1 text-muted"></i> Your Full Name <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.name.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.name.errors.0 }}</div>
+                                    {% endif %}
                                 </div>
-                                {% if form.name.errors %}
-                                    <div class="text-danger small mt-1">{{ form.name.errors.0 }}</div>
-                                {% endif %}
                             </div>
 
+                            <!-- Email Address (Floating Label) -->
                             <div class="col-md-6">
-                                <label class="form-label small fw-bold text-navy">
-                                    Email Address <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text bg-light text-muted"><i class="bi bi-envelope"></i></span>
-                                    {{ form.email }}
+                                <div class="form-floating mb-3">
+                                    <input type="email"
+                                           name="email"
+                                           class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                           id="contact_email"
+                                           placeholder="name@example.com"
+                                           value="{{ form.email.value|default:'' }}"
+                                           required
+                                           aria-required="true">
+                                    <label for="contact_email">
+                                        <i class="bi bi-envelope me-1 text-muted"></i> Email Address <span class="text-danger">*</span>
+                                    </label>
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback d-block">{{ form.email.errors.0 }}</div>
+                                    {% endif %}
                                 </div>
-                                {% if form.email.errors %}
-                                    <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
-                                {% endif %}
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label class="form-label small fw-bold text-navy">
-                                Subject <span class="text-danger">*</span>
+                        <!-- Subject (Floating Label) -->
+                        <div class="form-floating mb-3">
+                            <input type="text"
+                                   name="subject"
+                                   class="form-control {% if form.subject.errors %}is-invalid{% endif %}"
+                                   id="contact_subject"
+                                   placeholder="How can we help you?"
+                                   value="{{ form.subject.value|default:'' }}"
+                                   required
+                                   aria-required="true">
+                            <label for="contact_subject">
+                                <i class="bi bi-chat-left-quote me-1 text-muted"></i> Subject / Topic <span class="text-danger">*</span>
                             </label>
-                            <div class="input-group">
-                                <span class="input-group-text bg-light text-muted"><i class="bi bi-chat-left-quote"></i></span>
-                                {{ form.subject }}
-                            </div>
                             {% if form.subject.errors %}
-                                <div class="text-danger small mt-1">{{ form.subject.errors.0 }}</div>
+                                <div class="invalid-feedback d-block">{{ form.subject.errors.0 }}</div>
                             {% endif %}
                         </div>
 
+                        <!-- Message Textarea with Live Character Counter -->
                         <div class="mb-4">
-                            <label class="form-label small fw-bold text-navy">
-                                Message <span class="text-danger">*</span>
-                            </label>
-                            {{ form.message }}
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label for="contact_message" class="form-label small fw-semibold text-navy mb-0">
+                                    Message <span class="text-danger">*</span>
+                                </label>
+                                <span id="charCounter" class="gb-char-counter text-muted">0 / 1000</span>
+                            </div>
+                            <textarea name="message"
+                                      class="form-control gb-textarea-control {% if form.message.errors %}is-invalid{% endif %}"
+                                      id="contact_message"
+                                      rows="5"
+                                      maxlength="1000"
+                                      placeholder="Describe your inquiry, contract details, or feedback in detail..."
+                                      required
+                                      aria-required="true">{{ form.message.value|default:'' }}</textarea>
                             {% if form.message.errors %}
-                                <div class="text-danger small mt-1">{{ form.message.errors.0 }}</div>
+                                <div class="invalid-feedback d-block">{{ form.message.errors.0 }}</div>
                             {% endif %}
                         </div>
 
-                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-2">
+                        <!-- Submit Row & Trust Text -->
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-3 pt-1">
                             <div class="text-muted small d-flex align-items-center gap-2">
-                                <i class="bi bi-shield-check text-success fs-5"></i>
-                                <span>Protected by 256-bit SSL encryption</span>
+                                <i class="bi bi-shield-check text-primary fs-5"></i>
+                                <span>Your details are private and never shared</span>
                             </div>
-                            <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4 py-2 shadow-sm">
-                                <i class="bi bi-send-fill me-1"></i> Send Message
+                            <button type="submit" class="gb-contact-submit-btn" id="submitBtn">
+                                <i class="bi bi-send-fill"></i>
+                                <span>Send Message</span>
                             </button>
                         </div>
                     </form>
+                </div>
+                {% endif %}
+
+                <!-- ──────────────────────────────────────────
+                     INLINE FAQ ACCORDION (UNDER THE FORM)
+                     ────────────────────────────────────────── -->
+                <div class="gb-faq-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="gb-contact-icon-box" style="width: 36px; height: 36px; font-size: 1.1rem;">
+                                <i class="bi bi-question-circle-fill"></i>
+                            </div>
+                            <h3 class="fw-bold text-navy mb-0 fs-5">Frequently Asked Questions</h3>
+                        </div>
+                        <a href="{% url 'how_it_works' %}" class="small text-primary fw-semibold text-decoration-none">
+                            View all FAQs <i class="bi bi-arrow-right"></i>
+                        </a>
+                    </div>
+                    <p class="text-muted small mb-3">
+                        Quick answers to our most common client and freelancer marketplace questions:
+                    </p>
+
+                    <div class="accordion gb-contact-accordion" id="contactFaqAccordion">
+                        <!-- FAQ 1: Escrow -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingEscrow">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseEscrow" aria-expanded="true" aria-controls="collapseEscrow">
+                                    <i class="bi bi-shield-lock-fill me-2 text-primary"></i> How does milestone escrow work?
+                                </button>
+                            </h2>
+                            <div id="collapseEscrow" class="accordion-collapse collapse show" aria-labelledby="headingEscrow" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    When a client hires a freelancer, payment for the milestone is deposited securely into GigBridge's escrow before work begins. Funds remain safely in escrow and are only released to the freelancer once the client reviews and explicitly approves the submitted work.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 2: Freelancer Payouts -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingPayout">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePayout" aria-expanded="false" aria-controls="collapsePayout">
+                                    <i class="bi bi-cash-stack me-2 text-primary"></i> When do freelancers get paid?
+                                </button>
+                            </h2>
+                            <div id="collapsePayout" class="accordion-collapse collapse" aria-labelledby="headingPayout" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    As soon as a client marks a project milestone approved, escrowed funds are instantly credited to the freelancer's wallet balance. From there, withdrawal requests to bank accounts or UPI via Razorpay are processed typically within 24 to 48 business hours.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 3: Payment Dispute -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingDispute">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDispute" aria-expanded="false" aria-controls="collapseDispute">
+                                    <i class="bi bi-exclamation-octagon-fill me-2 text-primary"></i> How to raise a payment dispute?
+                                </button>
+                            </h2>
+                            <div id="collapseDispute" class="accordion-collapse collapse" aria-labelledby="headingDispute" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    If deliverables do not match contract scope or communication breaks down, either party can open a ticket via this contact form or click "Raise Dispute" on the active contract view. Our resolution desk reviews milestones, chat history, and submitted code or assets to arbitrate fairly.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- FAQ 4: Post a Project -->
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="headingPost">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePost" aria-expanded="false" aria-controls="collapsePost">
+                                    <i class="bi bi-briefcase-fill me-2 text-primary"></i> How do clients post a project?
+                                </button>
+                            </h2>
+                            <div id="collapsePost" class="accordion-collapse collapse" aria-labelledby="headingPost" data-bs-parent="#contactFaqAccordion">
+                                <div class="accordion-body">
+                                    Verified clients can click "Post a Project" in the navigation bar, choose a category, specify required skills and deliverables, and set a fixed price or hourly budget. Qualified freelancers are alerted immediately and proposals typically start arriving within minutes.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- ──────────────────────────────────────────
                  RIGHT COLUMN: Contact Channels & Support
                  ────────────────────────────────────────── -->
-            <div class="col-lg-5">
-                <div class="card border-0 shadow-sm rounded-4 p-4 p-md-4 bg-white mb-4">
-                    <h3 class="fw-bold text-navy mb-4 fs-5">Contact Information</h3>
-
-                    <!-- Channel 1: Headquarters -->
-                    <div class="gb-contact-channel-item">
-                        <div class="gb-contact-icon-box bg-primary-subtle text-primary">
-                            <i class="bi bi-geo-alt-fill"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold text-navy mb-1 fs-6">Global Headquarters</h4>
-                            <p class="text-muted small mb-0">100 Market Street, Suite 400<br>San Francisco, CA 94105</p>
+            <div class="col-lg-5 gb-fade-up-delay-2">
+                <div class="gb-contact-sidebar-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-4">
+                        <h3 class="fw-bold text-navy mb-0 fs-5">Contact Information</h3>
+                        <!-- Live IST Support Status -->
+                        <div id="istSupportStatus" class="gb-status-badge is-online" aria-live="polite">
+                            <span class="gb-status-dot online"></span> Support online now
                         </div>
                     </div>
 
-                    <!-- Channel 2: Support Email -->
+                    <!-- Channel 1: India Office Address -->
                     <div class="gb-contact-channel-item">
-                        <div class="gb-contact-icon-box bg-success-subtle text-success">
+                        <div class="gb-contact-icon-box">
+                            <i class="bi bi-geo-alt-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">India Technology Hub</h4>
+                            <p class="text-muted small mb-0">
+                                Mondeal Heights, Near Wide Angle,<br>
+                                S.G. Highway, Ahmedabad, Gujarat 380015, India
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Channel 2: WhatsApp Channel Card -->
+                    <a href="https://wa.me/919876543210?text=Hi%20GigBridge%20Support%2C%20I%20have%20an%20inquiry%20regarding%20my%20account"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="gb-contact-channel-item"
+                       aria-label="Chat with GigBridge on WhatsApp">
+                        <div class="gb-contact-icon-box">
+                            <i class="bi bi-whatsapp"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <h4 class="fw-bold text-navy mb-0 fs-6">WhatsApp Support</h4>
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">Fast Reply</span>
+                            </div>
+                            <span class="text-navy small fw-semibold d-block mt-1">+91 98765 43210</span>
+                            <small class="text-muted">Chat directly with an agent for urgent help</small>
+                        </div>
+                    </a>
+
+                    <!-- Channel 3: Direct Phone Support (IST Hours) -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box">
+                            <i class="bi bi-telephone-fill"></i>
+                        </div>
+                        <div>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Direct Phone Support</h4>
+                            <span class="text-navy small fw-semibold">+91 79 4000 8900</span>
+                            <small class="text-muted d-block mt-1">Mon &ndash; Sat: 10:00 AM &ndash; 7:00 PM IST</small>
+                        </div>
+                    </div>
+
+                    <!-- Channel 4: Support Email with Copy Button -->
+                    <div class="gb-contact-channel-item">
+                        <div class="gb-contact-icon-box">
                             <i class="bi bi-envelope-fill"></i>
                         </div>
                         <div class="flex-grow-1">
-                            <h4 class="fw-bold text-navy mb-1 fs-6">Support &amp; Inquiries</h4>
+                            <h4 class="fw-bold text-navy mb-1 fs-6">Official Inquiries</h4>
                             <div class="d-flex align-items-center justify-content-between">
-                                <span class="text-navy small fw-semibold">support@gigbridge.com</span>
-                                <button type="button" class="btn btn-sm btn-link p-0 text-decoration-none" onclick="copyEmail('support@gigbridge.com')" title="Copy email">
-                                    <i class="bi bi-clipboard"></i>
+                                <span class="text-navy small fw-semibold font-monospace">support@gigbridge.com</span>
+                                <button type="button"
+                                        class="btn btn-sm btn-light border py-0 px-2 rounded-2 text-navy"
+                                        onclick="copyEmail('support@gigbridge.com')"
+                                        title="Copy email address"
+                                        aria-label="Copy support email">
+                                    <i class="bi bi-clipboard me-1 text-primary"></i> Copy
                                 </button>
                             </div>
                             <small class="text-muted d-block mt-1">partnerships@gigbridge.com</small>
                         </div>
                     </div>
 
-                    <!-- Channel 3: Direct Phone Support -->
+                    <!-- Channel 5: Milestone Escrow Desk -->
                     <div class="gb-contact-channel-item">
-                        <div class="gb-contact-icon-box bg-warning-subtle text-warning">
-                            <i class="bi bi-telephone-fill"></i>
-                        </div>
-                        <div>
-                            <h4 class="fw-bold text-navy mb-1 fs-6">Direct Phone Support</h4>
-                            <span class="text-navy small fw-semibold">+1 (800) 444-2743</span>
-                            <small class="text-muted d-block">Mon – Fri: 8:00 AM – 6:00 PM PST</small>
-                        </div>
-                    </div>
-
-                    <!-- Channel 4: Security & Escrow -->
-                    <div class="gb-contact-channel-item">
-                        <div class="gb-contact-icon-box bg-info-subtle text-info">
+                        <div class="gb-contact-icon-box">
                             <i class="bi bi-shield-check"></i>
                         </div>
                         <div>
                             <h4 class="fw-bold text-navy mb-1 fs-6">Milestone Escrow Desk</h4>
-                            <p class="text-muted small mb-0">Razorpay verified checkout and dispute resolution team on standby.</p>
+                            <p class="text-muted small mb-0">Razorpay verified checkout and dispute resolution team on standby 24/7.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Help / FAQ Callout -->
+                <!-- Quick Help / FAQ Callout Card -->
                 <div class="card border-0 shadow-sm rounded-4 p-4 text-white" style="background: linear-gradient(135deg, #0b132b 0%, #1e3a8a 100%);">
                     <div class="d-flex align-items-center gap-3 mb-3">
                         <div class="gb-stat-icon-circle bg-white text-primary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">
-                            <i class="bi bi-question-circle-fill"></i>
+                            <i class="bi bi-book-half"></i>
                         </div>
                         <div>
                             <h4 class="fw-bold text-white mb-0 fs-6">Need Immediate Answers?</h4>
@@ -237,6 +437,15 @@
     </div>
 </section>
 
+<!-- ──────────────────────────────────────────
+     MOBILE STICKY BUTTON (< 768px)
+     ────────────────────────────────────────── -->
+<div class="gb-mobile-contact-bar" id="mobileStickyBar">
+    <a href="#contactFormCard" class="btn btn-primary w-100 py-2 rounded-pill shadow fw-bold d-flex align-items-center justify-content-center gap-2">
+        <i class="bi bi-envelope-fill"></i> Send Message
+    </a>
+</div>
+
 <!-- Toast notification for copy email -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1100">
     <div id="copyToast" class="toast align-items-center text-white bg-dark border-0 rounded-4 shadow" role="alert" aria-live="assertive" aria-atomic="true">
@@ -252,24 +461,128 @@
 
 {% block extra_js %}
 <script>
-    function setSubject(subjectText) {
-        const subjectInput = document.querySelector('input[name="subject"]');
-        if (subjectInput) {
-            subjectInput.value = subjectText;
-            subjectInput.focus();
+    // 1. Topic Chips Selection
+    document.addEventListener('DOMContentLoaded', function () {
+        const chips = document.querySelectorAll('.gb-topic-chip');
+        const subjectInput = document.getElementById('contact_subject');
+        const topicInput = document.getElementById('contact_topic');
+
+        chips.forEach(function (chip) {
+            chip.addEventListener('click', function () {
+                chips.forEach(c => c.classList.remove('active'));
+                this.classList.add('active');
+
+                const chosenTopic = this.getAttribute('data-topic');
+                const chosenSubject = this.getAttribute('data-subject');
+
+                if (subjectInput) {
+                    subjectInput.value = chosenSubject;
+                    subjectInput.dispatchEvent(new Event('input', { bubbles: true }));
+                    subjectInput.focus();
+                }
+                if (topicInput) {
+                    topicInput.value = chosenTopic;
+                }
+            });
+        });
+
+        // 2. Character Counter for Message Textarea
+        const messageInput = document.getElementById('contact_message');
+        const charCounter = document.getElementById('charCounter');
+
+        function updateCharCount() {
+            if (!messageInput || !charCounter) return;
+            const currentLen = messageInput.value.length;
+            charCounter.textContent = currentLen + ' / 1000';
+            if (currentLen >= 900) {
+                charCounter.classList.add('near-limit');
+            } else {
+                charCounter.classList.remove('near-limit');
+            }
+        }
+
+        if (messageInput) {
+            messageInput.addEventListener('input', updateCharCount);
+            updateCharCount();
+        }
+
+        // 3. Prevent Double Submit and Show Spinner
+        const contactForm = document.getElementById('contactForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        if (contactForm && submitBtn) {
+            contactForm.addEventListener('submit', function (e) {
+                // If form is valid according to native HTML5 validity
+                if (contactForm.checkValidity()) {
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending...';
+                }
+            });
+        }
+
+        // 4. IST Live Support Status Indicator
+        function updateSupportStatus() {
+            const statusEl = document.getElementById('istSupportStatus');
+            if (!statusEl) return;
+
+            // Current UTC time + 5.5 hours for IST
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const istDate = new Date(utc + (5.5 * 3600000));
+
+            const day = istDate.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+            const hour = istDate.getHours();
+            const min = istDate.getMinutes();
+            const totalMinutes = hour * 60 + min;
+
+            // Mon - Sat: 10:00 AM (600 min) to 7:00 PM (1140 min) IST
+            const isWorkingDay = day >= 1 && day <= 6;
+            const isWorkingHour = totalMinutes >= 600 && totalMinutes < 1140;
+
+            if (isWorkingDay && isWorkingHour) {
+                statusEl.className = 'gb-status-badge is-online';
+                statusEl.innerHTML = '<span class="gb-status-dot online"></span> Support online now';
+            } else {
+                statusEl.className = 'gb-status-badge is-offline';
+                statusEl.innerHTML = '<span class="gb-status-dot offline"></span> Offline, back at 10 AM';
+            }
+        }
+
+        updateSupportStatus();
+        setInterval(updateSupportStatus, 60000);
+    });
+
+    // 5. Copy Email Helper
+    function copyEmail(email) {
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(email).then(showToast).catch(function() {
+                fallbackCopy(email);
+            });
+        } else {
+            fallbackCopy(email);
         }
     }
 
-    function copyEmail(email) {
-        navigator.clipboard.writeText(email).then(function() {
-            const toastEl = document.getElementById('copyToast');
-            if (toastEl) {
-                const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-                toast.show();
-            }
-        }).catch(function() {
+    function fallbackCopy(email) {
+        const tempInput = document.createElement('input');
+        tempInput.value = email;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+            document.execCommand('copy');
+            showToast();
+        } catch (e) {
             alert('Email: ' + email);
-        });
+        }
+        document.body.removeChild(tempInput);
+    }
+
+    function showToast() {
+        const toastEl = document.getElementById('copyToast');
+        if (toastEl && typeof bootstrap !== 'undefined') {
+            const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+            toast.show();
+        }
     }
 </script>
 {% endblock %}

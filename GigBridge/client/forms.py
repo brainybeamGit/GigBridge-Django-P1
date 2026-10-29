@@ -156,14 +156,16 @@ class ReviewForm(forms.ModelForm):
 
 
 class ContactForm(forms.ModelForm):
+    topic = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput(attrs={'id': 'contact_topic'}))
+
     class Meta:
         model = ContactMessage
-        fields = ['name', 'email', 'subject', 'message']
+        fields = ['name', 'email', 'subject', 'topic', 'message']
         widgets = {
-            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your full name'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'your@email.com'}),
-            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'How can we help you?'}),
-            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Describe your question or issue in detail...'}),
+            'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your full name', 'id': 'contact_name'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com', 'id': 'contact_email'}),
+            'subject': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'How can we help you?', 'id': 'contact_subject'}),
+            'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Describe your question or issue in detail...', 'id': 'contact_message', 'maxlength': '1000'}),
         }
 
 

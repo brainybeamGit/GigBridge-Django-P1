@@ -362,6 +362,19 @@
             <p class="adm-kpi-caption">Cleared escrow volume</p>
         </a>
     </div>
+
+    <div class="col-xl-2 col-md-4 col-6">
+        <a href="{% url 'adminpanel:messages' %}?status=new" class="adm-kpi-card" style="border-left: 3px solid #0284c7;">
+            <div class="d-flex justify-content-between align-items-baseline">
+                <span class="adm-kpi-label text-primary">New Messages</span>
+                <span class="adm-kpi-index">07</span>
+            </div>
+            <div class="adm-kpi-value {% if new_messages_count %}text-primary{% else %}text-muted{% endif %}">
+                {{ new_messages_count }}
+            </div>
+            <p class="adm-kpi-caption">Awaiting response</p>
+        </a>
+    </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════
@@ -744,16 +757,16 @@
         </div>
     </div>
 
-    <!-- Recent Contact Inquiries -->
+    <!-- Recent Messages (Latest 5 Linking to Detail) -->
     <div class="col-lg-6">
         <div class="admin-card p-4 h-100">
             <div class="d-flex justify-content-between align-items-center mb-3">
                 <div>
-                    <h5 class="fw-bold text-dark mb-0">Recent Support Inquiries</h5>
-                    <small class="text-muted">Incoming submissions via platform contact channel</small>
+                    <h5 class="fw-bold text-dark mb-0">Recent Messages</h5>
+                    <small class="text-muted">Latest client inquiries via contact desk</small>
                 </div>
-                <a href="{% url 'adminpanel_messages' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
-                    View All Inquiries &rarr;
+                <a href="{% url 'adminpanel:messages' %}" class="btn btn-outline-primary btn-sm rounded-pill px-3">
+                    View All Messages &rarr;
                 </a>
             </div>
 
@@ -761,31 +774,56 @@
                 <table class="table align-middle mb-0 small">
                     <thead>
                         <tr>
+                            <th>Ticket #</th>
                             <th>Sender</th>
-                            <th>Email</th>
                             <th>Subject</th>
                             <th>Status</th>
                             <th>Received</th>
+                            <th class="text-end">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for msg in recent_contact_messages %}
+                        {% for msg in recent_contact_messages|slice:":5" %}
                         <tr>
-                            <td class="fw-bold text-dark">{{ msg.name }}</td>
-                            <td class="text-muted">{{ msg.email }}</td>
-                            <td>{{ msg.subject|truncatechars:35 }}</td>
                             <td>
-                                {% if msg.is_resolved %}
-                                    <span class="badge" style="background:#DCFCE7;color:#166534;">Resolved</span>
+                                <a href="{% url 'adminpanel:message_detail' msg.id %}" class="font-monospace fw-bold text-primary text-decoration-none">
+                                    {{ msg.ticket_number }}
+                                </a>
+                            </td>
+                            <td>
+                                <div class="{% if msg.status == 'new' %}fw-bold text-dark{% else %}text-secondary{% endif %}">
+                                    {{ msg.name }}
+                                </div>
+                                <span class="text-muted" style="font-size:0.72rem;">{{ msg.email }}</span>
+                            </td>
+                            <td>
+                                <a href="{% url 'adminpanel:message_detail' msg.id %}" class="text-decoration-none {% if msg.status == 'new' %}fw-bold text-dark{% else %}text-secondary{% endif %}">
+                                    {{ msg.subject|truncatechars:28 }}
+                                </a>
+                            </td>
+                            <td>
+                                {% if msg.status == 'new' %}
+                                    <span class="badge" style="background:#0284c7;color:#ffffff;font-weight:600;">New</span>
+                                {% elif msg.status == 'read' %}
+                                    <span class="badge" style="background:#e2e8f0;color:#475569;font-weight:600;">Read</span>
+                                {% elif msg.status == 'replied' %}
+                                    <span class="badge" style="background:#16a34a;color:#ffffff;font-weight:600;">Replied</span>
+                                {% elif msg.status == 'closed' %}
+                                    <span class="badge" style="background:#0f172a;color:#ffffff;font-weight:600;">Closed</span>
                                 {% else %}
-                                    <span class="badge" style="background:#FEF3C7;color:#92400E;">Pending</span>
+                                    <span class="badge bg-secondary">{{ msg.get_status_display }}</span>
                                 {% endif %}
                             </td>
-                            <td class="text-muted">{{ msg.created_at|date:"M d, Y" }}</td>
+                            <td class="text-muted" style="font-size:0.75rem;">{{ msg.created_at|date:"M d, H:i" }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'adminpanel:message_detail' msg.id %}" class="btn btn-sm btn-light border py-0 px-2 rounded-2 text-primary fw-semibold" style="font-size:0.74rem;">
+                                    Open
+                                </a>
+                            </td>
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="5" class="text-center text-muted py-4">No contact inquiries recorded yet.</td>
+                            <td colspan="6" class="text-center text-muted py-4">No contact messages received yet.</td>
                         </tr>
                         {% endfor %}
                     </tbody>

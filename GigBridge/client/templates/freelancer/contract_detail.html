@@ -190,6 +190,66 @@
         flex-shrink: 0;
     }
 
+    /* Enhanced Contract Parameters & Full-Width Deliverables */
+    .cd-param-card {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 20px 22px;
+        height: 100%;
+        transition: all 0.2s ease;
+    }
+    .cd-param-card:hover {
+        border-color: #BAE6FD;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.06);
+    }
+    .cd-badge-sub {
+        font-size: 0.72rem;
+        font-weight: 800;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: #0369A1;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+    }
+    .cd-deliverables-box {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-top: 12px;
+    }
+    .cd-deliverable-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #FFFFFF;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        font-size: 0.88rem;
+        color: #334155;
+        line-height: 1.5;
+        transition: all 0.15s ease;
+    }
+    .cd-deliverable-line:hover {
+        border-color: #0284C7;
+        background: #F0F9FF;
+        transform: translateY(-1px);
+    }
+    .cd-icon-pill {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
     .cd-table {
         margin-bottom: 0;
     }
@@ -323,67 +383,139 @@
 
 <!-- 3. Contract Overview Card -->
 <div class="cd-panel">
-    <div class="row g-4 align-items-center">
-        <!-- Project & Deliverables Details -->
-        <div class="col-lg-5 border-lg-end">
-            <div class="small text-muted fw-bold text-uppercase letter-spacing-1 mb-2">Contract Parameters</div>
-            <h4 class="fw-bold text-dark mb-2">{{ contract.project.title }}</h4>
-            <div class="text-muted small mb-3">
-                Started {{ contract.start_date|date:"F d, Y" }}
-                {% if contract.end_date %}&bull; Deadline: {{ contract.end_date|date:"F d, Y" }}{% endif %}
-            </div>
-            {% if contract.deliverables %}
-                <div class="p-3 bg-light rounded-3 small text-secondary">
-                    <strong class="text-dark d-block mb-1">Agreed Deliverables Checklist:</strong>
-                    {{ contract.deliverables|linebreaksbr }}
-                </div>
-            {% endif %}
-        </div>
-
-        <!-- Client Profile Details -->
-        <div class="col-lg-3 border-lg-end">
-            <div class="small text-muted fw-bold text-uppercase letter-spacing-1 mb-2">Employer Profile</div>
-            <div class="d-flex align-items-center gap-3 mb-3">
-                <div class="cd-avatar">
-                    {{ contract.client.first_name|default:contract.client.username|slice:":1"|upper }}
-                </div>
+    <!-- Top Row: 3 Balanced Overview Cards -->
+    <div class="row g-4 align-items-stretch mb-2">
+        <!-- 1. Contract Parameters -->
+        <div class="col-lg-4 col-md-6">
+            <div class="cd-param-card d-flex flex-column justify-content-between">
                 <div>
-                    <h6 class="fw-bold text-dark mb-0">{{ contract.client.get_full_name|default:contract.client.username }}</h6>
-                    <small class="text-muted">{{ contract.client.profile.company_name|default:"Verified Employer" }}</small>
+                    <div class="cd-badge-sub">
+                        <i class="bi bi-file-earmark-code me-1"></i> Contract Parameters
+                    </div>
+                    <h5 class="fw-bold text-navy mb-2">{{ contract.project.title }}</h5>
+                    <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                        <span class="badge bg-light text-dark border small">
+                            <i class="bi bi-tag-fill text-primary me-1"></i> {{ contract.project.category.name|default:"General" }}
+                        </span>
+                        <span class="badge {% if contract.status == 'completed' %}bg-success{% elif contract.status == 'active' %}bg-primary{% else %}bg-secondary{% endif %} rounded-pill px-2 py-1 small">
+                            {{ contract.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="border-top pt-2 mt-auto">
+                    <div class="d-flex align-items-center justify-content-between small text-muted py-1 border-bottom">
+                        <span class="text-secondary"><i class="bi bi-calendar-check text-primary me-1"></i> Commenced:</span>
+                        <strong class="text-dark">{{ contract.start_date|date:"F d, Y" }}</strong>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-between small text-muted py-1">
+                        <span class="text-secondary"><i class="bi bi-flag-fill text-danger me-1"></i> Target Deadline:</span>
+                        <strong class="text-dark">{% if contract.end_date %}{{ contract.end_date|date:"F d, Y" }}{% else %}Milestone Schedule{% endif %}</strong>
+                    </div>
                 </div>
             </div>
-            <a href="{% url 'start_conversation' %}?user_id={{ contract.client.id }}&project_id={{ contract.project.id }}" class="btn btn-outline-primary btn-sm w-100 rounded-3">
-                Private Workroom Chat &rarr;
-            </a>
         </div>
 
-        <!-- Financial Overview -->
-        <div class="col-lg-4">
-            <div class="small text-muted fw-bold text-uppercase letter-spacing-1 mb-2">Escrow Financial Summary</div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="text-muted small">Total Contract Budget:</span>
-                <strong class="text-dark fs-5">&#8377;{{ contract.total_amount|floatformat:2 }}</strong>
+        <!-- 2. Employer Profile -->
+        <div class="col-lg-4 col-md-6">
+            <div class="cd-param-card d-flex flex-column justify-content-between">
+                <div>
+                    <div class="cd-badge-sub">
+                        <i class="bi bi-person-check-fill me-1"></i> Employer Profile
+                    </div>
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="cd-avatar">
+                            {{ contract.client.first_name|default:contract.client.username|slice:":1"|upper }}
+                        </div>
+                        <div>
+                            <h6 class="fw-bold text-navy mb-0">{{ contract.client.get_full_name|default:contract.client.username }}</h6>
+                            <small class="text-muted d-block">{{ contract.client.profile.company_name|default:"Verified Project Client" }}</small>
+                            <span class="badge bg-light text-muted border mt-1 small" style="font-size: 0.7rem;">
+                                <i class="bi bi-geo-alt-fill text-primary me-1"></i> {{ contract.client.profile.location|default:"India" }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top pt-3 mt-auto">
+                    <a href="{% url 'start_conversation' %}?user_id={{ contract.client.id }}&project_id={{ contract.project.id }}" class="btn btn-outline-primary btn-sm w-100 rounded-3 fw-bold py-2 shadow-sm">
+                        <i class="bi bi-chat-dots-fill me-1"></i> Private Workroom Chat &rarr;
+                    </a>
+                </div>
             </div>
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <span class="text-muted small">Step 5 Advance (Agreed):</span>
-                <span class="fw-bold {% if contract.is_advance_paid %}text-success{% else %}text-warning{% endif %}">
-                    &#8377;{{ contract.advance_amount|floatformat:2 }}
-                    {% if contract.is_advance_paid %}(Escrow Secured){% else %}(Awaiting Deposit){% endif %}
-                </span>
-            </div>
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <span class="text-muted small">Step 7 Final Delivery Due:</span>
-                <strong class="text-primary">&#8377;{{ contract.final_amount|floatformat:2 }}</strong>
-            </div>
-            <div class="progress mb-2" style="height: 6px; background-color: #E2E8F0; border-radius: 999px;">
-                <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: linear-gradient(90deg, #0284C7, #38BDF8); border-radius: 999px;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-            <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
-                <span>Delivery Progress</span>
-                <span class="fw-bold text-dark">{{ contract.progress_percentage }}% Complete</span>
+        </div>
+
+        <!-- 3. Escrow Financial Summary -->
+        <div class="col-lg-4 col-md-12">
+            <div class="cd-param-card d-flex flex-column justify-content-between">
+                <div>
+                    <div class="cd-badge-sub">
+                        <i class="bi bi-shield-lock-fill me-1"></i> Escrow Financial Summary
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Total Contract Budget:</span>
+                        <strong class="text-dark fs-5">&#8377;{{ contract.total_amount|floatformat:2 }}</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="text-muted small">Step 5 Advance (Agreed):</span>
+                        <span class="badge {% if contract.is_advance_paid %}bg-success-subtle text-success border border-success-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %} fw-bold">
+                            &#8377;{{ contract.advance_amount|floatformat:2 }} {% if contract.is_advance_paid %}(Escrow Secured){% else %}(Awaiting Deposit){% endif %}
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <span class="text-muted small">Step 7 Final Delivery Due:</span>
+                        <strong class="text-primary">&#8377;{{ contract.final_amount|floatformat:2 }}</strong>
+                    </div>
+                </div>
+                <div class="border-top pt-2 mt-auto">
+                    <div class="progress mb-2" style="height: 6px; background-color: #E2E8F0; border-radius: 999px;">
+                        <div class="progress-bar" role="progressbar" style="width: {{ contract.progress_percentage }}%; background: linear-gradient(90deg, #0284C7, #38BDF8); border-radius: 999px;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+                    </div>
+                    <div class="d-flex justify-content-between text-muted" style="font-size: 0.75rem;">
+                        <span>Delivery Progress</span>
+                        <span class="fw-bold text-dark">{{ contract.progress_percentage }}% Complete</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+
+    <!-- Bottom Section: Dedicated Full-Width Agreed Deliverables Checklist -->
+    {% if contract.deliverables %}
+        <div class="pt-3 mt-3 border-top">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="cd-icon-pill">
+                        <i class="bi bi-card-checklist text-primary fs-5"></i>
+                    </div>
+                    <div>
+                        <h6 class="fw-bold text-navy mb-0">Agreed Deliverables Checklist &amp; Scope</h6>
+                        <small class="text-muted">Itemized criteria and technical deliverables contractually required for milestone completion.</small>
+                    </div>
+                </div>
+                <span class="badge bg-primary-subtle text-primary border rounded-pill px-3 py-1 fw-bold small">
+                    <i class="bi bi-shield-check me-1"></i> Contract Milestones
+                </span>
+            </div>
+
+            <div class="cd-deliverables-box">
+                <div class="row g-2">
+                    {% for line in contract.deliverables.splitlines %}
+                        {% if line.strip %}
+                            <div class="col-lg-6 col-12">
+                                <div class="cd-deliverable-line h-100">
+                                    <i class="bi bi-check2-circle text-primary fs-5 flex-shrink-0 mt-0"></i>
+                                    <div class="fw-semibold text-dark">{{ line.strip }}</div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% empty %}
+                        <div class="col-12 p-2 text-secondary small">
+                            {{ contract.deliverables|linebreaksbr }}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    {% endif %}
 </div>
 
 <!-- 4. Step 5 & 6: Project Delivery Workroom Section -->

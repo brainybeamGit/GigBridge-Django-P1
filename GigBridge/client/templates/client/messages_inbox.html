@@ -1,0 +1,265 @@
+{% extends base_template|default:'client/dashboard_base.html' %}
+{% load static %}
+{% load messaging_tags %}
+
+{% block breadcrumb_current %}Messages{% endblock %}
+{% block dashboard_title %}Project Communications &amp; Messages{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Messages Inbox - Luxury Light Blue Shining Theme
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
+       ========================================================================== */
+    .msg-inbox-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 26px 30px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .msg-inbox-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: #0369A1;
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.74rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .msg-inbox-title {
+        font-size: 1.7rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: #0F172A;
+        margin-bottom: 4px;
+        line-height: 1.2;
+    }
+
+    .msg-inbox-sub {
+        font-size: 0.9rem;
+        color: #334155;
+        max-width: 620px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* Conversation Cards */
+    .msg-conv-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 18px 22px;
+        margin-bottom: 12px;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        text-decoration: none;
+        display: block;
+        color: inherit;
+        position: relative;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+    }
+
+    .msg-conv-card:hover {
+        border-color: #0284C7;
+        box-shadow: 0 10px 24px -4px rgba(2, 132, 199, 0.14);
+        transform: translateY(-2px);
+        color: inherit;
+    }
+
+    .msg-conv-card.has-unread {
+        border-left: 4px solid #0284C7 !important;
+        background: linear-gradient(90deg, #F0F9FF 0%, #FFFFFF 20%);
+    }
+
+    .msg-avatar-circle {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.15rem;
+        flex-shrink: 0;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
+    }
+
+    .msg-unread-pill {
+        background: #0284C7;
+        color: #FFFFFF;
+        font-size: 0.72rem;
+        font-weight: 800;
+        border-radius: 999px;
+        padding: 2px 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Minimal Empty State */
+    .msg-empty-card {
+        background: #FFFFFF;
+        border: 1.5px dashed #CBD5E1;
+        border-radius: 18px;
+        padding: 64px 24px;
+        text-align: center;
+    }
+
+    .msg-empty-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 20px;
+        background: #F0F9FF;
+        color: #0284C7;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin: 0 auto 16px;
+        border: 1px solid #BAE6FD;
+    }
+</style>
+
+<!-- 1. Hero Banner -->
+<div class="msg-inbox-hero">
+    <div class="row align-items-center g-3">
+        <div class="col-lg-8">
+            <div class="msg-inbox-badge">
+                <i class="bi bi-shield-check"></i> Accepted-Only Workroom Chat
+            </div>
+            <h2 class="msg-inbox-title">Direct Messages &amp; Workrooms</h2>
+            <p class="msg-inbox-sub">
+                Secure real-time communications between clients and freelancers on accepted project proposals and active contracts.
+            </p>
+        </div>
+        <div class="col-lg-4 text-lg-end">
+            <!-- Search Filter -->
+            <form method="GET" action="{% url 'messages_inbox' %}" class="d-flex gap-2 justify-content-lg-end">
+                <div class="input-group input-group-sm" style="max-width: 260px;">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+                    <input type="text" name="q" value="{{ search_query }}" class="form-control border-start-0" placeholder="Search conversations...">
+                </div>
+                {% if search_query %}
+                    <a href="{% url 'messages_inbox' %}" class="btn btn-sm btn-outline-secondary d-flex align-items-center">Reset</a>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 2. Conversations List -->
+{% if conversations %}
+    <div class="row g-3">
+        {% for conv in conversations %}
+            <div class="col-12">
+                <a href="{% url 'conversation_detail' conv.id %}" class="msg-conv-card {% if conv.unread_count > 0 %}has-unread{% endif %}">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+                        <!-- Left: Avatar & Other Participant Info -->
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="msg-avatar-circle">
+                                {% if conv.other_user.profile.avatar %}
+                                    <img src="{{ conv.other_user.profile.avatar.url }}" alt="{{ conv.other_user.username }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                                {% else %}
+                                    {{ conv.other_user.first_name|default:conv.other_user.username|slice:":2"|upper }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="d-flex align-items-center gap-2">
+                                    <h6 class="fw-bold mb-0 text-navy fs-6">
+                                        {{ conv.other_user.get_full_name|default:conv.other_user.username }}
+                                    </h6>
+                                    <span class="badge bg-light text-muted border small" style="font-size: 0.7rem;">
+                                        {{ conv.other_user.profile.get_role_display|default:"Member" }}
+                                    </span>
+                                    {% if conv.unread_count > 0 %}
+                                        <span class="msg-unread-pill">
+                                            <i class="bi bi-envelope-fill"></i> {{ conv.unread_count }} new
+                                        </span>
+                                    {% endif %}
+                                </div>
+                                {% if conv.project %}
+                                    <div class="small text-primary fw-semibold mt-1">
+                                        <i class="bi bi-briefcase me-1"></i> {{ conv.project.title }}
+                                    </div>
+                                {% endif %}
+                                <div class="small text-muted text-truncate mt-1" style="max-width: 520px;">
+                                    {% if conv.last_msg %}
+                                        {% if conv.last_msg.sender == request.user %}
+                                            <span class="text-secondary fw-semibold">You:</span>
+                                        {% else %}
+                                            <span class="text-secondary fw-semibold">{{ conv.last_msg.sender.first_name|default:conv.last_msg.sender.username }}:</span>
+                                        {% endif %}
+                                        {{ conv.last_msg.content|default:"[Attachment]"|truncatechars:85 }}
+                                    {% else %}
+                                        <span class="text-muted fst-italic">Conversation opened. Send your first message!</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right: Timestamp & Action Arrow -->
+                        <div class="text-end d-flex align-items-center gap-3">
+                            <div>
+                                <small class="text-muted d-block" style="font-size: 0.75rem;">
+                                    {{ conv.updated_at|date:"M d, Y" }}
+                                </small>
+                                <small class="text-muted" style="font-size: 0.72rem;">
+                                    {{ conv.updated_at|time:"h:i A" }}
+                                </small>
+                            </div>
+                            <span class="btn btn-sm btn-outline-primary rounded-pill px-3 py-1 fw-bold">
+                                Open Chat <i class="bi bi-arrow-right ms-1"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <!-- 3. Empty State -->
+    <div class="msg-empty-card">
+        <div class="msg-empty-icon">
+            <i class="bi bi-chat-left-dots"></i>
+        </div>
+        <h4 class="fw-bold text-navy mb-2">No conversations yet</h4>
+        <p class="text-muted mx-auto mb-4" style="max-width: 480px;">
+            Accepted proposals will appear here. When a client accepts a freelancer's proposal, a secure direct messaging workroom is created automatically.
+        </p>
+        <div class="d-flex justify-content-center gap-2 flex-wrap">
+            {% if request.user.profile.role == 'client' %}
+                <a href="{% url 'client_proposals' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-envelope-paper me-1"></i> Review Received Proposals
+                </a>
+                <a href="{% url 'client_projects' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                    Manage Projects
+                </a>
+            {% else %}
+                <a href="{% url 'project_list' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                    <i class="bi bi-search me-1"></i> Browse Open Gigs
+                </a>
+                <a href="{% url 'freelancer_proposals' %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                    My Proposals
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
