@@ -13,4 +13,6 @@ urlpatterns = [
     path('messages/', views.messages_view, name='freelancer_messages'),
     path('messages/<int:pk>/', views.conversation_detail_view, name='freelancer_conversation_detail'),
     path('messages/<int:pk>/delete/', views.conversation_delete_view, name='freelancer_conversation_delete'),
+    path('reviews/', views.freelancer_my_reviews_view, name='freelancer_my_reviews'),
+    path('reviews/<int:review_id>/reply/', views.freelancer_review_reply_view, name='freelancer_review_reply'),
 ]

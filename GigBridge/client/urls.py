@@ -53,10 +53,13 @@ urlpatterns = [
     path('client/messages/<int:pk>/', views.conversation_detail_view, name='client_conversation_detail'),
     path('client/messages/<int:pk>/delete/', views.conversation_delete_view, name='client_conversation_delete'),
 
-    # ─── Freelancer Public Profile (Part B) ───
+    # ─── Rating & Reviews (Part A & B) ───
+    path('contracts/<int:contract_id>/review/', views.contract_review_create_view, name='contract_review_create'),
+    path('contracts/<int:contract_id>/review/edit/', views.contract_review_edit_view, name='contract_review_edit'),
     path('freelancers/<int:id>/', views.freelancer_public_profile_view, name='freelancer_public_profile'),
+    path('freelancer/profile/<int:id>/', views.freelancer_public_profile_view, name='freelancer_public_profile_alias'),
     path('client/reviews/', views.client_reviews_view, name='client_reviews'),
-    path('client/reviews/create/<int:contract_pk>/', views.client_review_create_view, name='client_review_create'),
+    path('client/reviews/create/<int:contract_pk>/', views.contract_review_create_view, name='client_review_create'),
     path('client/profile/', views.client_profile_view, name='client_profile'),
     path('client/profile/delete/', views.client_delete_account_view, name='client_delete_account'),
 ]

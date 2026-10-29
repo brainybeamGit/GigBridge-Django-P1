@@ -3421,55 +3421,68 @@ body.gb-body-light {
 /* ═══════════════════════════════════════════════════════════
    CONTACT US PAGE STYLES (UI/UX REVAMP - LUXE & RESPONSIVE)
    ═══════════════════════════════════════════════════════════ */
-
 /* ─── Hero Banner ─── */
+/* ═════════ CONTACT HERO (matches About page) ═════════ */
+/* ═════════ CONTACT HERO (same look as About) ═════════ */
 .gb-contact-hero {
-  background: linear-gradient(135deg, #0b132b 0%, #0f172a 40%, #1e293b 80%, #1e3a8a 100%);
-  padding: 44px 0 115px;
-  position: relative;
-  overflow: hidden;
-  color: #ffffff;
+    position: relative;
+    overflow: hidden;
+    padding: 44px 0 115px;
+    color: #ffffff;
+    background:
+        radial-gradient(ellipse 45% 70% at 0% 15%, #1d4ed8 0%, rgba(29, 78, 216, 0) 100%),
+        radial-gradient(ellipse 40% 70% at 100% 65%, rgba(59, 108, 190, .55) 0%, rgba(59, 108, 190, 0) 100%),
+        linear-gradient(100deg, #1e40af 0%, #0f172a 42%, #1b2a4e 62%, #2a4a8a 100%);
 }
 
+/* Faint dot grid */
 .gb-contact-hero::before {
-  content: '';
-  position: absolute;
-  top: -30%;
-  right: -5%;
-  width: 520px;
-  height: 520px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(37, 99, 235, 0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, .13) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
 }
 
-.gb-contact-hero::after {
-  content: '';
-  position: absolute;
-  bottom: -20%;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  background: radial-gradient(circle, rgba(2, 132, 199, 0.16) 0%, rgba(2, 132, 199, 0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
+.gb-ct-hero-inner { z-index: 2; }
+.gb-ct-stats { max-width: 820px; }
+
+/* Wave at the bottom */
+.gb-hero-wave-divider {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 100%;
+    height: 48px;
+    line-height: 0;
+    z-index: 1;
 }
+.gb-hero-wave-divider svg { width: 100%; height: 100%; display: block; }
 
 .gb-contact-hero-title {
-  font-size: 2.35rem;
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.5px;
-  color: #ffffff;
-  margin-bottom: 10px;
+    font-size: 2.35rem;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: -0.5px;
+    color: #ffffff;
+    margin-bottom: 10px;
 }
 
 .gb-contact-hero-subtitle {
-  font-size: 1.02rem;
-  color: rgba(255, 255, 255, 0.8);
-  max-width: 660px;
-  line-height: 1.6;
-  margin-bottom: 22px;
+    font-size: 1.02rem;
+    color: rgba(255, 255, 255, 0.8);
+    max-width: 660px;
+    line-height: 1.6;
+    margin-bottom: 22px;
+}
+
+.gb-ct-breadcrumb { --bs-breadcrumb-divider-color: rgba(255, 255, 255, .5); }
+.gb-ct-breadcrumb .breadcrumb-item.active { color: #fff; }
+
+@media (max-width: 575.98px) {
+    .gb-contact-hero { padding: 36px 0 100px; }
+    .gb-contact-hero-title { font-size: 1.75rem; }
 }
 
 /* Glass Stat Cards in Hero */

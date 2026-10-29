@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     UserProfile, Category, Project, Proposal,
     Contract, Milestone, Payment, Conversation,
-    Message, Review, ContactMessage, ContactReply
+    Message, Review, ContactMessage, ContactReply, Notification
 )
 
 
@@ -59,8 +59,34 @@ class PaymentAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ('reviewer', 'reviewee', 'project', 'rating', 'created_at')
-    list_filter = ('rating',)
+    list_display = ('contract', 'reviewer', 'reviewee', 'overall_rating', 'would_recommend', 'is_hidden', 'created_at')
+    list_filter = ('is_hidden', 'overall_rating', 'would_recommend', 'created_at')
+    search_fields = ('reviewer__username', 'reviewee__username', 'project__title', 'comment')
+    readonly_fields = ('overall_rating', 'created_at', 'updated_at')
+    actions = ['hide_reviews', 'unhide_reviews']
+
+    def hide_reviews(self, request, queryset):
+        updated = queryset.update(is_hidden=True)
+        for r in queryset:
+            if hasattr(r.reviewee, 'profile'):
+                r.reviewee.profile.recalculate_stats()
+        self.message_user(request, f"{updated} review(s) hidden from platform.")
+    hide_reviews.short_description = "Hide selected reviews from platform"
+
+    def unhide_reviews(self, request, queryset):
+        updated = queryset.update(is_hidden=False)
+        for r in queryset:
+            if hasattr(r.reviewee, 'profile'):
+                r.reviewee.profile.recalculate_stats()
+        self.message_user(request, f"{updated} review(s) unhidden.")
+    unhide_reviews.short_description = "Unhide selected reviews"
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('user', 'title', 'is_read', 'created_at')
+    list_filter = ('is_read', 'created_at')
+    search_fields = ('user__username', 'title', 'message')
 
 
 class ContactReplyInline(admin.TabularInline):

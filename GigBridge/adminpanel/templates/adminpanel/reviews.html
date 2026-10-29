@@ -80,10 +80,10 @@
 <!-- Search & Filters -->
 <div class="admin-card p-3 mb-4">
     <form method="GET" action="{% url 'adminpanel_reviews' %}" class="row g-2 align-items-center">
-        <div class="col-md-6">
+        <div class="col-md-5">
             <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by reviewer, reviewee, project title, or comment keywords...">
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <select name="rating" class="form-select">
                 <option value="">All Star Ratings</option>
                 <option value="5" {% if rating_filter == '5' %}selected{% endif %}>5 Stars (Exceptional)</option>
@@ -93,9 +93,16 @@
                 <option value="1" {% if rating_filter == '1' %}selected{% endif %}>1 Star (Poor)</option>
             </select>
         </div>
+        <div class="col-md-2">
+            <select name="visibility" class="form-select">
+                <option value="">All Visibility</option>
+                <option value="visible" {% if visibility_filter == 'visible' %}selected{% endif %}>Visible Only</option>
+                <option value="hidden" {% if visibility_filter == 'hidden' %}selected{% endif %}>Hidden (Moderated)</option>
+            </select>
+        </div>
         <div class="col-md-2 d-flex gap-2">
             <button type="submit" class="btn btn-primary fw-bold w-100" style="background:#0284C7;border-color:#0284C7;">Filter</button>
-            {% if search_query or rating_filter %}
+            {% if search_query or rating_filter or visibility_filter %}
                 <a href="{% url 'adminpanel_reviews' %}" class="btn btn-outline-secondary" title="Reset Filters">Reset</a>
             {% endif %}
         </div>
@@ -106,7 +113,7 @@
 <div class="admin-card">
     <div class="p-3 px-4 border-bottom d-flex justify-content-between align-items-center bg-light">
         <span class="fw-bold text-dark">Customer &amp; Freelancer Reviews ({{ reviews|length }})</span>
-        <span class="text-muted small">Quality feedback entries</span>
+        <span class="text-muted small">Quality feedback &amp; moderation</span>
     </div>
 
     <div class="table-responsive">
@@ -116,7 +123,8 @@
                     <th class="ps-4">Reviewer</th>
                     <th>Reviewee</th>
                     <th>Project</th>
-                    <th>Rating</th>
+                    <th>Overall Rating</th>
+                    <th>Moderation</th>
                     <th>Comment Summary</th>
                     <th>Date</th>
                     <th class="text-end pe-4">Actions</th>
@@ -124,7 +132,7 @@
             </thead>
             <tbody>
                 {% for r in reviews %}
-                <tr>
+                <tr {% if r.is_hidden %}style="background: #FFF1F2;"{% endif %}>
                     <td class="ps-4">
                         <span class="fw-semibold text-dark">{{ r.reviewer.username }}</span>
                     </td>
@@ -135,14 +143,29 @@
                         <span class="fw-semibold text-dark small">{{ r.project.title|truncatechars:32 }}</span>
                     </td>
                     <td>
-                        <span class="fw-bold text-dark">{{ r.rating }}.0 / 5.0</span>
+                        <span class="fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i>{{ r.overall_rating|floatformat:1 }} / 5.0</span>
                     </td>
                     <td>
-                        <span class="text-muted small">{{ r.comment|truncatechars:55 }}</span>
+                        {% if r.is_hidden %}
+                            <span class="badge bg-danger text-white rounded-pill px-2 py-1 small">
+                                <i class="bi bi-eye-slash-fill me-1"></i> Hidden
+                            </span>
+                        {% else %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
+                                <i class="bi bi-eye-fill me-1"></i> Visible
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="text-muted small">{{ r.comment|truncatechars:50 }}</span>
+                        {% if r.tags %}
+                            <div class="mt-1">
+                                <span class="badge bg-light text-secondary border small">{{ r.tags|truncatechars:30 }}</span>
+                            </div>
+                        {% endif %}
                     </td>
                     <td class="text-muted small">{{ r.created_at|date:"M d, Y" }}</td>
                     <td class="text-end pe-4">
-                        <!-- Converted multi-button into Actions Dropdown -->
                         <div class="dropdown">
                             <button class="btn btn-action-dropdown dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Actions
@@ -150,8 +173,20 @@
                             <ul class="dropdown-menu dropdown-menu-end shadow-sm border rounded-3 p-1">
                                 <li>
                                     <button class="dropdown-item rounded-2 small py-2" type="button" data-bs-toggle="modal" data-bs-target="#viewReviewModal{{ r.id }}">
-                                        View Full Written Feedback
+                                        View Full Details &amp; Scores
                                     </button>
+                                </li>
+                                <li>
+                                    <form method="POST" action="{% url 'adminpanel_review_toggle_hide' r.id %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item rounded-2 small py-2 {% if r.is_hidden %}text-success{% else %}text-warning{% endif %}">
+                                            {% if r.is_hidden %}
+                                                <i class="bi bi-eye me-1"></i> Restore / Unhide Review
+                                            {% else %}
+                                                <i class="bi bi-eye-slash me-1"></i> Hide from Platform
+                                            {% endif %}
+                                        </button>
+                                    </form>
                                 </li>
                                 <li><hr class="dropdown-divider my-1"></li>
                                 <li>
@@ -165,7 +200,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="7" class="text-center py-5 text-muted">
+                    <td colspan="8" class="text-center py-5 text-muted">
                         No reviews match your query.
                     </td>
                 </tr>
@@ -200,15 +235,56 @@
                 </div>
 
                 <div class="p-3 bg-light rounded-3 border mb-3 text-center">
-                    <span class="text-muted small d-block mb-1">Rating Score</span>
-                    <h3 class="fw-bold text-dark mb-0">{{ r.rating }}.0 / 5.0</h3>
-                    <small class="text-muted">{{ r.get_rating_display }}</small>
+                    <span class="text-muted small d-block mb-1">Overall Rating Score</span>
+                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-1"></i>{{ r.overall_rating|floatformat:1 }} / 5.0</h3>
+                    <small class="text-muted">{% if r.would_recommend %}<i class="bi bi-hand-thumbs-up-fill text-success me-1"></i> Would Recommend Freelancer{% else %}<i class="bi bi-hand-thumbs-down text-danger me-1"></i> Would Not Recommend{% endif %}</small>
                 </div>
 
-                <div class="p-3 bg-light rounded-3 border">
-                    <span class="text-muted small d-block mb-2">Written Feedback</span>
+                <div class="row g-2 mb-3 text-center">
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-2 bg-light">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Quality</small>
+                            <strong class="text-dark">{{ r.quality_of_work }}/5</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-2 bg-light">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Comm.</small>
+                            <strong class="text-dark">{{ r.communication }}/5</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-2 bg-light">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Deadline</small>
+                            <strong class="text-dark">{{ r.deadline_adherence }}/5</strong>
+                        </div>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <div class="p-2 border rounded-2 bg-light">
+                            <small class="text-muted d-block" style="font-size:0.7rem;">Prof.</small>
+                            <strong class="text-dark">{{ r.professionalism }}/5</strong>
+                        </div>
+                    </div>
+                </div>
+
+                {% if r.tags %}
+                    <div class="mb-3">
+                        <span class="text-muted small d-block mb-1">Positive Feedback Tags:</span>
+                        <span class="badge bg-light text-primary border">{{ r.tags }}</span>
+                    </div>
+                {% endif %}
+
+                <div class="p-3 bg-light rounded-3 border mb-3">
+                    <span class="text-muted small d-block mb-2">Written Client Feedback:</span>
                     <p class="mb-0 text-secondary small" style="white-space:pre-line;">{{ r.comment }}</p>
                 </div>
+
+                {% if r.freelancer_reply %}
+                    <div class="p-3 rounded-3 border-start border-primary border-3 bg-white border">
+                        <span class="text-primary fw-bold small d-block mb-1"><i class="bi bi-reply-fill"></i> Freelancer Reply ({{ r.replied_at|date:"M d, Y" }}):</span>
+                        <p class="mb-0 text-dark small" style="white-space:pre-line;">{{ r.freelancer_reply }}</p>
+                    </div>
+                {% endif %}
             </div>
             <div class="modal-footer bg-light p-3">
                 <button type="button" class="btn btn-secondary btn-sm rounded-3 px-4" data-bs-dismiss="modal">Close</button>

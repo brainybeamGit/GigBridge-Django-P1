@@ -55,6 +55,7 @@ urlpatterns = [
     # Reviews
     path('adminpanel/reviews/', views.reviews_view, name='adminpanel_reviews'),
     path('adminpanel/reviews/<int:review_id>/delete/', views.review_delete_view, name='adminpanel_review_delete'),
+    path('adminpanel/reviews/<int:review_id>/toggle-hide/', views.review_toggle_hide_view, name='adminpanel_review_toggle_hide'),
 
     # Messages (Full Contact Inquiries & Replies Module)
     path('adminpanel/messages/', views.contact_messages_list_view, name='messages'),

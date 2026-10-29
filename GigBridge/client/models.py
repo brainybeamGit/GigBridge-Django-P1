@@ -3,6 +3,9 @@ from django.contrib.auth.models import User
 from django.utils.text import slugify
 from django.utils import timezone
 from datetime import timedelta
+from decimal import Decimal
+from django.db.models import Avg, Count, Q
+from django.conf import settings
 
 
 class UserProfile(models.Model):
@@ -26,21 +29,109 @@ class UserProfile(models.Model):
         default=True,
         help_text='Indicates if the client account has been verified and approved by the admin to post projects.'
     )
+
+    # Dynamic aggregate fields on the freelancer profile
+    average_rating = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    total_reviews = models.PositiveIntegerField(default=0)
+    avg_quality = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    avg_communication = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    avg_deadline = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    avg_professionalism = models.DecimalField(max_digits=3, decimal_places=1, default=0.0)
+    completed_projects_count = models.PositiveIntegerField(default=0)
+    on_time_delivery_rate = models.PositiveIntegerField(default=100)
+    repeat_clients_count = models.PositiveIntegerField(default=0)
+    recommend_percentage = models.PositiveIntegerField(default=100)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
 
     @property
-    def average_rating(self):
-        reviews = self.user.received_reviews.all()
-        if reviews.exists():
-            return round(sum(r.rating for r in reviews) / reviews.count(), 1)
-        return 0.0
-
-    @property
     def skills_list(self):
         return [s.strip() for s in self.skills.split(',') if s.strip()]
+
+    @property
+    def is_top_rated(self):
+        """Top Rated when average_rating >= 4.7 and at least 5 reviews."""
+        return self.average_rating >= Decimal('4.7') and self.total_reviews >= 5
+
+    @property
+    def is_rising_talent(self):
+        """Rising Talent for new freelancers with at least 1 completed project and < 5 reviews."""
+        return self.completed_projects_count >= 1 and self.total_reviews < 5
+
+    @property
+    def is_new_on_gigbridge(self):
+        """New on GigBridge when there are no completed projects."""
+        return self.completed_projects_count == 0
+
+    @property
+    def is_ontime_pro(self):
+        """On-Time Pro when on_time_delivery_rate >= 90% and at least 1 completed project."""
+        return self.on_time_delivery_rate >= 90 and self.completed_projects_count >= 1
+
+    def recalculate_stats(self):
+        """Recalculates all aggregate metrics from database records."""
+        from client.models import Review, Contract
+
+        # 1. Reviews aggregates (excluding hidden reviews)
+        reviews = Review.objects.filter(reviewee=self.user, is_hidden=False)
+        self.total_reviews = reviews.count()
+        if self.total_reviews > 0:
+            agg = reviews.aggregate(
+                avg_overall=Avg('overall_rating'),
+                avg_q=Avg('quality_of_work'),
+                avg_c=Avg('communication'),
+                avg_d=Avg('deadline_adherence'),
+                avg_p=Avg('professionalism'),
+                recommended=Count('id', filter=Q(would_recommend=True))
+            )
+            self.average_rating = Decimal(str(round(agg['avg_overall'] or 0.0, 1)))
+            self.avg_quality = Decimal(str(round(agg['avg_q'] or 0.0, 1)))
+            self.avg_communication = Decimal(str(round(agg['avg_c'] or 0.0, 1)))
+            self.avg_deadline = Decimal(str(round(agg['avg_d'] or 0.0, 1)))
+            self.avg_professionalism = Decimal(str(round(agg['avg_p'] or 0.0, 1)))
+            rec_count = agg['recommended'] or 0
+            self.recommend_percentage = round((rec_count / self.total_reviews) * 100)
+        else:
+            self.average_rating = Decimal('0.0')
+            self.avg_quality = Decimal('0.0')
+            self.avg_communication = Decimal('0.0')
+            self.avg_deadline = Decimal('0.0')
+            self.avg_professionalism = Decimal('0.0')
+            self.recommend_percentage = 100
+
+        # 2. Completed Contracts aggregates
+        completed_contracts = Contract.objects.filter(freelancer=self.user, status='completed')
+        self.completed_projects_count = completed_contracts.count()
+
+        # Repeat clients: distinct clients with > 1 completed contract with this freelancer
+        repeat_clients = (
+            completed_contracts.values('client')
+            .annotate(c_count=Count('id'))
+            .filter(c_count__gt=1)
+            .count()
+        )
+        self.repeat_clients_count = repeat_clients
+
+        # On-time delivery rate
+        contracts_with_deadline = [
+            c for c in completed_contracts.select_related('project')
+            if c.project and c.project.deadline and c.end_date
+        ]
+        if contracts_with_deadline:
+            on_time = sum(1 for c in contracts_with_deadline if c.end_date.date() <= c.project.deadline)
+            self.on_time_delivery_rate = round((on_time / len(contracts_with_deadline)) * 100)
+        else:
+            self.on_time_delivery_rate = 100 if self.completed_projects_count > 0 else 0
+
+        self.save(update_fields=[
+            'average_rating', 'total_reviews',
+            'avg_quality', 'avg_communication', 'avg_deadline', 'avg_professionalism',
+            'completed_projects_count', 'on_time_delivery_rate', 'repeat_clients_count',
+            'recommend_percentage'
+        ])
 
 
 class Category(models.Model):
@@ -422,19 +513,95 @@ class Review(models.Model):
         (1, '1 Star - Poor'),
     ]
 
+    contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='review')
     reviewer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='given_reviews')
     reviewee = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_reviews')
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='reviews')
-    contract = models.OneToOneField(Contract, on_delete=models.CASCADE, related_name='review')
-    rating = models.PositiveSmallIntegerField(choices=RATING_CHOICES, default=5)
-    comment = models.TextField()
+
+    # Category ratings, each 1 to 5
+    quality_of_work = models.PositiveSmallIntegerField(default=5, help_text="Rating 1-5")
+    communication = models.PositiveSmallIntegerField(default=5, help_text="Rating 1-5")
+    deadline_adherence = models.PositiveSmallIntegerField(default=5, help_text="Rating 1-5")
+    professionalism = models.PositiveSmallIntegerField(default=5, help_text="Rating 1-5")
+
+    # overall_rating: calculated automatically as the average of the 4 categories, rounded to 1 decimal
+    overall_rating = models.DecimalField(max_digits=3, decimal_places=1, default=5.0)
+    rating = models.PositiveSmallIntegerField(default=5)  # Backwards compatibility integer rating
+
+    comment = models.TextField(help_text="Detailed review (min 20, max 1000 chars)")
+    would_recommend = models.BooleanField(default=True, help_text="Would you recommend this freelancer?")
+    tags = models.CharField(max_length=255, blank=True, default='', help_text="Comma-separated quick tags")
+
+    # Freelancer public reply
+    freelancer_reply = models.TextField(blank=True, default='', help_text="Freelancer's one public reply")
+    replied_at = models.DateTimeField(null=True, blank=True)
+
+    # Moderation flag
+    is_hidden = models.BooleanField(default=False, help_text="Hidden by admin moderation; excluded from aggregates")
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Review by {self.reviewer.username} for {self.reviewee.username} ({self.overall_rating}/5.0)"
+
+    @property
+    def client(self):
+        return self.reviewer
+
+    @client.setter
+    def client(self, value):
+        self.reviewer = value
+
+    @property
+    def freelancer(self):
+        return self.reviewee
+
+    @freelancer.setter
+    def freelancer(self, value):
+        self.reviewee = value
+
+    @property
+    def is_editable(self):
+        """Client can edit the review within 7 days of submission."""
+        if not self.created_at:
+            return True
+        return (timezone.now() - self.created_at).total_seconds() <= 7 * 86400
+
+    @property
+    def tags_list(self):
+        if not self.tags:
+            return []
+        return [t.strip() for t in self.tags.split(',') if t.strip()]
+
+    def save(self, *args, **kwargs):
+        # Calculate overall_rating as average of the 4 category ratings rounded to 1 decimal
+        q = self.quality_of_work or 5
+        c = self.communication or 5
+        d = self.deadline_adherence or 5
+        p = self.professionalism or 5
+        avg = (q + c + d + p) / 4.0
+        self.overall_rating = Decimal(str(round(avg, 1)))
+        self.rating = int(round(self.overall_rating))
+        super().save(*args, **kwargs)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    title = models.CharField(max_length=255)
+    message = models.TextField()
+    link = models.CharField(max_length=255, blank=True, default='')
+    is_read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"Review by {self.reviewer.username} ({self.rating}/5)"
+        return f"Notification for {self.user.username}: {self.title}"
 
 
 class ContactMessage(models.Model):
@@ -576,7 +743,7 @@ def handle_contract_pre_delete(sender, instance, **kwargs):
         pass
 
 
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 
 @receiver(post_save, sender=Proposal)
 def create_conversation_on_proposal_accepted(sender, instance, **kwargs):
@@ -594,3 +761,60 @@ def create_conversation_on_proposal_accepted(sender, instance, **kwargs):
             )
         except Exception:
             pass
+
+
+@receiver(post_save, sender=Review)
+def handle_review_post_save(sender, instance, created, **kwargs):
+    """
+    Update freelancer profile aggregates and send in-app/email notification on review save.
+    """
+    profile = getattr(instance.reviewee, 'profile', None)
+    if profile:
+        profile.recalculate_stats()
+
+    if created:
+        client_name = instance.reviewer.get_full_name() or instance.reviewer.username
+        title = f"New {instance.overall_rating}★ Review from {client_name}"
+        msg = f"{client_name} left a {instance.overall_rating}/5.0 star review for completed project '{instance.project.title}'."
+        try:
+            Notification.objects.create(
+                user=instance.reviewee,
+                title=title,
+                message=msg,
+                link='/freelancer/reviews/'
+            )
+        except Exception:
+            pass
+
+        try:
+            if instance.reviewee.email:
+                from django.core.mail import send_mail
+                subject = f"[GigBridge] New {instance.overall_rating}★ Review from {client_name}"
+                body = (
+                    f"Hello {instance.reviewee.username},\n\n"
+                    f"{client_name} has submitted a review for project '{instance.project.title}'.\n\n"
+                    f"Overall Rating: {instance.overall_rating} / 5.0\n"
+                    f"Feedback: \"{instance.comment}\"\n\n"
+                    f"You can view your reviews and post your public response at:\n"
+                    f"http://127.0.0.1:8000/freelancer/reviews/\n\n"
+                    f"Best regards,\nThe GigBridge Team"
+                )
+                send_mail(
+                    subject,
+                    body,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [instance.reviewee.email],
+                    fail_silently=True
+                )
+        except Exception:
+            pass
+
+
+@receiver(post_delete, sender=Review)
+def handle_review_post_delete(sender, instance, **kwargs):
+    """
+    Recalculate freelancer profile aggregates when a review is deleted.
+    """
+    profile = getattr(instance.reviewee, 'profile', None)
+    if profile:
+        profile.recalculate_stats()

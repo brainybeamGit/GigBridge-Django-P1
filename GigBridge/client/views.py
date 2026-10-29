@@ -1451,7 +1451,10 @@ def client_payment_verify_view(request):
             success_msg = f"Payment of ₹{milestone.amount:,.2f} verified and paid successfully via Razorpay!"
 
     messages.success(request, success_msg)
-    redirect_url = reverse('client_contract_detail', kwargs={'pk': contract.id})
+    if milestone.milestone_type == 'final':
+        redirect_url = reverse('contract_review_create', kwargs={'contract_id': contract.id})
+    else:
+        redirect_url = reverse('client_contract_detail', kwargs={'pk': contract.id})
 
     if is_ajax:
         return JsonResponse({
@@ -1461,6 +1464,8 @@ def client_payment_verify_view(request):
             'payment_id': payment.id,
             'invoice_number': payment.invoice_number,
         })
+    if milestone.milestone_type == 'final':
+        return redirect('contract_review_create', contract_id=contract.id)
     return redirect('client_contract_detail', pk=contract.id)
 
 
@@ -1808,12 +1813,16 @@ def freelancer_public_profile_view(request, id):
     URL: /freelancers/<id>/ (name: freelancer_public_profile)
     Sections:
     - Header: photo, name, title/headline, location, member since, verified badge, skills, hourly rate.
-    - Live calculated Stats: completed projects, in progress, proposals submitted, acceptance rate %,
-      average rating, review count, on-time delivery rate.
-    - Proposal Context Card (if opened from a proposal): project title, bid, delivery, cover letter,
-      Accept/Decline buttons and 'Message Freelancer' button if accepted.
-    - Work history with tabs (All / Completed / In Progress), status badges, client reviews.
-    - Reviews list & 5-to-1 rating breakdown percentage bars.
+    - Badges automatically awarded from data:
+        * 'Top Rated' if rating >= 4.7 and total_reviews >= 5
+        * 'Rising Talent' if completed >= 1 and total_reviews < 5
+        * 'New on GigBridge' if completed == 0
+        * 'On-Time Pro' if on_time_delivery_rate >= 90% and completed >= 1
+    - Live calculated Stats: completed projects, in progress, on-time %, would recommend %, repeat clients.
+    - Rating Breakdown card: big score, star display, total reviews, 4 category progress bars, 5-to-1 breakdown.
+    - Work History with tabs (All / Completed / In Progress).
+    - Reviews list with sorting (Newest, Highest, Lowest), reviewer privacy formatting, tags, replies, and pagination.
+    - Proposal Context Card (if opened from a proposal): project title, bid, delivery, cover letter.
     - Privacy: Hides email & phone until proposal is accepted.
     """
     freelancer_user = get_object_or_404(
@@ -1821,6 +1830,8 @@ def freelancer_public_profile_view(request, id):
         id=id
     )
     profile = getattr(freelancer_user, 'profile', None)
+    if profile:
+        profile.recalculate_stats()
 
     # Optional proposal context if passed from client proposals list
     proposal_id = request.GET.get('proposal_id')
@@ -1832,7 +1843,7 @@ def freelancer_public_profile_view(request, id):
         if proposal_context and proposal_context.project.client_id != request.user.id and not request.user.is_superuser:
             proposal_context = None
 
-    # Privacy Protection: Email and phone hidden until proposal is accepted
+    # Privacy Protection: Email and phone hidden until proposal is accepted or active contract
     can_view_private = False
     if request.user.is_authenticated:
         if request.user.id == freelancer_user.id or request.user.is_superuser:
@@ -1849,15 +1860,32 @@ def freelancer_public_profile_view(request, id):
             ).exists()
             can_view_private = has_accepted_proposal or has_contract
 
-    # Check for existing conversation
-    existing_conversation = None
-    if proposal_context and proposal_context.status == 'accepted':
-        existing_conversation = Conversation.objects.filter(
-            project=proposal_context.project,
+    # Check for existing conversation or chat access
+    can_message = False
+    conversation_id = None
+    if request.user.is_authenticated and request.user.id != freelancer_user.id:
+        conv = Conversation.objects.filter(
+            client=request.user,
             freelancer=freelancer_user
         ).first()
+        if not conv:
+            conv = Conversation.objects.filter(
+                freelancer=request.user,
+                client=freelancer_user
+            ).first()
+        if conv:
+            can_message = True
+            conversation_id = conv.id
+        else:
+            has_acc = Proposal.objects.filter(
+                project__client=request.user,
+                freelancer=freelancer_user,
+                status='accepted'
+            ).first()
+            if has_acc:
+                can_message = True
 
-    # Live platform stats (using aggregate & annotate)
+    # Live platform contracts stats
     contracts_base = Contract.objects.filter(freelancer=freelancer_user)
     completed_contracts_count = contracts_base.filter(status='completed').count()
     in_progress_contracts_count = contracts_base.filter(status='active').count()
@@ -1866,36 +1894,33 @@ def freelancer_public_profile_view(request, id):
     accepted_proposals = Proposal.objects.filter(freelancer=freelancer_user, status='accepted').count()
     acceptance_rate = round((accepted_proposals / total_proposals) * 100) if total_proposals > 0 else 0
 
-    # Reviews & Ratings aggregation
-    reviews_qs = Review.objects.filter(reviewee=freelancer_user).select_related('reviewer', 'project', 'contract').order_by('-created_at')
-    total_reviews = reviews_qs.count()
-    avg_rating_raw = reviews_qs.aggregate(Avg('rating'))['rating__avg']
-    avg_rating = round(avg_rating_raw, 1) if avg_rating_raw else (5.0 if completed_contracts_count > 0 else 0.0)
+    # Reviews & Ratings aggregation (only non-hidden reviews)
+    review_sort = request.GET.get('review_sort', 'newest').strip()
+    reviews_base = Review.objects.filter(reviewee=freelancer_user, is_hidden=False).select_related('reviewer', 'project', 'contract')
+    if review_sort == 'highest':
+        reviews_base = reviews_base.order_by('-overall_rating', '-created_at')
+    elif review_sort == 'lowest':
+        reviews_base = reviews_base.order_by('overall_rating', '-created_at')
+    else:
+        reviews_base = reviews_base.order_by('-created_at')
+
+    total_reviews = reviews_base.count()
 
     # 5-Star to 1-Star Rating breakdown bars
     rating_breakdown = []
     for star in [5, 4, 3, 2, 1]:
-        star_count = reviews_qs.filter(rating=star).count()
+        if star == 5:
+            star_count = reviews_base.filter(overall_rating__gte=4.5).count()
+        elif star == 1:
+            star_count = reviews_base.filter(overall_rating__lt=2.0).count()
+        else:
+            star_count = reviews_base.filter(overall_rating__gte=star - 0.5, overall_rating__lt=star + 0.5).count()
         star_pct = round((star_count / total_reviews) * 100) if total_reviews > 0 else 0
         rating_breakdown.append({
             'star': star,
             'count': star_count,
             'percent': star_pct,
         })
-
-    # On-Time Delivery Rate
-    completed_with_deadlines = [
-        c for c in contracts_base.filter(status='completed').select_related('project')
-        if c.project and c.project.deadline and c.end_date
-    ]
-    if completed_with_deadlines:
-        on_time_count = sum(1 for c in completed_with_deadlines if c.end_date.date() <= c.project.deadline)
-        on_time_rate = round((on_time_count / len(completed_with_deadlines)) * 100)
-    else:
-        on_time_rate = 100 if completed_contracts_count > 0 else None
-
-    # Handle brand new freelancers gracefully with "New Talent" badge
-    is_new_talent = (completed_contracts_count == 0 and total_reviews == 0)
 
     # Work History Filter Tabs
     history_tab = request.GET.get('history_tab', 'all').strip()
@@ -1909,8 +1934,8 @@ def freelancer_public_profile_view(request, id):
     history_page_num = request.GET.get('history_page', 1)
     history_page_obj = paginator_history.get_page(history_page_num)
 
-    # Reviews Pagination
-    paginator_reviews = Paginator(reviews_qs, 5)
+    # Reviews Pagination (5 per page)
+    paginator_reviews = Paginator(reviews_base, 5)
     reviews_page_num = request.GET.get('reviews_page', 1)
     reviews_page_obj = paginator_reviews.get_page(reviews_page_num)
 
@@ -1919,17 +1944,16 @@ def freelancer_public_profile_view(request, id):
         'profile': profile,
         'proposal_context': proposal_context,
         'can_view_private': can_view_private,
-        'existing_conversation': existing_conversation,
+        'can_message': can_message,
+        'conversation_id': conversation_id,
         'completed_contracts_count': completed_contracts_count,
         'in_progress_contracts_count': in_progress_contracts_count,
         'total_proposals': total_proposals,
         'accepted_proposals': accepted_proposals,
         'acceptance_rate': acceptance_rate,
         'total_reviews': total_reviews,
-        'avg_rating': avg_rating,
         'rating_breakdown': rating_breakdown,
-        'on_time_rate': on_time_rate,
-        'is_new_talent': is_new_talent,
+        'review_sort': review_sort,
         'history_tab': history_tab,
         'history_page_obj': history_page_obj,
         'reviews_page_obj': reviews_page_obj,
@@ -1959,30 +1983,115 @@ def client_reviews_view(request):
 
 
 @login_required
-def client_review_create_view(request, contract_pk):
-    contract = get_object_or_404(Contract, pk=contract_pk)
-    if contract.client != request.user:
-        messages.error(request, "Unauthorized.")
-        return redirect('client_contracts')
+def contract_review_create_view(request, contract_id=None, contract_pk=None):
+    """
+    Client rates and reviews a freelancer after contract completion.
+    URL: /contracts/<id>/review/ (name: contract_review_create)
+    Rule:
+    - Contract status must be 'completed'
+    - Only hiring client of that contract can submit
+    - One review per contract (if already exists, redirects to edit if <= 7 days, else locked)
+    """
+    cid = contract_id or contract_pk
+    contract = get_object_or_404(
+        Contract.objects.select_related('project', 'freelancer', 'client', 'freelancer__profile'),
+        id=cid
+    )
+
+    # Permission check: hiring client only
+    if contract.client != request.user and not request.user.is_superuser:
+        messages.error(request, "Only the client who hired the freelancer on this contract can submit a review.")
+        return redirect('client_contract_detail', pk=contract.id)
+
+    # Status check: contract must be completed
     if contract.status != 'completed':
-        messages.warning(request, "You can only review a completed contract.")
-        return redirect('client_contract_detail', pk=contract_pk)
-    if hasattr(contract, 'review'):
-        messages.info(request, "You have already submitted a review for this contract.")
-        return redirect('client_reviews')
+        messages.warning(request, "You can rate and review the freelancer once all milestones are completed and paid.")
+        return redirect('client_contract_detail', pk=contract.id)
+
+    # Check for existing review
+    existing_review = getattr(contract, 'review', None)
+    if existing_review:
+        if existing_review.is_editable:
+            messages.info(request, "You have already reviewed this contract. You can edit your review within 7 days.")
+            return redirect('contract_review_edit', contract_id=contract.id)
+        else:
+            messages.warning(request, "This contract has already been reviewed, and the 7-day edit window has expired.")
+            return redirect('client_contract_detail', pk=contract.id)
+
     if request.method == 'POST':
         form = ReviewForm(request.POST)
         if form.is_valid():
             review = form.save(commit=False)
+            review.contract = contract
             review.reviewer = request.user
             review.reviewee = contract.freelancer
             review.project = contract.project
-            review.contract = contract
             review.save()
-            messages.success(request, "Review submitted successfully. Thank you!")
-            return redirect('client_reviews')
+            freelancer_name = contract.freelancer.get_full_name() or contract.freelancer.username
+            messages.success(request, f"Thank you! Your {review.overall_rating}★ review for {freelancer_name} has been posted.")
+            return redirect('client_contract_detail', pk=contract.id)
+        else:
+            messages.error(request, "Please check the form and fix any highlighted errors.")
     else:
         form = ReviewForm()
+
+    context = {
+        'contract': contract,
+        'freelancer_user': contract.freelancer,
+        'form': form,
+        'is_edit': False,
+    }
+    return render(request, 'client/contract_review.html', context)
+
+
+@login_required
+def contract_review_edit_view(request, contract_id):
+    """
+    Client edits their submitted review within the 7-day window.
+    URL: /contracts/<id>/review/edit/ (name: contract_review_edit)
+    """
+    contract = get_object_or_404(
+        Contract.objects.select_related('project', 'freelancer', 'client', 'review'),
+        id=contract_id
+    )
+
+    if contract.client != request.user and not request.user.is_superuser:
+        messages.error(request, "Unauthorized access to review.")
+        return redirect('client_contract_detail', pk=contract.id)
+
+    existing_review = getattr(contract, 'review', None)
+    if not existing_review:
+        messages.info(request, "No review found for this contract yet. You can submit one now.")
+        return redirect('contract_review_create', contract_id=contract.id)
+
+    if not existing_review.is_editable:
+        messages.warning(request, "This review is locked. Reviews can only be edited within 7 days of posting.")
+        return redirect('client_contract_detail', pk=contract.id)
+
+    if request.method == 'POST':
+        form = ReviewForm(request.POST, instance=existing_review)
+        if form.is_valid():
+            review = form.save()
+            messages.success(request, "Your review has been updated successfully.")
+            return redirect('client_contract_detail', pk=contract.id)
+        else:
+            messages.error(request, "Please fix the highlighted errors.")
+    else:
+        form = ReviewForm(instance=existing_review)
+
+    context = {
+        'contract': contract,
+        'freelancer_user': contract.freelancer,
+        'form': form,
+        'review': existing_review,
+        'is_edit': True,
+    }
+    return render(request, 'client/contract_review.html', context)
+
+
+def client_review_create_view(request, contract_pk):
+    """Alias pointing to contract_review_create_view for backward compatibility."""
+    return contract_review_create_view(request, contract_id=contract_pk)
     return render(request, 'client/review_form.html', {'form': form, 'contract': contract})
 
 

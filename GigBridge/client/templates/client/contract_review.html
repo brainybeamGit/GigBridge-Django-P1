@@ -1,0 +1,597 @@
+{% extends 'client/dashboard_base.html' %}
+{% load static %}
+{% load review_tags %}
+
+{% block breadcrumb_current %}{% if is_edit %}Edit Review{% else %}Rate Freelancer{% endif %}{% endblock %}
+{% block dashboard_title %}{% if is_edit %}Edit Contract Review{% else %}Rate &amp; Review Freelancer{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       GigBridge Interactive Rating & Review Styles
+       ========================================================================== */
+    .gb-review-container {
+        max-width: 920px;
+        margin: 0 auto;
+    }
+
+    .gb-review-hero {
+        background: linear-gradient(135deg, #0F172A 0%, #0369A1 100%);
+        border-radius: 20px;
+        padding: 32px 36px;
+        color: #FFFFFF;
+        margin-bottom: 24px;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.25);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .gb-review-hero::after {
+        content: '';
+        position: absolute;
+        width: 300px;
+        height: 300px;
+        background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
+        top: -100px;
+        right: -100px;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+
+    .gb-card-luxury {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 18px;
+        padding: 32px 36px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+        margin-bottom: 24px;
+    }
+
+    .gb-avatar-md {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        flex-shrink: 0;
+        border: 3px solid rgba(255, 255, 255, 0.2);
+    }
+
+    /* Category Star Row */
+    .gb-rating-row {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 14px;
+        transition: all 0.2s ease;
+    }
+    .gb-rating-row:hover {
+        background: #FFFFFF;
+        border-color: #BAE6FD;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+    }
+
+    .gb-star-group {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+    }
+
+    .gb-star-btn {
+        background: transparent;
+        border: none;
+        padding: 2px 4px;
+        font-size: 1.6rem;
+        line-height: 1;
+        color: #CBD5E1;
+        cursor: pointer;
+        transition: transform 0.15s ease, color 0.15s ease;
+    }
+    .gb-star-btn:hover {
+        transform: scale(1.2);
+    }
+    .gb-star-btn.active {
+        color: #F59E0B;
+    }
+
+    /* Overall Live Score Display */
+    .gb-overall-box {
+        background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
+        border: 1.5px solid #BAE6FD;
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+    }
+
+    .gb-overall-score {
+        font-size: 3rem;
+        font-weight: 900;
+        color: #0F172A;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+
+    /* Quick Tag Chips */
+    .gb-tag-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #F1F5F9;
+        color: #334155;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 999px;
+        padding: 7px 16px;
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.18s ease;
+        margin: 4px;
+    }
+    .gb-tag-chip:hover {
+        border-color: #93C5FD;
+        color: #0284C7;
+        background: #F0F9FF;
+    }
+    .gb-tag-chip.selected {
+        background: #0284C7;
+        border-color: #0284C7;
+        color: #FFFFFF;
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
+    }
+
+    /* Counter */
+    .gb-char-counter {
+        font-size: 0.78rem;
+        font-weight: 600;
+        color: #64748B;
+    }
+    .gb-char-counter.invalid {
+        color: #DC2626;
+    }
+    .gb-char-counter.valid {
+        color: #166534;
+    }
+</style>
+
+<div class="gb-review-container">
+    <div class="mb-3">
+        <a href="{% url 'client_contract_detail' contract.id %}" class="small text-decoration-none fw-semibold text-primary">
+            <i class="bi bi-arrow-left me-1"></i> Back to Contract #{{ contract.id }}
+        </a>
+    </div>
+
+    <!-- Hero Card -->
+    <div class="gb-review-hero">
+        <div class="row align-items-center g-3">
+            <div class="col-md-8">
+                <span class="badge bg-white text-dark rounded-pill px-3 py-1 fw-bold small mb-2 text-uppercase" style="letter-spacing: 0.06em;">
+                    <i class="bi bi-shield-check text-success me-1"></i> Verified Contract Completion
+                </span>
+                <h2 class="fw-bold mb-1 fs-3">
+                    {% if is_edit %}Update Your Review{% else %}Rate &amp; Review Freelancer{% endif %}
+                </h2>
+                <p class="mb-0 text-white-50 small">
+                    Contract #{{ contract.id }}: <strong>{{ contract.project.title }}</strong> &bull; Total Value: &#8377;{{ contract.total_amount|floatformat:0 }}
+                </p>
+            </div>
+            <div class="col-md-4 text-md-end">
+                <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 rounded-4 p-2 pe-3 text-start">
+                    <div class="gb-avatar-md">
+                        {% if freelancer_user.profile.avatar %}
+                            <img src="{{ freelancer_user.profile.avatar.url }}" alt="{{ freelancer_user.username }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                        {% else %}
+                            {{ freelancer_user.first_name|default:freelancer_user.username|slice:":2"|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="fw-bold text-white small">{{ freelancer_user.get_full_name|default:freelancer_user.username }}</div>
+                        <small class="text-white-50 d-block" style="font-size: 0.72rem;">{{ freelancer_user.profile.title|default:"Independent Specialist" }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if form.errors %}
+        <div class="alert alert-danger border-0 rounded-4 p-3 mb-4 shadow-sm">
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
+                <strong class="text-danger">Please fix the following issues:</strong>
+            </div>
+            <ul class="mb-0 small text-danger ps-4">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <!-- Review Form Card -->
+    <div class="gb-card-luxury">
+        <form method="POST" id="gigbridgeReviewForm" novalidate>
+            {% csrf_token %}
+
+            <!-- Hidden rating fields -->
+            <input type="hidden" name="quality_of_work" id="id_quality_of_work" value="{{ form.quality_of_work.value|default:5 }}">
+            <input type="hidden" name="communication" id="id_communication" value="{{ form.communication.value|default:5 }}">
+            <input type="hidden" name="deadline_adherence" id="id_deadline_adherence" value="{{ form.deadline_adherence.value|default:5 }}">
+            <input type="hidden" name="professionalism" id="id_professionalism" value="{{ form.professionalism.value|default:5 }}">
+            <input type="hidden" name="tags" id="id_selected_tags" value="{{ form.tags.value|default:'' }}">
+
+            <div class="row g-4 mb-4">
+                <!-- Left 8 cols: 4 Rating Categories -->
+                <div class="col-lg-8">
+                    <h5 class="fw-bold text-dark mb-3">
+                        <i class="bi bi-star-fill text-warning me-2"></i> Performance Assessment
+                    </h5>
+                    <p class="text-muted small mb-3">
+                        Rate the freelancer across the 4 key delivery dimensions. The overall score is calculated as the precise average.
+                    </p>
+
+                    <!-- Category 1: Quality of Work -->
+                    <div class="gb-rating-row" data-category="quality_of_work">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <div>
+                                <span class="fw-bold text-dark d-block">1. Quality of Work</span>
+                                <small class="text-muted">Technical craftsmanship, attention to detail, bug-free deliverable</small>
+                            </div>
+                            <span class="badge bg-white text-primary border px-2 py-1 small fw-bold category-label" id="label_quality_of_work">
+                                5 - Exceptional
+                            </span>
+                        </div>
+                        <div class="gb-star-group mt-2" data-target="id_quality_of_work" data-label="label_quality_of_work">
+                            {% for i in "12345" %}
+                                <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Communication -->
+                    <div class="gb-rating-row" data-category="communication">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <div>
+                                <span class="fw-bold text-dark d-block">2. Communication</span>
+                                <small class="text-muted">Clarity, responsiveness, proactiveness, and listening</small>
+                            </div>
+                            <span class="badge bg-white text-primary border px-2 py-1 small fw-bold category-label" id="label_communication">
+                                5 - Outstanding
+                            </span>
+                        </div>
+                        <div class="gb-star-group mt-2" data-target="id_communication" data-label="label_communication">
+                            {% for i in "12345" %}
+                                <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Deadline Adherence -->
+                    <div class="gb-rating-row" data-category="deadline_adherence">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <div>
+                                <span class="fw-bold text-dark d-block">3. Deadline Adherence</span>
+                                <small class="text-muted">Turnaround speed, meeting milestones, respect for timelines</small>
+                            </div>
+                            <span class="badge bg-white text-primary border px-2 py-1 small fw-bold category-label" id="label_deadline_adherence">
+                                5 - On Schedule / Early
+                            </span>
+                        </div>
+                        <div class="gb-star-group mt-2" data-target="id_deadline_adherence" data-label="label_deadline_adherence">
+                            {% for i in "12345" %}
+                                <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Category 4: Professionalism -->
+                    <div class="gb-rating-row" data-category="professionalism">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
+                            <div>
+                                <span class="fw-bold text-dark d-block">4. Professionalism</span>
+                                <small class="text-muted">Collaboration, polite conduct, problem-solving attitude</small>
+                            </div>
+                            <span class="badge bg-white text-primary border px-2 py-1 small fw-bold category-label" id="label_professionalism">
+                                5 - Highly Professional
+                            </span>
+                        </div>
+                        <div class="gb-star-group mt-2" data-target="id_professionalism" data-label="label_professionalism">
+                            {% for i in "12345" %}
+                                <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
+                                    <i class="bi bi-star-fill"></i>
+                                </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 4 cols: Live Overall Score Card -->
+                <div class="col-lg-4 d-flex flex-column justify-content-between">
+                    <div class="gb-overall-box">
+                        <small class="text-uppercase fw-bold text-muted small" style="letter-spacing: 0.08em;">
+                            Calculated Overall Score
+                        </small>
+                        <div class="gb-overall-score mt-2" id="liveOverallNumber">5.0</div>
+                        <div class="fs-4 text-warning mb-2" id="liveOverallStars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold small" id="liveOverallBadge">
+                            Exceptional Partner
+                        </span>
+                        <hr class="my-3 text-secondary opacity-25">
+                        <small class="text-muted d-block lh-sm" style="font-size: 0.74rem;">
+                            Overall rating automatically rounds to 1 decimal place and updates the freelancer's public reputation score.
+                        </small>
+                    </div>
+
+                    <!-- Recommendation Toggle Switch -->
+                    <div class="p-3 bg-light rounded-4 border mt-3">
+                        <div class="form-check form-switch d-flex align-items-center justify-content-between ps-0 mb-0">
+                            <div>
+                                <label class="form-check-label fw-bold text-dark small d-block" for="wouldRecommendSwitch">
+                                    Recommend to Other Clients?
+                                </label>
+                                <small class="text-muted" style="font-size: 0.72rem;">Adds to freelancer's recommendation rate</small>
+                            </div>
+                            <input class="form-check-input ms-2" type="checkbox" role="switch" name="would_recommend" id="wouldRecommendSwitch" {% if form.would_recommend.value != False %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Positive Tag Chips -->
+            <div class="mb-4 pt-3 border-top">
+                <label class="form-label fw-bold text-dark d-block mb-1">
+                    <i class="bi bi-tags-fill text-primary me-1"></i> Quick Positive Highlights (Click to add)
+                </label>
+                <small class="text-muted d-block mb-3">Select the key strengths that best describe your collaboration with this freelancer:</small>
+
+                <div class="d-flex flex-wrap" id="tagChipsContainer">
+                    <span class="gb-tag-chip" data-tag="Fast Delivery"><i class="bi bi-lightning-charge"></i> Fast Delivery</span>
+                    <span class="gb-tag-chip" data-tag="Great Communicator"><i class="bi bi-chat-quote"></i> Great Communicator</span>
+                    <span class="gb-tag-chip" data-tag="Clean Code"><i class="bi bi-code-slash"></i> Clean Code</span>
+                    <span class="gb-tag-chip" data-tag="Went Above and Beyond"><i class="bi bi-rocket-takeoff"></i> Went Above and Beyond</span>
+                    <span class="gb-tag-chip" data-tag="Expert Knowledge"><i class="bi bi-mortarboard"></i> Expert Knowledge</span>
+                    <span class="gb-tag-chip" data-tag="Pixel Perfect"><i class="bi bi-palette"></i> Pixel Perfect</span>
+                    <span class="gb-tag-chip" data-tag="Highly Recommended"><i class="bi bi-hand-thumbs-up"></i> Highly Recommended</span>
+                    <span class="gb-tag-chip" data-tag="Proactive Problem Solver"><i class="bi bi-lightbulb"></i> Proactive Problem Solver</span>
+                </div>
+            </div>
+
+            <!-- Detailed Written Feedback -->
+            <div class="mb-4 pt-3 border-top">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <label class="form-label fw-bold text-dark mb-0" for="reviewCommentTextarea">
+                        <i class="bi bi-pencil-square text-primary me-1"></i> Written Review &amp; Detailed Feedback <span class="text-danger">*</span>
+                    </label>
+                    <span class="gb-char-counter" id="charCounter">0 / 1000 characters (min. 20 required)</span>
+                </div>
+                <textarea
+                    name="comment"
+                    id="reviewCommentTextarea"
+                    class="form-control rounded-3 p-3 {% if form.comment.errors %}is-invalid{% endif %}"
+                    rows="5"
+                    maxlength="1000"
+                    placeholder="Describe your experience: What went well? How was the technical competence, milestone adherence, and responsiveness? Your honest feedback helps both the freelancer and future clients..."
+                    required
+                >{{ form.comment.value|default:'' }}</textarea>
+                {% if form.comment.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.comment.errors.0 }}
+                    </div>
+                {% endif %}
+                <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
+                    <i class="bi bi-lock me-1"></i> You can edit this review for up to 7 days after submission. After 7 days, the review will lock permanently.
+                </small>
+            </div>
+
+            <!-- Submit Button & Action Bar -->
+            <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
+                <a href="{% url 'client_contract_detail' contract.id %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
+                    Cancel
+                </a>
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="submitReviewBtn">
+                    <span class="submit-spinner spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
+                    <i class="bi bi-check2-circle me-1"></i>
+                    {% if is_edit %}Save Changes{% else %}Submit Verified Review{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const categories = ['quality_of_work', 'communication', 'deadline_adherence', 'professionalism'];
+    const labelTexts = {
+        5: '5 - Exceptional',
+        4: '4 - Very Good',
+        3: '3 - Good / Satisfactory',
+        2: '2 - Needs Improvement',
+        1: '1 - Poor / Unsatisfactory'
+    };
+
+    // 1. Initialize category star groups
+    categories.forEach(cat => {
+        const input = document.getElementById('id_' + cat);
+        const group = document.querySelector(`.gb-star-group[data-target="id_${cat}"]`);
+        const label = document.getElementById('label_' + cat);
+        let currentVal = parseInt(input.value) || 5;
+
+        function updateGroupUI(val) {
+            val = Math.max(1, Math.min(5, val));
+            input.value = val;
+            const buttons = group.querySelectorAll('.gb-star-btn');
+            buttons.forEach(btn => {
+                const btnVal = parseInt(btn.getAttribute('data-val'));
+                if (btnVal <= val) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+            if (label) {
+                label.textContent = labelTexts[val] || (val + ' Stars');
+            }
+            updateOverallPreview();
+        }
+
+        group.querySelectorAll('.gb-star-btn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const val = parseInt(this.getAttribute('data-val'));
+                updateGroupUI(val);
+            });
+
+            btn.addEventListener('mouseenter', function () {
+                const hoverVal = parseInt(this.getAttribute('data-val'));
+                group.querySelectorAll('.gb-star-btn').forEach(b => {
+                    const bVal = parseInt(b.getAttribute('data-val'));
+                    if (bVal <= hoverVal) {
+                        b.classList.add('active');
+                    } else {
+                        b.classList.remove('active');
+                    }
+                });
+                if (label) {
+                    label.textContent = labelTexts[hoverVal] || (hoverVal + ' Stars');
+                }
+            });
+        });
+
+        group.addEventListener('mouseleave', function () {
+            updateGroupUI(parseInt(input.value) || 5);
+        });
+
+        updateGroupUI(currentVal);
+    });
+
+    // 2. Live overall preview updater
+    function updateOverallPreview() {
+        let sum = 0;
+        categories.forEach(cat => {
+            const v = parseInt(document.getElementById('id_' + cat).value) || 5;
+            sum += v;
+        });
+        const avg = sum / 4.0;
+        const rounded = avg.toFixed(1);
+
+        const liveNumber = document.getElementById('liveOverallNumber');
+        const liveBadge = document.getElementById('liveOverallBadge');
+        const liveStars = document.getElementById('liveOverallStars');
+
+        if (liveNumber) liveNumber.textContent = rounded;
+
+        if (liveBadge) {
+            if (avg >= 4.8) {
+                liveBadge.textContent = 'Exceptional Partner';
+                liveBadge.className = 'badge bg-primary text-white rounded-pill px-3 py-1 fw-bold small';
+            } else if (avg >= 4.0) {
+                liveBadge.textContent = 'Highly Recommended';
+                liveBadge.className = 'badge bg-success text-white rounded-pill px-3 py-1 fw-bold small';
+            } else if (avg >= 3.0) {
+                liveBadge.textContent = 'Satisfactory Collaboration';
+                liveBadge.className = 'badge bg-info text-white rounded-pill px-3 py-1 fw-bold small';
+            } else {
+                liveBadge.textContent = 'Needs Improvement';
+                liveBadge.className = 'badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold small';
+            }
+        }
+
+        if (liveStars) {
+            let html = '';
+            for (let i = 1; i <= 5; i++) {
+                if (avg >= i) {
+                    html += '<i class="bi bi-star-fill text-warning me-1"></i>';
+                } else if (avg >= (i - 0.5)) {
+                    html += '<i class="bi bi-star-half text-warning me-1"></i>';
+                } else {
+                    html += '<i class="bi bi-star text-muted opacity-50 me-1"></i>';
+                }
+            }
+            liveStars.innerHTML = html;
+        }
+    }
+
+    // 3. Tag chips toggle
+    const tagsInput = document.getElementById('id_selected_tags');
+    const chipContainer = document.getElementById('tagChipsContainer');
+    const existingTags = (tagsInput.value || '').split(',').map(t => t.trim()).filter(Boolean);
+
+    chipContainer.querySelectorAll('.gb-tag-chip').forEach(chip => {
+        const tagText = chip.getAttribute('data-tag');
+        if (existingTags.includes(tagText)) {
+            chip.classList.add('selected');
+        }
+
+        chip.addEventListener('click', function () {
+            this.classList.toggle('selected');
+            const selectedChips = chipContainer.querySelectorAll('.gb-tag-chip.selected');
+            const tags = Array.from(selectedChips).map(c => c.getAttribute('data-tag'));
+            tagsInput.value = tags.join(', ');
+        });
+    });
+
+    // 4. Comment character counter
+    const commentArea = document.getElementById('reviewCommentTextarea');
+    const charCounter = document.getElementById('charCounter');
+
+    function updateCounter() {
+        const len = (commentArea.value || '').trim().length;
+        charCounter.textContent = `${len} / 1000 characters (min. 20 required)`;
+        if (len < 20) {
+            charCounter.className = 'gb-char-counter invalid';
+        } else if (len > 950) {
+            charCounter.className = 'gb-char-counter text-warning';
+        } else {
+            charCounter.className = 'gb-char-counter valid';
+        }
+    }
+
+    if (commentArea && charCounter) {
+        commentArea.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+
+    // 5. Submit double-click prevention
+    const form = document.getElementById('gigbridgeReviewForm');
+    const submitBtn = document.getElementById('submitReviewBtn');
+    form.addEventListener('submit', function (e) {
+        const len = (commentArea.value || '').trim().length;
+        if (len < 20) {
+            e.preventDefault();
+            commentArea.classList.add('is-invalid');
+            commentArea.focus();
+            alert('Please write at least 20 characters describing your experience with the freelancer.');
+            return false;
+        }
+
+        if (submitBtn) {
+            submitBtn.disabled = true;
+            const spinner = submitBtn.querySelector('.submit-spinner');
+            if (spinner) spinner.classList.remove('d-none');
+        }
+    });
+
+    updateOverallPreview();
+});
+</script>
+{% endblock %}

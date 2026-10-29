@@ -228,6 +228,11 @@
                 <span>Earnings &amp; Payouts</span>
             </a>
 
+            <a href="{% url 'freelancer_my_reviews' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_my_reviews' %}active{% endif %}">
+                <i class="bi bi-star"></i>
+                <span>Client Reviews</span>
+            </a>
+
             <a href="{% url 'messages_inbox' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'messages_inbox' or request.resolver_match.url_name == 'conversation_detail' or request.resolver_match.url_name == 'freelancer_messages' or request.resolver_match.url_name == 'freelancer_conversation_detail' %}active{% endif %}">
                 <i class="bi bi-chat-dots"></i>
                 <span class="d-flex align-items-center justify-content-between flex-grow-1">

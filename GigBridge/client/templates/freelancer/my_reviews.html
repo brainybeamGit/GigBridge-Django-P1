@@ -1,0 +1,390 @@
+{% extends 'freelancer/dashboard_base.html' %}
+{% load static %}
+{% load review_tags %}
+
+{% block breadcrumb_current %}Client Reviews{% endblock %}
+{% block dashboard_title %}Client Reviews &amp; Reputation Management{% endblock %}
+
+{% block dashboard_content %}
+<style>
+    /* ==========================================================================
+       Freelancer Reviews & Reputation Management
+       ========================================================================== */
+    .fr-stat-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 20px 22px;
+        text-align: center;
+        height: 100%;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
+        transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+    .fr-stat-card:hover {
+        transform: translateY(-2px);
+        border-color: #BAE6FD;
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
+    }
+    .fr-stat-num {
+        font-size: 2rem;
+        font-weight: 800;
+        line-height: 1;
+        margin-bottom: 4px;
+    }
+    .fr-stat-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #64748B;
+    }
+
+    .fr-review-card {
+        background: #FFFFFF;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 16px;
+        padding: 24px;
+        margin-bottom: 18px;
+        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        transition: border-color 0.2s ease;
+    }
+    .fr-review-card:hover {
+        border-color: #BAE6FD;
+    }
+
+    .fr-reply-box {
+        background: #F8FAFC;
+        border-left: 4px solid #0284C7;
+        border-radius: 0 12px 12px 0;
+        padding: 16px 20px;
+        margin-top: 14px;
+    }
+
+    .fr-progress-track {
+        height: 6px;
+        border-radius: 999px;
+        background: #E2E8F0;
+        overflow: hidden;
+        margin-top: 4px;
+    }
+    .fr-progress-fill {
+        height: 100%;
+        border-radius: 999px;
+        background: #0284C7;
+    }
+</style>
+
+<div class="mb-4">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div>
+            <h4 class="fw-bold text-navy mb-1">Your Reputation &amp; Client Feedback</h4>
+            <p class="text-secondary small mb-0">
+                Track how clients evaluate your work across milestones. Transparent reviews help attract top enterprise clients.
+            </p>
+        </div>
+        <a href="{% url 'freelancer_public_profile' user.id %}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold">
+            <i class="bi bi-box-arrow-up-right me-1"></i> View Public Profile
+        </a>
+    </div>
+</div>
+
+<!-- 1. Reputation Overview Metrics Row -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6 col-6">
+        <div class="fr-stat-card">
+            <div class="fr-stat-num text-warning">
+                {% if profile.total_reviews > 0 %}
+                    {{ profile.average_rating }} <span class="fs-6 text-muted">★</span>
+                {% else %}
+                    <span class="fs-4 text-muted">--</span>
+                {% endif %}
+            </div>
+            <div class="fr-stat-label">Overall Rating</div>
+            <small class="text-muted" style="font-size: 0.72rem;">{{ profile.total_reviews }} Verified Review{{ profile.total_reviews|pluralize }}</small>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-6">
+        <div class="fr-stat-card">
+            <div class="fr-stat-num text-success">{{ profile.recommend_percentage }}%</div>
+            <div class="fr-stat-label">Client Recommendation</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Satisfaction Rate</small>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-6">
+        <div class="fr-stat-card">
+            <div class="fr-stat-num text-info">{{ profile.on_time_delivery_rate }}%</div>
+            <div class="fr-stat-label">On-Time Delivery</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Deadlines Met</small>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 col-6">
+        <div class="fr-stat-card">
+            <div class="fr-stat-num text-primary">{{ profile.repeat_clients_count }}</div>
+            <div class="fr-stat-label">Repeat Clients</div>
+            <small class="text-muted" style="font-size: 0.72rem;">Multiple Contracts</small>
+        </div>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Left Column: Reviews Stream with Reply Option -->
+    <div class="col-lg-8">
+        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+                <h5 class="fw-bold text-navy mb-0">
+                    <i class="bi bi-chat-heart-fill text-danger me-2"></i> Client Reviews Received
+                </h5>
+
+                <!-- Sort Filter -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3 fw-semibold" type="button" data-bs-toggle="dropdown">
+                        <i class="bi bi-sort-down me-1"></i>
+                        {% if sort == 'highest' %}Highest Rating{% elif sort == 'lowest' %}Lowest Rating{% else %}Newest First{% endif %}
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm">
+                        <li><a class="dropdown-item {% if sort == 'newest' or not sort %}active{% endif %}" href="?sort=newest">Newest First</a></li>
+                        <li><a class="dropdown-item {% if sort == 'highest' %}active{% endif %}" href="?sort=highest">Highest Rating</a></li>
+                        <li><a class="dropdown-item {% if sort == 'lowest' %}active{% endif %}" href="?sort=lowest">Lowest Rating</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            {% for r in reviews %}
+                <div class="fr-review-card">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="fw-bold text-dark fs-6">{{ r.reviewer|reviewer_display_name }}</span>
+                            <span class="badge bg-light text-muted border small">Verified Client</span>
+                            {% if r.would_recommend %}
+                                <span class="badge bg-success-subtle text-success small rounded-pill">
+                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> Recommended
+                                </span>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">{{ r.created_at|date:"M d, Y" }}</small>
+                    </div>
+
+                    <!-- Stars & Category Pills -->
+                    <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+                        <div>{% render_stars r.overall_rating %}</div>
+                        <span class="fw-bold text-dark small">{{ r.overall_rating }} / 5.0</span>
+                        <div class="vr mx-1 d-none d-sm-block"></div>
+                        <span class="badge bg-light text-secondary border small">Quality: {{ r.quality_of_work }}★</span>
+                        <span class="badge bg-light text-secondary border small">Comm: {{ r.communication }}★</span>
+                        <span class="badge bg-light text-secondary border small">Deadline: {{ r.deadline_adherence }}★</span>
+                        <span class="badge bg-light text-secondary border small">Prof: {{ r.professionalism }}★</span>
+                    </div>
+
+                    <small class="text-muted d-block mb-2" style="font-size: 0.76rem;">
+                        Project: <strong class="text-dark">{{ r.project.title }}</strong> &bull; Contract #{{ r.contract.id }}
+                    </small>
+
+                    <!-- Client Comment -->
+                    <p class="text-secondary small mb-2 lh-base">
+                        "{{ r.comment }}"
+                    </p>
+
+                    <!-- Tags -->
+                    {% if r.tags_list %}
+                        <div class="mb-3">
+                            {% for tag in r.tags_list %}
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1 small">
+                                    <i class="bi bi-tag-fill me-1"></i>{{ tag }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <!-- Reply Section -->
+                    {% if r.freelancer_reply %}
+                        <!-- Already Replied -->
+                        <div class="fr-reply-box">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small fw-bold text-primary">
+                                    <i class="bi bi-reply-fill me-1"></i> Your Public Response
+                                </span>
+                                <small class="text-muted" style="font-size: 0.72rem;">{{ r.replied_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-0 text-dark small fst-italic">"{{ r.freelancer_reply }}"</p>
+                        </div>
+                    {% else %}
+                        <!-- Not Yet Replied: Show Reply Button & Modal Trigger -->
+                        <div class="pt-2 border-top d-flex justify-content-end">
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#replyModal{{ r.id }}">
+                                <i class="bi bi-reply me-1"></i> Post Public Reply
+                            </button>
+                        </div>
+
+                        <!-- Modal: Freelancer Public Reply -->
+                        <div class="modal fade" id="replyModal{{ r.id }}" tabindex="-1" aria-hidden="true">
+                            <div class="modal-dialog modal-dialog-centered">
+                                <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                                    <div class="modal-header bg-navy text-white p-4">
+                                        <div>
+                                            <h5 class="modal-title fs-6 fw-bold mb-1">Reply to {{ r.reviewer|reviewer_display_name }}</h5>
+                                            <small class="text-white-50">Review for: {{ r.project.title|truncatechars:35 }}</small>
+                                        </div>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'freelancer_review_reply' r.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body p-4">
+                                            <div class="p-3 bg-light rounded-3 mb-3 small text-secondary">
+                                                <strong class="text-dark d-block mb-1">Client Feedback:</strong>
+                                                "{{ r.comment }}"
+                                            </div>
+                                            <label class="form-label small fw-bold text-navy mb-1" for="replyTextarea{{ r.id }}">
+                                                Your Public Response <span class="text-danger">*</span>
+                                            </label>
+                                            <textarea
+                                                name="reply"
+                                                id="replyTextarea{{ r.id }}"
+                                                class="form-control rounded-3 p-3"
+                                                rows="4"
+                                                minlength="5"
+                                                maxlength="500"
+                                                placeholder="Thank the client for the opportunity and highlight key deliverables accomplished together..."
+                                                required
+                                            ></textarea>
+                                            <div class="d-flex justify-content-between align-items-center mt-2">
+                                                <small class="text-muted" style="font-size: 0.72rem;">
+                                                    <i class="bi bi-info-circle me-1"></i> Responses cannot be edited once published.
+                                                </small>
+                                                <small class="text-muted reply-counter" id="counter{{ r.id }}">0 / 500</small>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer border-0 p-3 bg-light">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill">Publish Response</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div class="text-center py-5">
+                    <div class="display-6 text-muted mb-2"><i class="bi bi-star"></i></div>
+                    <h6 class="fw-bold text-dark">No client reviews yet</h6>
+                    <p class="text-muted small mb-0">When clients approve and finalize your contracts, their reviews will appear here.</p>
+                </div>
+            {% endfor %}
+
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+                <nav class="d-flex justify-content-center mt-3">
+                    <ul class="pagination pagination-sm mb-0">
+                        {% if page_obj.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?sort={{ sort }}&page={{ page_obj.previous_page_number }}">&larr;</a>
+                            </li>
+                        {% endif %}
+                        <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                        {% if page_obj.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?sort={{ sort }}&page={{ page_obj.next_page_number }}">&rarr;</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Right Column: Rating Distribution & Dimension Scores -->
+    <div class="col-lg-4">
+        <!-- Dimension Score Card -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
+            <h6 class="fw-bold text-navy mb-3">
+                <i class="bi bi-speedometer2 text-primary me-2"></i> Category Performance
+            </h6>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small">
+                    <span class="text-secondary">Quality of Work</span>
+                    <span class="fw-bold text-dark">{{ profile.avg_quality }} / 5.0</span>
+                </div>
+                <div class="fr-progress-track">
+                    <div class="fr-progress-fill" style="width: {% widthratio profile.avg_quality 5 100 %}%;"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small">
+                    <span class="text-secondary">Communication</span>
+                    <span class="fw-bold text-dark">{{ profile.avg_communication }} / 5.0</span>
+                </div>
+                <div class="fr-progress-track">
+                    <div class="fr-progress-fill" style="width: {% widthratio profile.avg_communication 5 100 %}%;"></div>
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <div class="d-flex justify-content-between small">
+                    <span class="text-secondary">Deadline Adherence</span>
+                    <span class="fw-bold text-dark">{{ profile.avg_deadline }} / 5.0</span>
+                </div>
+                <div class="fr-progress-track">
+                    <div class="fr-progress-fill" style="width: {% widthratio profile.avg_deadline 5 100 %}%;"></div>
+                </div>
+            </div>
+
+            <div class="mb-2">
+                <div class="d-flex justify-content-between small">
+                    <span class="text-secondary">Professionalism</span>
+                    <span class="fw-bold text-dark">{{ profile.avg_professionalism }} / 5.0</span>
+                </div>
+                <div class="fr-progress-track">
+                    <div class="fr-progress-fill" style="width: {% widthratio profile.avg_professionalism 5 100 %}%;"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Star Distribution Card -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
+            <h6 class="fw-bold text-navy mb-3">
+                <i class="bi bi-bar-chart-fill text-warning me-2"></i> Star Distribution
+            </h6>
+
+            {% for b in rating_breakdown %}
+                <div class="d-flex align-items-center gap-2 mb-2 font-monospace small">
+                    <span class="text-muted" style="width: 45px;">{{ b.star }} ★</span>
+                    <div class="flex-grow-1" style="height: 8px; background: #E2E8F0; border-radius: 999px; overflow: hidden;">
+                        <div style="width: {{ b.percent }}%; height: 100%; background: #F59E0B; border-radius: 999px;"></div>
+                    </div>
+                    <span class="text-muted text-end" style="width: 32px;">{{ b.count }}</span>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Reputation Tips Card -->
+        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white">
+            <h6 class="fw-bold text-navy mb-2">
+                <i class="bi bi-lightbulb-fill text-warning me-2"></i> Pro Reputation Tip
+            </h6>
+            <p class="small text-secondary mb-0">
+                Responding professionally to client reviews demonstrates reliability and proactive communication. Future clients read both the review and your response when deciding whom to hire.
+            </p>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // Character counter for reply modals
+    document.querySelectorAll('textarea[name="reply"]').forEach(ta => {
+        const id = ta.id.replace('replyTextarea', '');
+        const counter = document.getElementById('counter' + id);
+        if (counter) {
+            ta.addEventListener('input', function () {
+                counter.textContent = `${this.value.length} / 500`;
+            });
+        }
+    });
+});
+</script>
+{% endblock %}

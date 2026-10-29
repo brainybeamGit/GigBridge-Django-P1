@@ -363,6 +363,22 @@
                 <span class="{% if contract.status == 'completed' %}badge-cd-success{% elif contract.status == 'active' %}badge-cd-active{% else %}badge-cd-muted{% endif %}">
                     Status: {{ contract.get_status_display }}
                 </span>
+                {% if contract.status == 'completed' %}
+                    {% if not contract.review %}
+                        <a href="{% url 'contract_review_create' contract.id %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                            <i class="bi bi-star-fill me-1"></i> Rate Freelancer
+                        </a>
+                    {% else %}
+                        <span class="badge bg-white text-dark border rounded-pill px-3 py-1 small fw-bold">
+                            <i class="bi bi-star-fill text-warning me-1"></i> {{ contract.review.overall_rating }}★ Reviewed
+                        </span>
+                        {% if contract.review.is_editable %}
+                            <a href="{% url 'contract_review_edit' contract.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
+                                <i class="bi bi-pencil-square me-1"></i> Edit Review
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                {% endif %}
                 <a href="{% url 'client_contracts' %}" class="btn-cd-outline">
                     &larr; All Contracts
                 </a>
@@ -370,6 +386,87 @@
         </div>
     </div>
 </div>
+
+{% if contract.status == 'completed' %}
+    {% if not contract.review %}
+        <!-- Contract Review Call-to-Action -->
+        <div class="cd-card border-warning border-2" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);">
+            <div class="row align-items-center g-3">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold small">
+                            <i class="bi bi-star-fill me-1"></i> Milestone Feedback Required
+                        </span>
+                        <span class="text-muted small">Project Officially Completed</span>
+                    </div>
+                    <h4 class="fw-bold text-dark mb-1">Rate &amp; Review {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h4>
+                    <p class="text-secondary small mb-0">
+                        All milestones are approved and paid! Please take 60 seconds to rate the freelancer's performance across quality, communication, and deadlines.
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <a href="{% url 'contract_review_create' contract.id %}" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm">
+                        <i class="bi bi-star-fill me-1"></i> Rate Freelancer Now &rarr;
+                    </a>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <!-- Contract Review Summary Card -->
+        <div class="cd-card">
+            <div class="cd-section-title d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-star-fill text-warning me-2"></i> Client Rating &amp; Review</span>
+                <div>
+                    {% if contract.review.is_editable %}
+                        <a href="{% url 'contract_review_edit' contract.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                            <i class="bi bi-pencil-square me-1"></i> Edit Review (Within 7 Days)
+                        </a>
+                    {% else %}
+                        <span class="badge bg-light text-muted border small"><i class="bi bi-lock me-1"></i> Review Locked</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                <div class="display-6 fw-bold text-dark">{{ contract.review.overall_rating }} <span class="fs-4 text-warning">★</span></div>
+                <div class="d-flex flex-wrap gap-2">
+                    <span class="badge bg-light text-dark border">Quality: {{ contract.review.quality_of_work }}★</span>
+                    <span class="badge bg-light text-dark border">Communication: {{ contract.review.communication }}★</span>
+                    <span class="badge bg-light text-dark border">Deadline: {{ contract.review.deadline_adherence }}★</span>
+                    <span class="badge bg-light text-dark border">Professionalism: {{ contract.review.professionalism }}★</span>
+                    {% if contract.review.would_recommend %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle">
+                            <i class="bi bi-check-circle me-1"></i> Recommended
+                        </span>
+                    {% endif %}
+                </div>
+                <small class="text-muted ms-auto">Submitted on {{ contract.review.created_at|date:"M d, Y" }}</small>
+            </div>
+
+            <p class="text-secondary small mb-2 fst-italic">"{{ contract.review.comment }}"</p>
+
+            {% if contract.review.tags_list %}
+                <div class="mb-3">
+                    {% for tag in contract.review.tags_list %}
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1 small">
+                            <i class="bi bi-tag-fill me-1"></i>{{ tag }}
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            {% if contract.review.freelancer_reply %}
+                <div class="p-3 bg-light rounded-3 border-start border-primary border-3 mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <strong class="text-primary small"><i class="bi bi-reply-fill me-1"></i> Response from {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}:</strong>
+                        <small class="text-muted" style="font-size: 0.72rem;">{{ contract.review.replied_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="mb-0 text-dark small fst-italic">"{{ contract.review.freelancer_reply }}"</p>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endif %}
 
 <!-- =========================================================================
      2. 25%, 50%, 25% AGREEMENT CONTRACT STRUCTURE CARD

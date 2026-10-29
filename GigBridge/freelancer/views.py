@@ -16,7 +16,7 @@ from client.models import (
     Project, Proposal, Contract, Milestone, Payment, Review, UserProfile, Category,
     Conversation, Message
 )
-from client.forms import UserProfileForm
+from client.forms import UserProfileForm, FreelancerReplyForm
 
 
 def _require_freelancer(request):
@@ -466,3 +466,89 @@ def earnings_view(request):
         'earnings_chart_data_json': json.dumps(earnings_chart_data),
     }
     return render(request, 'freelancer/earnings.html', context)
+
+
+@login_required
+def freelancer_my_reviews_view(request):
+    """
+    Freelancer's reputation and review management page (/freelancer/reviews/).
+    Displays live aggregate metrics, category scores, breakdown bars, and paginated
+    review stream with the ability to post one public response.
+    """
+    if getattr(request.user, 'profile', None) and request.user.profile.role == 'client':
+        return redirect('client_reviews')
+
+    user = request.user
+    profile = getattr(user, 'profile', None)
+    if profile:
+        profile.recalculate_stats()
+
+    sort = request.GET.get('sort', 'newest').strip()
+    reviews_qs = Review.objects.filter(reviewee=user, is_hidden=False).select_related('reviewer', 'project', 'contract')
+
+    if sort == 'highest':
+        reviews_qs = reviews_qs.order_by('-overall_rating', '-created_at')
+    elif sort == 'lowest':
+        reviews_qs = reviews_qs.order_by('overall_rating', '-created_at')
+    else:
+        reviews_qs = reviews_qs.order_by('-created_at')
+
+    # Rating breakdown counts (5, 4, 3, 2, 1 stars)
+    total_reviews = reviews_qs.count()
+    rating_breakdown = []
+    for s in [5, 4, 3, 2, 1]:
+        if s == 5:
+            count = reviews_qs.filter(overall_rating__gte=4.5).count()
+        elif s == 1:
+            count = reviews_qs.filter(overall_rating__lt=2.0).count()
+        else:
+            count = reviews_qs.filter(overall_rating__gte=s - 0.5, overall_rating__lt=s + 0.5).count()
+        pct = round((count / total_reviews) * 100) if total_reviews > 0 else 0
+        rating_breakdown.append({
+            'star': s,
+            'count': count,
+            'percent': pct
+        })
+
+    paginator = Paginator(reviews_qs, 5)
+    page_num = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_num)
+
+    reply_form = FreelancerReplyForm()
+
+    context = {
+        'profile': profile,
+        'reviews': page_obj,
+        'page_obj': page_obj,
+        'total_reviews': total_reviews,
+        'rating_breakdown': rating_breakdown,
+        'sort': sort,
+        'reply_form': reply_form,
+    }
+    return render(request, 'freelancer/my_reviews.html', context)
+
+
+@login_required
+@require_POST
+def freelancer_review_reply_view(request, review_id):
+    """
+    POST endpoint allowing a freelancer to post one professional public reply
+    to a client review on their profile.
+    """
+    review = get_object_or_404(Review, id=review_id, reviewee=request.user)
+
+    if review.freelancer_reply:
+        messages.warning(request, "You have already posted a response to this review.")
+        return redirect('freelancer_my_reviews')
+
+    form = FreelancerReplyForm(request.POST)
+    if form.is_valid():
+        review.freelancer_reply = form.cleaned_data['reply']
+        review.replied_at = timezone.now()
+        review.save(update_fields=['freelancer_reply', 'replied_at'])
+        messages.success(request, "Your public response has been published successfully.")
+    else:
+        error_msg = form.errors.get('reply', ['Invalid reply text.'])[0]
+        messages.error(request, error_msg)
+
+    return redirect('freelancer_my_reviews')

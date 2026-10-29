@@ -146,13 +146,61 @@ class ProposalForm(forms.ModelForm):
 
 
 class ReviewForm(forms.ModelForm):
+    quality_of_work = forms.IntegerField(min_value=1, max_value=5, initial=5, widget=forms.HiddenInput(attrs={'id': 'id_quality_of_work'}))
+    communication = forms.IntegerField(min_value=1, max_value=5, initial=5, widget=forms.HiddenInput(attrs={'id': 'id_communication'}))
+    deadline_adherence = forms.IntegerField(min_value=1, max_value=5, initial=5, widget=forms.HiddenInput(attrs={'id': 'id_deadline_adherence'}))
+    professionalism = forms.IntegerField(min_value=1, max_value=5, initial=5, widget=forms.HiddenInput(attrs={'id': 'id_professionalism'}))
+    tags = forms.CharField(required=False, widget=forms.HiddenInput(attrs={'id': 'id_selected_tags'}))
+
     class Meta:
         model = Review
-        fields = ['rating', 'comment']
+        fields = [
+            'quality_of_work', 'communication', 'deadline_adherence',
+            'professionalism', 'comment', 'would_recommend', 'tags'
+        ]
         widgets = {
-            'rating': forms.Select(attrs={'class': 'form-select'}),
-            'comment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Share your experience working with this freelancer...'}),
+            'comment': forms.Textarea(attrs={
+                'class': 'form-control',
+                'rows': 5,
+                'placeholder': 'Write at least 20 characters describing the quality, turnaround speed, technical competence, and communication experience...',
+                'id': 'reviewCommentTextarea',
+                'maxlength': '1000'
+            }),
+            'would_recommend': forms.CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'id': 'wouldRecommendSwitch'
+            }),
         }
+
+    def clean_comment(self):
+        comment = self.cleaned_data.get('comment', '').strip()
+        if len(comment) < 20:
+            raise forms.ValidationError(f"Please write at least 20 characters (currently {len(comment)} characters).")
+        if len(comment) > 1000:
+            raise forms.ValidationError(f"Comment cannot exceed 1000 characters (currently {len(comment)} characters).")
+        return comment
+
+
+class FreelancerReplyForm(forms.Form):
+    reply = forms.CharField(
+        min_length=5,
+        max_length=500,
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Write a polite, professional public response to this client feedback...',
+            'maxlength': '500',
+            'id': 'freelancerReplyTextarea'
+        })
+    )
+
+    def clean_reply(self):
+        reply = self.cleaned_data.get('reply', '').strip()
+        if len(reply) < 5:
+            raise forms.ValidationError("Please enter at least 5 characters for your response.")
+        if len(reply) > 500:
+            raise forms.ValidationError("Reply cannot exceed 500 characters.")
+        return reply
 
 
 class ContactForm(forms.ModelForm):

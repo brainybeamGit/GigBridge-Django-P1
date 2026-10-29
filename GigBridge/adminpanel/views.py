@@ -895,28 +895,38 @@ def category_delete_view(request, cat_id):
 def reviews_view(request):
     q = request.GET.get('q', '').strip()
     rating_filter = request.GET.get('rating', '').strip()
+    visibility_filter = request.GET.get('visibility', '').strip()
 
-    reviews_qs = Review.objects.select_related('reviewer', 'reviewee', 'project').order_by('-created_at')
+    reviews_qs = Review.objects.select_related('reviewer', 'reviewee', 'project', 'contract').order_by('-created_at')
 
     if q:
         reviews_qs = reviews_qs.filter(
             Q(reviewer__username__icontains=q) |
             Q(reviewee__username__icontains=q) |
             Q(project__title__icontains=q) |
-            Q(comment__icontains=q)
+            Q(comment__icontains=q) |
+            Q(tags__icontains=q)
         )
 
     if rating_filter:
         try:
-            reviews_qs = reviews_qs.filter(rating=int(rating_filter))
+            target_rating = float(rating_filter)
+            reviews_qs = reviews_qs.filter(overall_rating__gte=target_rating, overall_rating__lt=target_rating + 1.0)
         except ValueError:
             pass
 
+    if visibility_filter == 'hidden':
+        reviews_qs = reviews_qs.filter(is_hidden=True)
+    elif visibility_filter == 'visible':
+        reviews_qs = reviews_qs.filter(is_hidden=False)
+
     total_reviews = Review.objects.count()
-    avg_rating_res = Review.objects.aggregate(avg=Avg('rating'))['avg']
+    visible_reviews = Review.objects.filter(is_hidden=False)
+    avg_rating_res = visible_reviews.aggregate(avg=Avg('overall_rating'))['avg']
     avg_rating = round(avg_rating_res, 1) if avg_rating_res else 5.0
-    five_star_count = Review.objects.filter(rating=5).count()
-    low_star_count = Review.objects.filter(rating__lte=2).count()
+    five_star_count = Review.objects.filter(overall_rating__gte=4.5).count()
+    hidden_count = Review.objects.filter(is_hidden=True).count()
+    low_star_count = Review.objects.filter(overall_rating__lt=3.0).count()
 
     context = {
         'active_tab': 'reviews',
@@ -925,8 +935,10 @@ def reviews_view(request):
         'avg_rating': avg_rating,
         'five_star_count': five_star_count,
         'low_star_count': low_star_count,
+        'hidden_count': hidden_count,
         'search_query': q,
         'rating_filter': rating_filter,
+        'visibility_filter': visibility_filter,
     }
     return render(request, 'adminpanel/reviews.html', context)
 
@@ -936,8 +948,24 @@ def review_delete_view(request, review_id):
     if request.method == 'POST':
         review = get_object_or_404(Review, id=review_id)
         reviewer_name = review.reviewer.username
+        freelancer = review.reviewee
         review.delete()
+        if hasattr(freelancer, 'profile'):
+            freelancer.profile.recalculate_stats()
         messages.success(request, f"Review submitted by '{reviewer_name}' was deleted.")
+    return redirect('adminpanel_reviews')
+
+
+@admin_required
+def review_toggle_hide_view(request, review_id):
+    if request.method == 'POST':
+        review = get_object_or_404(Review, id=review_id)
+        review.is_hidden = not review.is_hidden
+        review.save(update_fields=['is_hidden'])
+        if hasattr(review.reviewee, 'profile'):
+            review.reviewee.profile.recalculate_stats()
+        action_text = "hidden from public view and excluded from platform aggregates" if review.is_hidden else "unhidden and restored"
+        messages.success(request, f"Review #{review.id} has been {action_text}.")
     return redirect('adminpanel_reviews')
 
 

@@ -8,17 +8,13 @@
      HERO BANNER (COMPACT LUXE GRADIENT WITH GLASS STAT CARDS)
      ═══════════════════════════════════════════════════════════ -->
 <section class="gb-contact-hero gb-fade-up">
-    <!-- Background glow blobs -->
-    <span class="gb-ct-blob gb-ct-blob-1" aria-hidden="true"></span>
-    <span class="gb-ct-blob gb-ct-blob-2" aria-hidden="true"></span>
-
     <div class="container position-relative text-center gb-ct-hero-inner">
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb justify-content-center mb-3 small text-white-50">
+            <ol class="breadcrumb gb-ct-breadcrumb justify-content-center mb-3 small">
                 <li class="breadcrumb-item">
                     <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
-                        <i class="bi bi-house-door me-1"></i> Home
+                        <i class="bi bi-house-door me-1" aria-hidden="true"></i> Home
                     </a>
                 </li>
                 <li class="breadcrumb-item active text-white" aria-current="page">Contact Us</li>
@@ -26,19 +22,19 @@
         </nav>
 
         <div class="gb-hero-pill-badge mx-auto mb-2">
-            <i class="bi bi-chat-dots-fill me-1"></i> Specialized Support &amp; Inquiries
+            <i class="bi bi-chat-dots-fill me-1" aria-hidden="true"></i> Specialized Support &amp; Inquiries
         </div>
 
         <h1 class="gb-contact-hero-title">Get in Touch with the GigBridge Team</h1>
         <p class="gb-contact-hero-subtitle mx-auto">
-            Have questions about client hiring, milestone escrow, freelancer payouts, or platform partnerships? Our dedicated support team in India is here to assist you.
+            Have questions about client hiring, milestone escrow, freelancer payments, or partnerships? Our support team in India is here to help.
         </p>
 
         <!-- 3 Glass Stat Cards -->
         <div class="row g-3 justify-content-center mt-2 mx-auto gb-ct-stats">
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-warning"><i class="bi bi-lightning-charge-fill"></i></div>
+                    <div class="gb-glass-card-icon text-warning"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">4 hrs</div>
                         <div class="gb-glass-card-lbl">Avg Response Time</div>
@@ -47,23 +43,28 @@
             </div>
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-info"><i class="bi bi-shield-check"></i></div>
+                    <div class="gb-glass-card-icon text-info"><i class="bi bi-clock-history" aria-hidden="true"></i></div>
                     <div>
-                        <div class="gb-glass-card-val">24/7</div>
-                        <div class="gb-glass-card-lbl">Escrow Help</div>
+                        <div class="gb-glass-card-val">Mon &ndash; Sat</div>
+                        <div class="gb-glass-card-lbl">10 AM &ndash; 7 PM IST</div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4 col-sm-6 col-12">
+            <div class="col-md-4 col-sm-12 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-primary-subtle"><i class="bi bi-patch-check-fill"></i></div>
+                    <div class="gb-glass-card-icon text-info"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></div>
                     <div>
-                        <div class="gb-glass-card-val">Dedicated</div>
-                        <div class="gb-glass-card-lbl">Enterprise Support</div>
+                        <div class="gb-glass-card-val">Escrow Desk</div>
+                        <div class="gb-glass-card-lbl">Payments &amp; Disputes</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="gb-hero-wave-divider" aria-hidden="true">
+        <svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,24 C320,48 480,0 800,24 C1120,48 1280,12 1440,24 L1440,48 L0,48 Z" fill="#f8fafc"></path>
+        </svg>
     </div>
 </section>
 <!-- ═══════════════════════════════════════════════════════════
