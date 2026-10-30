@@ -17,6 +17,15 @@ class UserProfile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='client')
     phone = models.CharField(max_length=20, blank=True)
+    country = models.CharField(max_length=2, blank=True, default='IN', help_text='ISO 2-letter country code (e.g. IN, US, GB)')
+    phone_country_code = models.CharField(max_length=8, blank=True, default='+91', help_text='Dialing country code (e.g. +91, +1)')
+    phone_number = models.CharField(max_length=20, blank=True, help_text='National phone number digits without country code')
+    display_currency = models.CharField(
+        max_length=3,
+        choices=[('INR', 'Indian Rupee (₹)'), ('USD', 'US Dollar ($)')],
+        default='INR',
+        help_text="User's display currency"
+    )
     company_name = models.CharField(max_length=150, blank=True)
     title = models.CharField(max_length=150, blank=True, help_text='e.g. Full-Stack Developer or Product Manager')
     bio = models.TextField(blank=True)
@@ -46,6 +55,28 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} ({self.get_role_display()})"
+
+    @property
+    def full_phone(self):
+        if self.phone_country_code and self.phone_number:
+            code = self.phone_country_code.strip()
+            num = self.phone_number.strip()
+            if not code.startswith('+'):
+                code = '+' + code
+            num = num.lstrip('0')
+            return f"{code}{num}"
+        return self.phone or ''
+
+    def save(self, *args, **kwargs):
+        if self.country:
+            self.country = self.country.strip().upper()
+            self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+        elif not self.display_currency:
+            self.display_currency = 'INR'
+
+        if self.phone_country_code and self.phone_number:
+            self.phone = self.full_phone
+        super().save(*args, **kwargs)
 
     @property
     def skills_list(self):
@@ -134,6 +165,19 @@ class UserProfile(models.Model):
         ])
 
 
+class ExchangeRate(models.Model):
+    from_currency = models.CharField(max_length=3, default='USD')
+    to_currency = models.CharField(max_length=3, default='INR')
+    rate = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('83.0000'))
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('from_currency', 'to_currency')
+
+    def __str__(self):
+        return f"1 {self.from_currency} = {self.rate} {self.to_currency}"
+
+
 class Category(models.Model):
     name = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=120, unique=True, blank=True)
@@ -220,6 +264,36 @@ class Project(models.Model):
     def pending_proposals_count(self):
         return self.proposals.filter(status='pending').count()
 
+    @property
+    def is_new(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        if not self.created_at:
+            return False
+        return timezone.now() - self.created_at <= timedelta(hours=48)
+
+    @property
+    def is_closing_soon(self):
+        from django.utils import timezone
+        from datetime import timedelta
+        if self.deadline and self.status == 'open':
+            today = timezone.localdate()
+            return today <= self.deadline <= today + timedelta(days=3)
+        return False
+
+
+class Bookmark(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='bookmarks')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'project')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} saved {self.project.title}"
+
 
 class Proposal(models.Model):
     STATUS_CHOICES = [
@@ -262,6 +336,13 @@ class Contract(models.Model):
     advance_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Agreed advance payment amount")
     final_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, help_text="Remaining final payment after full delivery")
     deliverables = models.TextField(blank=True, help_text="Key deliverables and specifications agreed in contract")
+    contract_currency = models.CharField(max_length=3, default='INR', help_text="Base currency for contract accounting")
+    exchange_rate_used = models.DecimalField(
+        max_digits=10,
+        decimal_places=4,
+        default=Decimal('83.0000'),
+        help_text="USD to INR rate locked at contract creation"
+    )
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     start_date = models.DateTimeField(auto_now_add=True)
     end_date = models.DateTimeField(blank=True, null=True)
@@ -273,24 +354,44 @@ class Contract(models.Model):
     def __str__(self):
         return f"Contract: {self.project.title}"
 
+    def get_amount_for_currency(self, amount_in_inr, target_currency='INR'):
+        if amount_in_inr is None:
+            return Decimal('0.00')
+        from decimal import ROUND_HALF_UP
+        amt = Decimal(str(amount_in_inr))
+        if target_currency == 'USD':
+            rate = self.exchange_rate_used or Decimal('83.0000')
+            if rate <= Decimal('0'):
+                rate = Decimal('83.0000')
+            return (amt / rate).quantize(Decimal('0.01'), rounding=ROUND_HALF_UP)
+        return amt
+
     @property
     def paid_amount(self):
-        paid = self.payments.filter(status='completed').aggregate(models.Sum('amount'))['amount__sum']
-        return paid or 0.00
+        paid = self.milestones.filter(status='paid').aggregate(models.Sum('amount'))['amount__sum']
+        if paid is None:
+            paid = self.payments.filter(status='completed').aggregate(models.Sum('amount'))['amount__sum']
+        return paid or Decimal('0.00')
 
     @property
     def remaining_amount(self):
-        paid = float(self.paid_amount)
-        total = float(self.total_amount)
-        return max(0.00, round(total - paid, 2))
+        total = self.total_amount or Decimal('0.00')
+        paid = self.paid_amount
+        return max(Decimal('0.00'), total - paid)
+
+    @property
+    def escrow_secured_amount(self):
+        """Total funds secured in escrow or paid."""
+        paid_or_escrow = self.milestones.filter(status__in=['paid', 'approved', 'submitted', 'in_progress']).aggregate(models.Sum('amount'))['amount__sum']
+        return paid_or_escrow or Decimal('0.00')
 
     @property
     def advance_milestone(self):
-        return self.milestones.filter(milestone_type='advance').first() or self.milestones.order_by('created_at').first()
+        return self.milestones.filter(milestone_type='advance').order_by('order', 'id').first() or self.milestones.order_by('order', 'id').first()
 
     @property
     def final_milestone(self):
-        return self.milestones.filter(milestone_type='final').first() or self.milestones.order_by('-created_at').first()
+        return self.milestones.filter(milestone_type='final').order_by('-order', '-id').first() or self.milestones.order_by('-order', '-id').first()
 
     @property
     def is_advance_paid(self):
@@ -302,15 +403,46 @@ class Contract(models.Model):
         adv = self.advance_milestone
         return bool(not adv or adv.status == 'paid')
 
+    def get_active_milestone(self):
+        """
+        Returns the single active milestone: the first milestone in order that is not paid.
+        If all milestones are paid, returns None.
+        """
+        return self.milestones.exclude(status='paid').order_by('order', 'id').first()
+
+    @property
+    def active_milestone(self):
+        return self.get_active_milestone()
+
+    @property
+    def all_milestones_paid(self):
+        return bool(self.milestones.exists() and not self.milestones.exclude(status='paid').exists())
+
     @property
     def progress_percentage(self):
-        if self.status == 'completed':
+        """
+        Calculated as: sum of paid milestone amounts / total contract amount * 100.
+        """
+        if self.status == 'completed' or self.all_milestones_paid:
             return 100
-        milestones = self.milestones.all()
-        if not milestones.exists():
+        total = self.total_amount
+        if not total or total <= Decimal('0.00'):
             return 0
-        approved_or_paid = milestones.filter(status__in=['approved', 'paid']).count()
-        return int((approved_or_paid / milestones.count()) * 100)
+        paid = self.milestones.filter(status='paid').aggregate(models.Sum('amount'))['amount__sum'] or Decimal('0.00')
+        return int(round((paid / total) * 100))
+
+    @property
+    def next_payment_due_milestone(self):
+        return self.get_active_milestone()
+
+
+
+
+def get_active_milestone(contract):
+    """Module-level helper returning the single active milestone for a contract."""
+    if not contract:
+        return None
+    return contract.get_active_milestone()
 
 
 class Milestone(models.Model):
@@ -329,6 +461,7 @@ class Milestone(models.Model):
     ]
 
     contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='milestones')
+    order = models.PositiveIntegerField(default=1, help_text="Sequential milestone order (1, 2, 3...)")
     milestone_type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='regular')
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True)
@@ -345,10 +478,120 @@ class Milestone(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['order', 'id']
 
     def __str__(self):
-        return f"{self.title} ({self.contract.project.title})"
+        return f"Phase {self.order}: {self.title} ({self.contract.project.title})"
+
+    def clean(self):
+        super().clean()
+        if self.contract_id and self.due_date and self.order:
+            earlier = self.contract.milestones.filter(order__lt=self.order, due_date__isnull=False).order_by('-order').first()
+            if earlier and earlier.due_date and self.due_date < earlier.due_date:
+                from django.core.exceptions import ValidationError
+                raise ValidationError({
+                    'due_date': f"Due date ({self.due_date}) cannot be earlier than previous milestone's due date ({earlier.due_date})."
+                })
+
+    @property
+    def is_active(self):
+        """True if this milestone is the active (first unpaid) milestone of the contract."""
+        active = self.contract.get_active_milestone()
+        return bool(active and active.id == self.id)
+
+    @property
+    def previous_milestone(self):
+        """Returns the milestone immediately preceding this one in the contract order."""
+        return self.contract.milestones.filter(order__lt=self.order).order_by('-order', '-id').first()
+
+    @property
+    def is_locked(self):
+        """
+        Locked if any previous milestone in the contract order is not paid.
+        """
+        return self.contract.milestones.filter(order__lt=self.order).exclude(status='paid').exists()
+
+    def can_submit(self, user=None):
+        """
+        Freelancer can submit work only when:
+        - The milestone is the contract's active milestone
+        - Status is 'in_progress' or 'revision_requested'
+        - If user provided, user is the contract's freelancer or superuser
+        """
+        if user and not user.is_superuser and user != self.contract.freelancer:
+            return False
+        if not self.is_active:
+            return False
+        return self.status in ['in_progress', 'revision_requested']
+
+    def can_approve(self, user=None):
+        """
+        Client can approve only when:
+        - The milestone is the contract's active milestone
+        - Status is 'submitted'
+        - If user provided, user is the contract's client or superuser
+        """
+        if user and not user.is_superuser and user != self.contract.client:
+            return False
+        if not self.is_active:
+            return False
+        return self.status == 'submitted'
+
+    def can_request_revision(self, user=None):
+        """
+        Client can request revision only when:
+        - The milestone is the contract's active milestone
+        - Status is 'submitted' (or 'approved')
+        - If user provided, user is the contract's client or superuser
+        """
+        if user and not user.is_superuser and user != self.contract.client:
+            return False
+        if not self.is_active:
+            return False
+        return self.status in ['submitted', 'approved']
+
+    def can_pay(self, user=None):
+        """
+        Client can pay this milestone only when:
+        - The milestone is the contract's active milestone
+        - Status is not 'paid'
+        - All earlier milestones are paid
+        - Either:
+          - It is an advance payment milestone (milestone_type='advance' or order==1) and status in ['pending', 'in_progress']
+          - OR status is 'approved'
+        - If user provided, user is the contract's client or superuser
+        """
+        if user and not user.is_superuser and user != self.contract.client:
+            return False
+        if not self.is_active:
+            return False
+        if self.status == 'paid':
+            return False
+        if self.is_locked:
+            return False
+        if self.milestone_type == 'advance' or self.order == 1:
+            return self.status in ['pending', 'in_progress']
+        return self.status == 'approved'
+
+    @property
+    def latest_submission(self):
+        return self.submissions.order_by('-created_at').first()
+
+
+class Submission(models.Model):
+    milestone = models.ForeignKey(Milestone, on_delete=models.CASCADE, related_name='submissions')
+    contract = models.ForeignKey(Contract, on_delete=models.CASCADE, related_name='submissions')
+    freelancer = models.ForeignKey(User, on_delete=models.CASCADE, related_name='submissions')
+    submission_notes = models.TextField(blank=True)
+    deliverable_link = models.URLField(blank=True, help_text="Git repository or live demo preview link")
+    submission_file = models.FileField(upload_to='milestone_files/', blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"Submission for {self.milestone.title} ({self.created_at.strftime('%Y-%m-%d %H:%M')})" 
 
 
 class Payment(models.Model):
@@ -371,6 +614,8 @@ class Payment(models.Model):
     payment_type = models.CharField(max_length=20, choices=PAYMENT_TYPE_CHOICES, default='milestone')
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     currency = models.CharField(max_length=10, default='INR')
+    base_amount_inr = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Base amount in INR")
+    exchange_rate = models.DecimalField(max_digits=10, decimal_places=4, default=Decimal('83.0000'), help_text="Exchange rate at payment")
     payment_method = models.CharField(max_length=50, default='Razorpay Test Mode')
     razorpay_order_id = models.CharField(max_length=100, blank=True)
     razorpay_payment_id = models.CharField(max_length=100, blank=True)
@@ -614,6 +859,7 @@ class ContactMessage(models.Model):
 
     name = models.CharField(max_length=100)
     email = models.EmailField()
+    phone = models.CharField(max_length=30, blank=True)
     subject = models.CharField(max_length=200)
     topic = models.CharField(max_length=100, blank=True, default='')
     message = models.TextField()

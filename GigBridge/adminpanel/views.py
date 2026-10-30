@@ -331,6 +331,10 @@ def clients_view(request):
             Q(profile__location__icontains=q)
         )
 
+    country_filter = request.GET.get('country', '').strip().upper()
+    if country_filter:
+        clients_qs = clients_qs.filter(profile__country=country_filter)
+
     if status_filter == 'active':
         clients_qs = clients_qs.filter(is_active=True)
     elif status_filter == 'inactive':
@@ -358,6 +362,8 @@ def clients_view(request):
         'total_client_projects': total_client_projects,
         'search_query': q,
         'status_filter': status_filter,
+        'country_filter': country_filter,
+        'available_countries': list(UserProfile.objects.filter(role='client').exclude(country='').values_list('country', flat=True).distinct()),
     }
     return render(request, 'adminpanel/clients.html', context)
 
@@ -420,6 +426,10 @@ def freelancers_view(request):
             Q(profile__location__icontains=q)
         )
 
+    country_filter = request.GET.get('country', '').strip().upper()
+    if country_filter:
+        freelancers_qs = freelancers_qs.filter(profile__country=country_filter)
+
     if status_filter == 'active':
         freelancers_qs = freelancers_qs.filter(is_active=True)
     elif status_filter == 'inactive':
@@ -439,6 +449,8 @@ def freelancers_view(request):
         'total_proposals_submitted': total_proposals_submitted,
         'search_query': q,
         'status_filter': status_filter,
+        'country_filter': country_filter,
+        'available_countries': list(UserProfile.objects.filter(role='freelancer').exclude(country='').values_list('country', flat=True).distinct()),
     }
     return render(request, 'adminpanel/freelancers.html', context)
 
@@ -1263,3 +1275,54 @@ def contact_messages_bulk_view(request):
 # Legacy aliases for backward compatibility
 contact_messages_view = contact_messages_list_view
 contact_message_toggle_view = contact_message_status_view
+
+
+
+@admin_required
+def admin_settings_view(request):
+    from client.currency import get_usd_inr_rate
+    from client.models import ExchangeRate
+    from django.conf import settings
+    from decimal import Decimal
+
+    rate_obj = ExchangeRate.objects.filter(from_currency='USD', to_currency='INR').first()
+    current_rate = get_usd_inr_rate()
+    env_rate = getattr(settings, 'USD_INR_RATE', 83.0)
+    payment_currency = getattr(settings, 'PAYMENT_CURRENCY', 'INR')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        if action == 'refresh':
+            from django.core.management import call_command
+            try:
+                call_command('refresh_exchange_rates')
+                messages.success(request, "Successfully refreshed USD to INR exchange rate from live API!")
+            except Exception as e:
+                messages.warning(request, f"API refresh note: {e}")
+        elif action == 'set_manual':
+            manual_val = request.POST.get('manual_rate', '').strip()
+            try:
+                m_dec = Decimal(str(round(float(manual_val), 4)))
+                if m_dec > Decimal('0'):
+                    rate_obj, _ = ExchangeRate.objects.get_or_create(from_currency='USD', to_currency='INR')
+                    rate_obj.rate = m_dec
+                    rate_obj.save()
+                    from django.core.cache import cache
+                    cache.set('usd_inr_rate', float(m_dec), 86400)
+                    messages.success(request, f"Exchange rate updated to 1 USD = ₹{m_dec} INR!")
+                else:
+                    messages.error(request, "Exchange rate must be positive.")
+            except (ValueError, TypeError):
+                messages.error(request, "Please enter a valid numeric exchange rate.")
+        return redirect('adminpanel_settings')
+
+    context = {
+        'active_tab': 'settings',
+        'current_rate': current_rate,
+        'rate_obj': rate_obj,
+        'env_rate': env_rate,
+        'payment_currency': payment_currency,
+        'razorpay_key_id': getattr(settings, 'RAZORPAY_KEY_ID', ''),
+        'base_currency': 'INR',
+    }
+    return render(request, 'adminpanel/settings.html', context)

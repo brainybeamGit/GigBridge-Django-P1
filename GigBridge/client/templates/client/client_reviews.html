@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load review_tags %}
 
 {% block breadcrumb_current %}Reviews &amp; Ratings{% endblock %}
 {% block dashboard_title %}Freelancer Reviews &amp; Ratings{% endblock %}
@@ -7,7 +8,7 @@
 {% block dashboard_content %}
 <style>
     /* ==========================================================================
-       Client Reviews - Minimalist Editorial & Light Blue Shining Theme
+       CLIENT REVIEWS - EDITORIAL LUXURY & LIGHT BLUE SHINING THEME
        Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
        ========================================================================== */
     :root {
@@ -17,11 +18,10 @@
         --cd-sky-50: #F0F9FF;
         --cd-sky-100: #E0F2FE;
         --cd-sky-200: #BAE6FD;
-        --cd-sky-300: #7DD3FC;
-        --cd-text-dark: #0F172A;
-        --cd-text-muted: #64748B;
+        --cd-slate-500: #64748B;
+        --cd-slate-700: #334155;
         --cd-border: #E2E8F0;
-        --cd-radius: 14px;
+        --cd-radius: 18px;
     }
 
     /* ─── 1. HERO BANNER ─── */
@@ -31,7 +31,7 @@
             radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
             linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
         border: 1px solid #BAE6FD;
-        border-radius: 18px;
+        border-radius: var(--cd-radius);
         padding: 30px 34px;
         position: relative;
         overflow: hidden;
@@ -70,22 +70,22 @@
         letter-spacing: -0.025em;
         color: #0F172A;
         margin-bottom: 6px;
-        line-height: 1.2;
+        line-height: 1.25;
     }
 
     .rev-hero-sub {
         font-size: 0.92rem;
         color: #334155;
-        max-width: 660px;
+        max-width: 680px;
         line-height: 1.5;
         margin-bottom: 0;
     }
 
-    /* ─── 2. EDITORIAL NUMBERED METRIC CARDS ─── */
+    /* ─── 2. NUMBERED METRIC CARDS ─── */
     .rev-metric-card {
         background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
         padding: 20px 22px;
         height: 100%;
         display: flex;
@@ -93,154 +93,134 @@
         justify-content: space-between;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
         transition: all 0.2s ease;
-        position: relative;
-        overflow: hidden;
     }
-
     .rev-metric-card:hover {
         transform: translateY(-2px);
         border-color: #BAE6FD;
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.1);
+        box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
     }
-
-    .rev-metric-card::after {
-        content: '';
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        height: 3px;
-        background: #0284C7;
-        opacity: 0;
-        transition: opacity 0.2s ease;
-    }
-
-    .rev-metric-card:hover::after {
-        opacity: 1;
-    }
-
     .rev-metric-index {
         font-size: 0.72rem;
         font-weight: 800;
         letter-spacing: 0.08em;
         color: #94A3B8;
         text-transform: uppercase;
-        margin-bottom: 8px;
+        margin-bottom: 6px;
     }
-
     .rev-metric-num {
-        font-size: 2rem;
-        font-weight: 800;
+        font-size: 2.1rem;
+        font-weight: 900;
+        line-height: 1;
         letter-spacing: -0.03em;
-        color: #0F172A;
-        line-height: 1.1;
         margin-bottom: 4px;
     }
-
     .rev-metric-label {
-        font-size: 0.86rem;
+        font-size: 0.84rem;
         font-weight: 700;
         color: #0F172A;
         margin-bottom: 2px;
     }
-
     .rev-metric-sub {
-        font-size: 0.75rem;
+        font-size: 0.74rem;
         color: #64748B;
     }
 
-    /* Eligible review notice */
+    /* ─── 3. ACTION REQUIRED BOX ─── */
     .rev-eligible-box {
         background: #F0F9FF;
-        border: 1px solid #BAE6FD;
-        border-left: 4px solid #0284C7;
+        border: 1.5px solid #BAE6FD;
+        border-left: 5px solid #0284C7;
         border-radius: 14px;
         padding: 22px 26px;
         margin-bottom: 24px;
     }
 
-    /* Review Card */
-    .rev-card {
+    /* ─── 4. REVIEW CARDS ─── */
+    .rev-card-panel {
         background: #FFFFFF;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 22px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
+        border: 1px solid var(--cd-border);
+        border-radius: 18px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
+    }
+
+    .rev-item-card {
+        background: #F8FAFC;
+        border: 1.5px solid #E2E8F0;
+        border-radius: 14px;
+        padding: 22px 24px;
+        margin-bottom: 18px;
         transition: all 0.2s ease;
     }
-
-    .rev-card:hover {
+    .rev-item-card:hover {
+        background: #FFFFFF;
         border-color: #BAE6FD;
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.08);
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.06);
     }
 
-    /* Buttons */
-    .btn-rev-primary {
-        background: #0284C7;
-        color: #FFFFFF !important;
-        border: 1px solid #0284C7;
-        border-radius: 6px;
-        font-size: 0.8rem;
-        font-weight: 700;
-        padding: 8px 16px;
-        text-decoration: none;
+    .rev-reply-box {
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-left: 4px solid #0284C7;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 12px;
+    }
+
+    .rev-tag-pill {
         display: inline-block;
-        transition: all 0.15s ease;
-    }
-
-    .btn-rev-primary:hover {
-        background: #0369A1;
-        border-color: #0369A1;
+        background: #FFFFFF;
+        color: #334155;
+        border: 1px solid #CBD5E1;
+        border-radius: 999px;
+        padding: 3px 12px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        margin-right: 6px;
+        margin-bottom: 4px;
     }
 
     .rev-empty-minimal {
         text-align: center;
         padding: 56px 20px;
         border: 1px dashed #CBD5E1;
-        border-radius: 12px;
+        border-radius: 14px;
         background: #F8FAFC;
     }
 </style>
 
-<!-- =========================================================================
-     1. LUMINOUS SHINING HERO BANNER
-     ========================================================================= -->
+<!-- 1. Luminous Shining Hero Banner -->
 <div class="rev-hero-banner">
     <div class="row align-items-center g-3">
         <div class="col-xl-9 col-lg-8">
             <div class="rev-hero-badge">
                 <span class="pulse-dot"></span>
-                <span>Feedback &amp; Reputation</span>
+                <span>EMPLOYER FEEDBACK &bull; VERIFIED ECOSYSTEM</span>
             </div>
-            <h2 class="rev-hero-title">
+            <h1 class="rev-hero-title">
                 Specialist Reviews &amp; Ratings
-            </h2>
+            </h1>
             <p class="rev-hero-sub">
-                Leave detailed feedback for completed project contracts, rate freelancer milestones, and contribute to the verified talent ecosystem.
+                Leave detailed feedback for completed project contracts, rate specialist delivery across milestones, and build verified reputation scores.
             </p>
         </div>
         <div class="col-xl-3 col-lg-4 text-lg-end">
-            <a href="{% url 'client_contracts' %}" class="btn btn-sm btn-outline-secondary py-2 px-3 fw-bold" style="border-radius: 8px;">
+            <a href="{% url 'client_contracts' %}" class="btn btn-outline-secondary bg-white fw-bold px-3 py-2 rounded-3 border shadow-sm">
                 Active Contracts &rarr;
             </a>
         </div>
     </div>
 </div>
 
-<!-- =========================================================================
-     2. ELIGIBLE CONTRACTS AWAITING REVIEW
-     ========================================================================= -->
+<!-- 2. Eligible Contracts Awaiting Review -->
 {% if eligible_contracts %}
 <div class="rev-eligible-box">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
         <div>
-            <div class="small fw-bold text-uppercase" style="letter-spacing: 0.06em; color: #0284C7;">Action Available</div>
-            <h5 class="fw-bold mb-0" style="color: #0F172A;">Contracts Eligible for Review ({{ eligible_contracts.count }})</h5>
-            <small class="text-muted">You recently completed these contracts. Rate your specialists to conclude the engagement.</small>
+            <div class="small fw-bold text-uppercase" style="letter-spacing: 0.06em; color: #0284C7;">Action Required</div>
+            <h5 class="fw-bold mb-0 text-navy">Contracts Awaiting Your Review ({{ eligible_contracts.count }})</h5>
+            <small class="text-muted">You recently finalized deliverables for these contracts. Rate your hired specialist to conclude the engagement.</small>
         </div>
     </div>
 
@@ -250,10 +230,10 @@
                 <div class="p-3 bg-white rounded-3 border d-flex justify-content-between align-items-center">
                     <div>
                         <strong class="text-dark d-block" style="font-size: 0.9rem;">{{ c.project.title }}</strong>
-                        <small class="text-muted">Talent &bull; {{ c.freelancer.get_full_name|default:c.freelancer.username }}</small>
+                        <small class="text-muted">Specialist &bull; {{ c.freelancer.get_full_name|default:c.freelancer.username }}</small>
                     </div>
-                    <a href="{% url 'client_review_create' c.id %}" class="btn-rev-primary py-1 px-3">
-                        Leave Review &rarr;
+                    <a href="{% url 'contract_review_create' c.id %}" class="btn btn-primary btn-sm rounded-3 fw-bold px-3 shadow-sm" style="background: #0284C7; border-color: #0284C7;">
+                        Rate Specialist &rarr;
                     </a>
                 </div>
             </div>
@@ -262,9 +242,7 @@
 </div>
 {% endif %}
 
-<!-- =========================================================================
-     3. FOUR EDITORIAL NUMBERED METRIC CARDS (ZERO NOISY ICONS)
-     ========================================================================= -->
+<!-- 3. Four Editorial Numbered Metric Cards (Icon-Free) -->
 <div class="row g-3 mb-4">
     <!-- Card 1: Reviews Given -->
     <div class="col-xl-3 col-sm-6">
@@ -273,19 +251,19 @@
             <div>
                 <div class="rev-metric-num" style="color: #0284C7;">{{ given_reviews.count|default:0 }}</div>
                 <div class="rev-metric-label">Reviews Submitted</div>
-                <div class="rev-metric-sub">Ratings left for completed talent</div>
+                <div class="rev-metric-sub">Ratings left for specialists</div>
             </div>
         </div>
     </div>
 
-    <!-- Card 2: Reviews Received -->
+    <!-- Card 2: Received Reviews -->
     <div class="col-xl-3 col-sm-6">
         <div class="rev-metric-card">
-            <div class="rev-metric-index">02 / Client Rating</div>
+            <div class="rev-metric-index">02 / Feedback</div>
             <div>
                 <div class="rev-metric-num" style="color: #059669;">{{ received_reviews.count|default:0 }}</div>
-                <div class="rev-metric-label">Client Feedback</div>
-                <div class="rev-metric-sub">Ratings received from specialists</div>
+                <div class="rev-metric-label">Feedback Received</div>
+                <div class="rev-metric-sub">Evaluations from specialists</div>
             </div>
         </div>
     </div>
@@ -293,67 +271,106 @@
     <!-- Card 3: Eligible Contracts -->
     <div class="col-xl-3 col-sm-6">
         <div class="rev-metric-card">
-            <div class="rev-metric-index">03 / Pending Review</div>
+            <div class="rev-metric-index">03 / Pending</div>
             <div>
                 <div class="rev-metric-num" style="color: #D97706;">{{ eligible_contracts.count|default:0 }}</div>
                 <div class="rev-metric-label">Awaiting Your Rating</div>
-                <div class="rev-metric-sub">Completed contracts ready for feedback</div>
+                <div class="rev-metric-sub">Ready for final feedback</div>
             </div>
         </div>
     </div>
 
-    <!-- Card 4: Reputation -->
+    <!-- Card 4: Employer Status -->
     <div class="col-xl-3 col-sm-6">
         <div class="rev-metric-card">
             <div class="rev-metric-index">04 / Verification</div>
             <div>
-                <div class="rev-metric-num" style="color: #0F172A; font-size: 1.45rem; line-height: 1.4;">Verified</div>
+                <div class="rev-metric-num" style="color: #0F172A; font-size: 1.5rem; line-height: 1.4;">Verified</div>
                 <div class="rev-metric-label">Employer Status</div>
-                <div class="rev-metric-sub">Active client reputation</div>
+                <div class="rev-metric-sub">Active client standing</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- =========================================================================
-     4. REVIEWS YOU HAVE GIVEN
-     ========================================================================= -->
-<div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+<!-- 4. Reviews You Have Given -->
+<div class="rev-card-panel">
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
-            <h5 class="fw-bold mb-0" style="color: #0F172A; font-size: 1.05rem;">Reviews You Have Given</h5>
+            <h5 class="fw-bold mb-0 text-dark">Reviews You Have Submitted</h5>
             <small class="text-muted">Total: {{ given_reviews.count }} evaluation{{ given_reviews.count|pluralize }}</small>
         </div>
     </div>
 
-    <div class="row g-4">
+    <div class="row g-3">
         {% for rev in given_reviews %}
             <div class="col-lg-6">
-                <div class="rev-card">
+                <div class="rev-item-card h-100 d-flex flex-column justify-content-between">
                     <div>
                         <div class="d-flex justify-content-between align-items-start mb-2">
                             <div>
-                                <h6 class="fw-bold mb-0" style="color: #0F172A;">For {{ rev.reviewee.get_full_name|default:rev.reviewee.username }}</h6>
-                                <small class="text-muted">Project: {{ rev.project.title }}</small>
+                                <h6 class="fw-bold mb-0 text-navy">{{ rev.reviewee.get_full_name|default:rev.reviewee.username }}</h6>
+                                <small class="text-muted d-block">Project: {{ rev.project.title }} &bull; Contract #{{ rev.contract.id }}</small>
                             </div>
-                            <span class="badge" style="background: #FFFBEB; color: #B45309; border: 1px solid #FDE68A; font-size: 0.76rem;">
-                                Rating &bull; {{ rev.rating }}.0 / 5.0
+                            <span class="badge bg-warning text-dark fw-bold px-2 py-1 small">
+                                {{ rev.overall_rating|floatformat:1 }} ★
                             </span>
                         </div>
-                        <p class="text-secondary small mb-3" style="line-height: 1.6;">
+
+                        <!-- Category Breakdown -->
+                        <div class="d-flex align-items-center gap-1 flex-wrap mb-2">
+                            <span class="badge bg-white text-secondary border small">Quality: {{ rev.quality_of_work }}★</span>
+                            <span class="badge bg-white text-secondary border small">Comm: {{ rev.communication }}★</span>
+                            <span class="badge bg-white text-secondary border small">Deadline: {{ rev.deadline_adherence }}★</span>
+                            <span class="badge bg-white text-secondary border small">Prof: {{ rev.professionalism }}★</span>
+                            {% if rev.would_recommend %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle small">Recommended</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Feedback Comment -->
+                        <p class="text-secondary small mb-3 lh-base" style="font-style: italic;">
                             &ldquo;{{ rev.comment }}&rdquo;
                         </p>
+
+                        <!-- Clean Tags -->
+                        {% if rev.tags_list %}
+                            <div class="mb-2">
+                                {% for tag in rev.tags_list %}
+                                    <span class="rev-tag-pill">{{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <!-- Freelancer's Reply if any -->
+                        {% if rev.freelancer_reply %}
+                            <div class="rev-reply-box mb-2">
+                                <div class="d-flex align-items-center justify-content-between mb-1">
+                                    <strong class="text-primary small">Response from {{ rev.reviewee.first_name|default:rev.reviewee.username }}:</strong>
+                                    <small class="text-muted" style="font-size: 0.72rem;">{{ rev.replied_at|date:"M d, Y" }}</small>
+                                </div>
+                                <p class="mb-0 text-dark small">&ldquo;{{ rev.freelancer_reply }}&rdquo;</p>
+                            </div>
+                        {% endif %}
                     </div>
-                    <div class="pt-2 border-top text-muted" style="font-size: 0.74rem;">
-                        Submitted on {{ rev.created_at|date:"M d, Y" }}
+
+                    <div class="pt-2 border-top d-flex justify-content-between align-items-center text-muted" style="font-size: 0.74rem;">
+                        <span>Submitted on {{ rev.created_at|date:"M d, Y" }}</span>
+                        {% if rev.is_editable %}
+                            <a href="{% url 'contract_review_edit' rev.contract.id %}" class="btn btn-outline-primary btn-sm py-1 px-3 fw-semibold" style="font-size: 0.75rem;">
+                                Edit Review &rarr;
+                            </a>
+                        {% else %}
+                            <span class="badge bg-light text-muted border small">Locked</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         {% empty %}
             <div class="col-12">
                 <div class="rev-empty-minimal">
-                    <div class="fw-bold mb-1" style="color: #0F172A; font-size: 1.05rem;">No Reviews Submitted Yet</div>
-                    <p class="text-muted small mb-0">Reviews unlock automatically as soon as hired contract deliverables are approved and completed.</p>
+                    <h6 class="fw-bold mb-1 text-dark">No Reviews Submitted Yet</h6>
+                    <p class="text-muted small mb-0">Reviews unlock automatically as soon as hired contract deliverables are approved and settled.</p>
                 </div>
             </div>
         {% endfor %}

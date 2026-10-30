@@ -1,7 +1,10 @@
+import phonenumbers
+from decimal import Decimal
 from django import forms
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import UserProfile, Project, Proposal, Review, ContactMessage, Message, Category
+from .currency import get_usd_inr_rate, convert_inr_to_usd, convert_usd_to_inr, resolve_currency_for_user_or_request
 
 
 class RegistrationForm(UserCreationForm):
@@ -30,12 +33,34 @@ class RegistrationForm(UserCreationForm):
         },
         widget=forms.EmailInput(attrs={'class': 'auth-luxe-input', 'placeholder': 'name@example.com'})
     )
+    # Visible phone input (attached to intl-tel-input widget)
     phone = forms.CharField(
-        max_length=20,
+        max_length=30,
         required=True,
         error_messages={'required': 'Please enter your phone number.'},
-        widget=forms.TextInput(attrs={'class': 'auth-luxe-input', 'placeholder': 'e.g. +1 (555) 000-0000'})
+        widget=forms.TextInput(attrs={
+            'class': 'auth-luxe-input',
+            'id': 'id_phone',
+            'placeholder': 'e.g. 98765 43210',
+            'autocomplete': 'tel'
+        })
     )
+    # Hidden fields populated automatically by intl-tel-input
+    country = forms.CharField(
+        required=False,
+        initial='IN',
+        widget=forms.HiddenInput(attrs={'id': 'id_country'})
+    )
+    phone_country_code = forms.CharField(
+        required=False,
+        initial='+91',
+        widget=forms.HiddenInput(attrs={'id': 'id_phone_country_code'})
+    )
+    phone_number = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_phone_number'})
+    )
+
     company_name = forms.CharField(
         max_length=150,
         required=False,
@@ -94,6 +119,27 @@ class RegistrationForm(UserCreationForm):
         password2 = cleaned_data.get('password2')
         if password1 and password2 and password1 != password2:
             self.add_error('password2', 'The passwords you entered do not match.')
+
+        # Server-side International Phone Number Validation via phonenumbers
+        phone_raw = cleaned_data.get('phone', '').strip()
+        country_code = (cleaned_data.get('country') or 'IN').strip().upper()
+
+        if phone_raw:
+            try:
+                parsed = phonenumbers.parse(phone_raw, country_code)
+                if not phonenumbers.is_valid_number(parsed):
+                    region = phonenumbers.region_code_for_number(parsed) or country_code
+                    country_name = "India" if region == "IN" else ("United States" if region == "US" else region)
+                    self.add_error('phone', f"Enter a valid phone number for {country_name}.")
+                else:
+                    e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+                    cleaned_data['phone'] = e164
+                    cleaned_data['phone_number'] = str(parsed.national_number)
+                    cleaned_data['phone_country_code'] = f"+{parsed.country_code}"
+                    cleaned_data['country'] = phonenumbers.region_code_for_number(parsed) or country_code
+            except phonenumbers.NumberParseException:
+                self.add_error('phone', "Invalid phone number format. Please check your country code and digits.")
+
         return cleaned_data
 
 
@@ -115,21 +161,59 @@ class ProjectForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 6, 'placeholder': 'Describe the project in detail...'}),
             'required_skills': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Python, Django, PostgreSQL, REST API'}),
             'budget_type': forms.Select(attrs={'class': 'form-select'}),
-            'budget_min': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '500', 'min': 0}),
-            'budget_max': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '2000', 'min': 0}),
+            'budget_min': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '500', 'min': 0, 'step': 'any'}),
+            'budget_max': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '2000', 'min': 0, 'step': 'any'}),
             'deliverables': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'List key deliverables and expectations...'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
 
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        self.user_currency = resolve_currency_for_user_or_request(user=user)
+        super().__init__(*args, **kwargs)
+
+        rate = get_usd_inr_rate()
+        symbol = '$' if self.user_currency == 'USD' else '₹'
+        code = self.user_currency
+
+        self.fields['budget_min'].label = f"Minimum Budget ({symbol} {code})"
+        self.fields['budget_max'].label = f"Maximum Budget ({symbol} {code})"
+
+        # If editing an existing project and client is USD, display initial values converted to USD
+        if self.instance and self.instance.pk and self.user_currency == 'USD':
+            if not self.is_bound:
+                if self.instance.budget_min:
+                    self.initial['budget_min'] = float(convert_inr_to_usd(self.instance.budget_min, rate=rate))
+                if self.instance.budget_max:
+                    self.initial['budget_max'] = float(convert_inr_to_usd(self.instance.budget_max, rate=rate))
+
     def clean(self):
         cleaned_data = super().clean()
         budget_min = cleaned_data.get('budget_min')
         budget_max = cleaned_data.get('budget_max')
+
         if budget_min is not None and budget_max is not None:
             if budget_max < budget_min:
                 raise forms.ValidationError("Maximum budget cannot be less than minimum budget.")
+
+            # If user submitted amounts in USD, convert to base currency (INR) before saving
+            if self.user_currency == 'USD':
+                rate = get_usd_inr_rate()
+                base_min = convert_usd_to_inr(budget_min, rate=rate)
+                base_max = convert_usd_to_inr(budget_max, rate=rate)
+                cleaned_data['budget_min'] = base_min
+                cleaned_data['budget_max'] = base_max
+
+                # Minimum validation in base currency: at least ₹100 INR
+                if base_min < Decimal('100.00'):
+                    min_usd = convert_inr_to_usd(Decimal('100.00'), rate=rate)
+                    raise forms.ValidationError(f"Minimum budget must be at least ${min_usd:.2f} USD (₹100 INR).")
+            else:
+                if budget_min < Decimal('100.00'):
+                    raise forms.ValidationError("Minimum budget must be at least ₹100 INR.")
+
         return cleaned_data
 
 
@@ -138,11 +222,41 @@ class ProposalForm(forms.ModelForm):
         model = Proposal
         fields = ['bid_amount', 'delivery_days', 'cover_letter', 'attachment']
         widgets = {
-            'bid_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '500.00', 'min': 1}),
+            'bid_amount': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '500.00', 'min': 1, 'step': 'any'}),
             'delivery_days': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '14', 'min': 1}),
             'cover_letter': forms.Textarea(attrs={'class': 'form-control', 'rows': 7, 'placeholder': 'Explain why you are the best choice for this project...'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        self.user_currency = resolve_currency_for_user_or_request(user=user)
+        super().__init__(*args, **kwargs)
+
+        rate = get_usd_inr_rate()
+        symbol = '$' if self.user_currency == 'USD' else '₹'
+        code = self.user_currency
+        self.fields['bid_amount'].label = f"Your Bid Amount ({symbol} {code})"
+
+        # If editing existing proposal and user is USD, display in USD
+        if self.instance and self.instance.pk and self.user_currency == 'USD':
+            if not self.is_bound and self.instance.bid_amount:
+                self.initial['bid_amount'] = float(convert_inr_to_usd(self.instance.bid_amount, rate=rate))
+
+    def clean_bid_amount(self):
+        bid = self.cleaned_data.get('bid_amount')
+        if bid is not None:
+            if self.user_currency == 'USD':
+                rate = get_usd_inr_rate()
+                base_bid = convert_usd_to_inr(bid, rate=rate)
+                if base_bid < Decimal('50.00'):
+                    min_usd = convert_inr_to_usd(Decimal('50.00'), rate=rate)
+                    raise forms.ValidationError(f"Bid amount must be at least ${min_usd:.2f} USD (₹50 INR).")
+                return base_bid
+            else:
+                if bid < Decimal('50.00'):
+                    raise forms.ValidationError("Bid amount must be at least ₹50 INR.")
+        return bid
 
 
 class ReviewForm(forms.ModelForm):
@@ -205,10 +319,25 @@ class FreelancerReplyForm(forms.Form):
 
 class ContactForm(forms.ModelForm):
     topic = forms.CharField(max_length=100, required=False, widget=forms.HiddenInput(attrs={'id': 'contact_topic'}))
+    # Optional phone number enhanced by intl-tel-input
+    phone = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_contact_phone',
+            'placeholder': 'e.g. 98765 43210'
+        })
+    )
+    country = forms.CharField(
+        required=False,
+        initial='IN',
+        widget=forms.HiddenInput(attrs={'id': 'id_contact_country'})
+    )
 
     class Meta:
         model = ContactMessage
-        fields = ['name', 'email', 'subject', 'topic', 'message']
+        fields = ['name', 'email', 'phone', 'subject', 'topic', 'message']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your full name', 'id': 'contact_name'}),
             'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'name@example.com', 'id': 'contact_email'}),
@@ -216,26 +345,119 @@ class ContactForm(forms.ModelForm):
             'message': forms.Textarea(attrs={'class': 'form-control', 'rows': 5, 'placeholder': 'Describe your question or issue in detail...', 'id': 'contact_message', 'maxlength': '1000'}),
         }
 
+    def clean_phone(self):
+        phone_raw = self.cleaned_data.get('phone', '').strip()
+        country_code = (self.data.get('country') or 'IN').strip().upper()
+        if phone_raw:
+            try:
+                parsed = phonenumbers.parse(phone_raw, country_code)
+                if not phonenumbers.is_valid_number(parsed):
+                    region = phonenumbers.region_code_for_number(parsed) or country_code
+                    raise forms.ValidationError(f"Enter a valid phone number for {region}.")
+                return phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+            except phonenumbers.NumberParseException:
+                raise forms.ValidationError("Invalid phone number format.")
+        return ''
+
 
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     last_name = forms.CharField(max_length=50, required=False, widget=forms.TextInput(attrs={'class': 'form-control'}))
     email = forms.EmailField(required=False, widget=forms.EmailInput(attrs={'class': 'form-control'}))
 
+    # Visible phone input (enhanced by intl-tel-input)
+    phone = forms.CharField(
+        max_length=30,
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'id': 'id_profile_phone',
+            'placeholder': 'Phone number'
+        })
+    )
+    country = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_profile_country'})
+    )
+    phone_country_code = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_profile_phone_country_code'})
+    )
+    phone_number = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_profile_phone_number'})
+    )
+
     class Meta:
         model = UserProfile
-        fields = ['phone', 'company_name', 'title', 'bio', 'avatar', 'location', 'skills', 'hourly_rate', 'website']
+        fields = [
+            'country', 'phone_country_code', 'phone_number', 'phone',
+            'company_name', 'title', 'bio', 'avatar', 'location',
+            'skills', 'hourly_rate', 'website'
+        ]
         widgets = {
-            'phone': forms.TextInput(attrs={'class': 'form-control', 'placeholder': '+91 9876543210'}),
             'company_name': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Your company or organisation'}),
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Full-Stack Developer or Product Manager'}),
             'bio': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Tell freelancers a bit about yourself and your projects...'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control'}),
             'location': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'City, Country or Remote'}),
             'skills': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. Python, Django, React'}),
-            'hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'min': 0}),
+            'hourly_rate': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '0.00', 'min': 0, 'step': 'any'}),
             'website': forms.URLInput(attrs={'class': 'form-control', 'placeholder': 'https://yourwebsite.com'}),
         }
+
+    def __init__(self, *args, user=None, **kwargs):
+        self.user = user
+        self.user_currency = resolve_currency_for_user_or_request(user=user)
+        super().__init__(*args, **kwargs)
+
+        rate = get_usd_inr_rate()
+        symbol = '$' if self.user_currency == 'USD' else '₹'
+        code = self.user_currency
+        self.fields['hourly_rate'].label = f"Hourly Rate ({symbol} {code}/hr)"
+
+        if self.instance and self.instance.pk:
+            if not self.is_bound:
+                if self.instance.country:
+                    self.initial['country'] = self.instance.country
+                if self.instance.phone_country_code:
+                    self.initial['phone_country_code'] = self.instance.phone_country_code
+                if self.instance.phone_number:
+                    self.initial['phone_number'] = self.instance.phone_number
+                if self.instance.phone:
+                    self.initial['phone'] = self.instance.phone
+
+                if self.user_currency == 'USD' and self.instance.hourly_rate:
+                    self.initial['hourly_rate'] = float(convert_inr_to_usd(self.instance.hourly_rate, rate=rate))
+
+    def clean(self):
+        cleaned_data = super().clean()
+        phone_raw = cleaned_data.get('phone', '').strip()
+        country_code = (cleaned_data.get('country') or 'IN').strip().upper()
+
+        if phone_raw:
+            try:
+                parsed = phonenumbers.parse(phone_raw, country_code)
+                if not phonenumbers.is_valid_number(parsed):
+                    region = phonenumbers.region_code_for_number(parsed) or country_code
+                    country_name = "India" if region == "IN" else ("United States" if region == "US" else region)
+                    self.add_error('phone', f"Enter a valid phone number for {country_name}.")
+                else:
+                    e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+                    cleaned_data['phone'] = e164
+                    cleaned_data['phone_number'] = str(parsed.national_number)
+                    cleaned_data['phone_country_code'] = f"+{parsed.country_code}"
+                    cleaned_data['country'] = phonenumbers.region_code_for_number(parsed) or country_code
+            except phonenumbers.NumberParseException:
+                self.add_error('phone', "Invalid phone number format.")
+
+        # Convert hourly_rate if entered in USD
+        hourly = cleaned_data.get('hourly_rate')
+        if hourly is not None and self.user_currency == 'USD':
+            rate = get_usd_inr_rate()
+            cleaned_data['hourly_rate'] = convert_usd_to_inr(hourly, rate=rate)
+
+        return cleaned_data
 
 
 class MessageForm(forms.ModelForm):

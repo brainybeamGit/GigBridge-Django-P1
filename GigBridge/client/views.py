@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.db import transaction
-from django.db.models import Avg, Count, Sum, Q
+from django.db.models import Avg, Count, Sum, Q, Exists, OuterRef, Value, BooleanField
 from django.core.paginator import Paginator
 from django.core.cache import cache
 from django.http import JsonResponse, HttpResponseForbidden
@@ -25,13 +25,18 @@ import razorpay
 from .models import (
     UserProfile, Category, Project, Proposal,
     Contract, Milestone, Payment, Conversation,
-    Message, Review, ContactMessage, PasswordResetOTP
+    Message, Review, ContactMessage, Submission, PasswordResetOTP, Bookmark
 )
 from .forms import (
     RegistrationForm, ProjectForm, ProposalForm,
     ReviewForm, ContactForm, UserProfileForm, MessageForm
 )
 from .helpers import can_message, can_message_conversation
+from .currency import (
+    get_currency_for_country, get_usd_inr_rate,
+    convert_inr_to_usd, convert_usd_to_inr,
+    resolve_currency_for_user_or_request
+)
 
 
 # ─────────────────────────── Helpers ───────────────────────────
@@ -77,6 +82,10 @@ def register_view(request):
                 title = form.cleaned_data.get('title', '').strip()
                 skills = form.cleaned_data.get('skills', '').strip()
                 phone = form.cleaned_data.get('phone', '').strip()
+                country = form.cleaned_data.get('country', '').strip().upper() or 'IN'
+                phone_country_code = form.cleaned_data.get('phone_country_code', '').strip() or '+91'
+                phone_number = form.cleaned_data.get('phone_number', '').strip()
+                display_currency = get_currency_for_country(country)
 
                 if selected_role == 'client':
                     UserProfile.objects.create(
@@ -85,6 +94,10 @@ def register_view(request):
                         company_name=company_name,
                         title=title or 'Client / Employer',
                         phone=phone,
+                        country=country,
+                        phone_country_code=phone_country_code,
+                        phone_number=phone_number,
+                        display_currency=display_currency,
                         is_approved=False  # Requires Admin Approval before posting projects!
                     )
                     messages.success(
@@ -99,6 +112,10 @@ def register_view(request):
                         title=title or 'Freelance Specialist',
                         skills=skills,
                         phone=phone,
+                        country=country,
+                        phone_country_code=phone_country_code,
+                        phone_number=phone_number,
+                        display_currency=display_currency,
                         is_approved=True
                     )
                     messages.success(
@@ -361,16 +378,44 @@ def reset_password_view(request):
 # ─────────────────────────── Public Pages ───────────────────────────
 
 def home_view(request):
-    categories = Category.objects.annotate(proj_count=Count('projects')).order_by('-proj_count')[:8]
-    featured_projects = Project.objects.filter(status='open').select_related('client', 'category').order_by('-created_at')[:6]
-    top_freelancers = User.objects.filter(
+    categories = Category.objects.annotate(
+        proj_count=Count('projects', filter=Q(projects__status='open'))
+    ).order_by('-proj_count')[:8]
+
+    featured_projects = Project.objects.filter(
+        status='open'
+    ).select_related('client', 'category', 'client__profile').order_by('-created_at')[:6]
+
+    top_freelancers = list(User.objects.filter(
         profile__role='freelancer'
-    ).annotate(avg_rating=Avg('received_reviews__rating')).order_by('-avg_rating')[:6]
+    ).annotate(
+        avg_rating=Avg('received_reviews__overall_rating', filter=Q(received_reviews__is_hidden=False)),
+        review_count=Count('received_reviews', filter=Q(received_reviews__is_hidden=False))
+    ).select_related('profile').order_by('-avg_rating', '-review_count')[:4])
+
+    for f in top_freelancers:
+        profile = getattr(f, 'profile', None)
+        if profile and profile.skills:
+            f.skills_list = [s.strip() for s in profile.skills.split(',') if s.strip()][:3]
+        else:
+            f.skills_list = []
+
+    # Real counts from database (no fake hardcoded numbers)
+    completed_contracts_count = Contract.objects.filter(status='completed').count()
+    freelancers_count = UserProfile.objects.filter(role='freelancer').count()
+    open_projects_count = Project.objects.filter(status='open').count()
 
     total_projects = Project.objects.count()
-    total_freelancers = UserProfile.objects.filter(role='freelancer').count()
+    total_freelancers = freelancers_count
     total_clients = UserProfile.objects.filter(role='client').count()
-    completed_projects = Project.objects.filter(status='completed').count()
+    completed_projects = completed_contracts_count or Project.objects.filter(status='completed').count()
+
+    # Testimonials: latest 3 visible 4-star or 5-star reviews; if fewer than 3 exist, hide section completely
+    testimonials_qs = list(Review.objects.filter(
+        is_hidden=False,
+        overall_rating__gte=4.0
+    ).select_related('reviewer', 'reviewee', 'project').order_by('-created_at')[:3])
+    testimonials = testimonials_qs if len(testimonials_qs) >= 3 else []
 
     context = {
         'categories': categories,
@@ -380,14 +425,31 @@ def home_view(request):
         'total_freelancers': total_freelancers,
         'total_clients': total_clients,
         'completed_projects': completed_projects,
+        'completed_contracts_count': completed_contracts_count,
+        'freelancers_count': freelancers_count,
+        'open_projects_count': open_projects_count,
+        'testimonials': testimonials,
     }
     return render(request, 'client/home.html', context)
 
 
 def project_list_view(request):
-    qs = Project.objects.exclude(status='draft').select_related('client', 'category').annotate(
-        num_proposals=Count('proposals')
+    """
+    Browse Projects job board with search, categories, budget range, status,
+    sort, pagination, and real-time bookmark annotations.
+    """
+    qs = Project.objects.exclude(status='draft').select_related(
+        'client', 'client__profile', 'category'
+    ).annotate(
+        proposals_count=Count('proposals', distinct=True)
     )
+
+    # Annotate is_bookmarked in a single query
+    if request.user.is_authenticated:
+        user_bookmarks = Bookmark.objects.filter(project=OuterRef('pk'), user=request.user)
+        qs = qs.annotate(is_bookmarked=Exists(user_bookmarks))
+    else:
+        qs = qs.annotate(is_bookmarked=Value(False, output_field=BooleanField()))
 
     q = (request.GET.get('q') or request.GET.get('query', '')).strip()
     category_slug = request.GET.get('category', '').strip()
@@ -413,20 +475,26 @@ def project_list_view(request):
         qs = qs.filter(budget_type=budget_type)
         active_filters_count += 1
 
+    curr = resolve_currency_for_user_or_request(request=request)
+
     if budget_min:
         try:
-            val_min = float(budget_min)
+            val_min = Decimal(str(budget_min))
+            if curr == 'USD':
+                val_min = convert_usd_to_inr(val_min)
             qs = qs.filter(Q(budget_max__gte=val_min) | Q(budget_min__gte=val_min))
             active_filters_count += 1
-        except ValueError:
+        except Exception:
             pass
 
     if budget_max:
         try:
-            val_max = float(budget_max)
+            val_max = Decimal(str(budget_max))
+            if curr == 'USD':
+                val_max = convert_usd_to_inr(val_max)
             qs = qs.filter(budget_min__lte=val_max)
             active_filters_count += 1
-        except ValueError:
+        except Exception:
             pass
 
     if status_filter and status_filter != 'all':
@@ -444,7 +512,9 @@ def project_list_view(request):
         '-budget_max': '-budget_max',
         'budget_low': 'budget_min',
         'budget_min': 'budget_min',
-        'proposals': '-num_proposals',
+        'proposals': '-proposals_count',
+        'proposals_many': '-proposals_count',
+        'proposals_few': 'proposals_count',
         'views': '-views_count',
     }
     order_clause = sort_mapping.get(sort, '-created_at')
@@ -459,6 +529,9 @@ def project_list_view(request):
     categories = Category.objects.annotate(
         open_project_count=Count('projects', filter=Q(projects__status='open'))
     ).order_by('-open_project_count', 'name')
+
+    open_projects_count = Project.objects.filter(status='open').count()
+    user_bookmarks_count = Bookmark.objects.filter(user=request.user).count() if request.user.is_authenticated else 0
 
     context = {
         'page_obj': page_obj,
@@ -480,8 +553,70 @@ def project_list_view(request):
         'total_count': total_count,
         'total_results': total_count,
         'active_filters_count': active_filters_count,
+        'open_projects_count': open_projects_count,
+        'user_bookmarks_count': user_bookmarks_count,
     }
     return render(request, 'client/project_list.html', context)
+
+
+@require_POST
+def project_bookmark_toggle_view(request, pk):
+    """
+    AJAX endpoint to toggle bookmark state on a project for authenticated users.
+    Returns JSON { status: 'ok', bookmarked: bool, count: int }.
+    """
+    if not request.user.is_authenticated:
+        return JsonResponse({
+            'status': 'unauthenticated',
+            'login_url': reverse('login') + f'?next={request.META.get("HTTP_REFERER", reverse("project_list"))}'
+        }, status=401)
+
+    project = get_object_or_404(Project, pk=pk)
+    bookmark, created = Bookmark.objects.get_or_create(user=request.user, project=project)
+    if not created:
+        bookmark.delete()
+        bookmarked = False
+    else:
+        bookmarked = True
+
+    count = project.bookmarks.count()
+    return JsonResponse({
+        'status': 'ok',
+        'bookmarked': bookmarked,
+        'count': count,
+        'project_id': project.id,
+    })
+
+
+@login_required
+def saved_projects_view(request):
+    """
+    Displays all projects saved/bookmarked by the logged-in user.
+    """
+    qs = Project.objects.filter(
+        bookmarks__user=request.user
+    ).select_related('client', 'client__profile', 'category').annotate(
+        proposals_count=Count('proposals', distinct=True),
+        is_bookmarked=Value(True, output_field=BooleanField())
+    ).order_by('-bookmarks__created_at')
+
+    q = (request.GET.get('q') or request.GET.get('query', '')).strip()
+    if q:
+        qs = qs.filter(Q(title__icontains=q) | Q(description__icontains=q) | Q(required_skills__icontains=q))
+
+    total_count = qs.count()
+    paginator = Paginator(qs, 8)
+    page_number = request.GET.get('page', 1)
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'page_obj': page_obj,
+        'total_results': total_count,
+        'total_count': total_count,
+        'q': q,
+        'is_saved_view': True,
+    }
+    return render(request, 'client/saved_projects.html', context)
 
 
 def project_detail_view(request, pk):
@@ -506,10 +641,10 @@ def project_detail_view(request, pk):
         except UserProfile.DoesNotExist:
             pass
 
-    proposal_form = ProposalForm() if can_propose and not user_proposal else None
+    proposal_form = ProposalForm(user=request.user) if can_propose and not user_proposal else None
 
     if request.method == 'POST' and can_propose and not user_proposal:
-        proposal_form = ProposalForm(request.POST, request.FILES)
+        proposal_form = ProposalForm(request.POST, request.FILES, user=request.user)
         if proposal_form.is_valid():
             prop = proposal_form.save(commit=False)
             prop.project = project
@@ -833,7 +968,7 @@ def client_project_create_view(request):
         )
         return redirect('client_dashboard')
     if request.method == 'POST':
-        form = ProjectForm(request.POST, request.FILES)
+        form = ProjectForm(request.POST, request.FILES, user=request.user)
         if form.is_valid():
             project = form.save(commit=False)
             project.client = request.user
@@ -843,7 +978,7 @@ def client_project_create_view(request):
         else:
             messages.error(request, "Please fix the errors in the form.")
     else:
-        form = ProjectForm(initial={'status': 'open'})
+        form = ProjectForm(initial={'status': 'open'}, user=request.user)
     return render(request, 'client/project_form.html', {'form': form, 'action': 'Create'})
 
 
@@ -854,7 +989,7 @@ def client_project_edit_view(request, pk):
         messages.error(request, "You are not authorized to edit this project.")
         return redirect('client_projects')
     if request.method == 'POST':
-        form = ProjectForm(request.POST, request.FILES, instance=project)
+        form = ProjectForm(request.POST, request.FILES, instance=project, user=request.user)
         if form.is_valid():
             form.save()
             messages.success(request, "Project updated successfully.")
@@ -862,7 +997,7 @@ def client_project_edit_view(request, pk):
         else:
             messages.error(request, "Please fix the errors in the form.")
     else:
-        form = ProjectForm(instance=project)
+        form = ProjectForm(instance=project, user=request.user)
     return render(request, 'client/project_form.html', {'form': form, 'action': 'Edit', 'project': project})
 
 
@@ -989,19 +1124,30 @@ def client_proposal_accept_view(request, proposal_id):
         mid_amount = round(total_amount * Decimal('0.50'), 2)
         final_amount = round(total_amount - advance_amount - mid_amount, 2)
 
-        deadline_date = project.deadline
-        if not deadline_date and proposal.delivery_days:
-            deadline_date = (timezone.now() + timedelta(days=proposal.delivery_days)).date()
+        today = timezone.now().date()
+        delivery_days = proposal.delivery_days or 14
+
+        # Calculate strict increasing due dates: due_date_1 < due_date_2 < due_date_3
+        due_date_1 = today + timedelta(days=2)
+        mid_days = max(4, delivery_days // 2)
+        due_date_2 = today + timedelta(days=mid_days)
+        if due_date_2 <= due_date_1:
+            due_date_2 = due_date_1 + timedelta(days=3)
+
+        due_date_3 = today + timedelta(days=max(delivery_days, mid_days + 4))
+        if project.deadline and project.deadline > due_date_2:
+            due_date_3 = project.deadline
+        elif due_date_3 <= due_date_2:
+            due_date_3 = due_date_2 + timedelta(days=5)
 
         end_datetime = timezone.make_aware(
-            timezone.datetime.combine(deadline_date, timezone.datetime.min.time())
-        ) if deadline_date else None
-
-        mid_due_date = timezone.now().date() + timedelta(days=max(2, (proposal.delivery_days or 6) // 2))
+            timezone.datetime.combine(due_date_3, timezone.datetime.min.time())
+        )
 
         deliverables_text = project.deliverables or f"Full source code, frontend, backend, and database deliverables for '{project.title}'"
 
-        # Create contract
+        # Create contract with locked exchange rate and base currency
+        current_rate = get_usd_inr_rate()
         contract = Contract.objects.create(
             project=project,
             proposal=proposal,
@@ -1013,39 +1159,44 @@ def client_proposal_accept_view(request, proposal_id):
             deliverables=deliverables_text,
             status='active',
             end_date=end_datetime,
+            contract_currency='INR',
+            exchange_rate_used=current_rate,
         )
 
-        # Milestone 1: Agreed 25% Advance Payment (Kickoff)
+        # Milestone 1: Agreed 25% Advance Payment (Kickoff) - order=1, active (in_progress)
         Milestone.objects.create(
             contract=contract,
+            order=1,
             milestone_type='advance',
             title=f"Phase 1: Project Kickoff & Advance Payment (25% — ₹{advance_amount:.2f})",
             description=f"25% upfront advance escrow payment. The freelancer will start system architecture and development once verified.",
             amount=advance_amount,
-            status='pending',
-            due_date=timezone.now().date() + timedelta(days=2),
+            status='in_progress',
+            due_date=due_date_1,
         )
 
-        # Milestone 2: 50% Progress Milestone (Development)
+        # Milestone 2: 50% Progress Milestone (Development) - order=2, pending (locked)
         Milestone.objects.create(
             contract=contract,
+            order=2,
             milestone_type='regular',
             title=f"Phase 2: Core Development & Implementation (50% — ₹{mid_amount:.2f})",
             description=f"50% mid-development milestone covering core feature development, database schema, APIs, and progress demo.",
             amount=mid_amount,
             status='pending',
-            due_date=mid_due_date,
+            due_date=due_date_2,
         )
 
-        # Milestone 3: 25% Final Project Delivery & Source Code
+        # Milestone 3: 25% Final Project Delivery & Source Code - order=3, pending (locked)
         Milestone.objects.create(
             contract=contract,
+            order=3,
             milestone_type='final',
             title=f"Phase 3: Complete Project Delivery & Handover (25% — ₹{final_amount:.2f})",
             description=f"Final 25% milestone for complete project delivery including source code repository, documentation, and handover.\nDeliverables: {deliverables_text}",
             amount=final_amount,
             status='pending',
-            due_date=deadline_date,
+            due_date=due_date_3,
         )
 
         # Create or link Conversation immediately for accepted proposal
@@ -1124,13 +1275,17 @@ def client_contract_detail_view(request, pk):
     contract = get_object_or_404(Contract, pk=pk)
     if contract.client != request.user and not request.user.is_superuser:
         messages.error(request, "You are not authorized to view this contract.")
-        return redirect('client_contracts')
-    milestones = contract.milestones.all()
-    payments = contract.payments.all()
+        return HttpResponseForbidden("You are not authorized to view this contract.")
+    milestones = contract.milestones.all().order_by('order', 'id')
+    payments = contract.payments.filter(status='completed').order_by('-created_at')
+    active_ms = contract.get_active_milestone()
     context = {
         'contract': contract,
         'milestones': milestones,
         'payments': payments,
+        'active_ms': active_ms,
+        'advance_ms': contract.advance_milestone,
+        'final_ms': contract.final_milestone,
     }
     return render(request, 'client/contract_detail.html', context)
 
@@ -1192,50 +1347,89 @@ def client_milestones_view(request):
 
 @login_required
 @require_POST
-def client_milestone_approve_view(request, pk):
-    milestone = get_object_or_404(Milestone, pk=pk)
-    if milestone.contract.client != request.user:
+def client_milestone_approve_view(request, pk=None, contract_id=None, milestone_id=None):
+    mid = milestone_id or pk
+    milestone = get_object_or_404(Milestone, pk=mid)
+    contract = milestone.contract
+
+    if contract.client != request.user and not request.user.is_superuser:
         messages.error(request, "Unauthorized action. Only the hiring client can approve deliverables.")
-        return redirect('client_contracts')
-    if milestone.status == 'submitted':
-        milestone.status = 'approved'
-        milestone.approved_at = timezone.now()
-        milestone.save()
-        if milestone.milestone_type == 'final':
-            messages.success(
-                request,
-                f"Complete project deliverables approved! Please proceed with the remaining payment of ₹{milestone.amount:,.2f} to complete the project."
-            )
-        else:
-            messages.success(request, f"Milestone '{milestone.title}' has been approved.")
-    else:
-        messages.warning(request, "Milestone must be in 'Work Submitted' state to approve.")
-    return redirect('client_contract_detail', pk=milestone.contract.id)
+        return HttpResponseForbidden("Unauthorized action. Only the hiring client can approve deliverables.")
+
+    if contract_id and contract.id != contract_id:
+        messages.error(request, "Milestone does not belong to the specified contract.")
+        return redirect('client_contract_detail', pk=contract.id)
+
+    if not milestone.can_approve(request.user):
+        messages.warning(
+            request,
+            f"Cannot approve Phase {milestone.order} ('{milestone.title}'): deliverables can only be approved on the active milestone in 'Work Submitted' state."
+        )
+        return redirect('client_contract_detail', pk=contract.id)
+
+    with transaction.atomic():
+        ms_locked = Milestone.objects.select_for_update().get(id=milestone.id)
+        if not ms_locked.can_approve(request.user):
+            messages.warning(request, "Milestone status changed.")
+            return redirect('client_contract_detail', pk=contract.id)
+
+        ms_locked.status = 'approved'
+        ms_locked.approved_at = timezone.now()
+        ms_locked.save()
+
+    messages.success(
+        request,
+        f"Deliverables for Phase {ms_locked.order}: '{ms_locked.title}' approved! Please proceed with the escrow release payment of ₹{ms_locked.amount:,.2f}."
+    )
+    return redirect('client_contract_detail', pk=contract.id)
 
 
 @login_required
 @require_POST
-def client_milestone_revision_view(request, pk):
-    milestone = get_object_or_404(Milestone, pk=pk)
-    if milestone.contract.client != request.user:
+def client_milestone_revision_view(request, pk=None, contract_id=None, milestone_id=None):
+    mid = milestone_id or pk
+    milestone = get_object_or_404(Milestone, pk=mid)
+    contract = milestone.contract
+
+    if contract.client != request.user and not request.user.is_superuser:
         messages.error(request, "Unauthorized action.")
-        return redirect('client_contracts')
+        return HttpResponseForbidden("Unauthorized action.")
+
+    if contract_id and contract.id != contract_id:
+        messages.error(request, "Milestone does not belong to the specified contract.")
+        return redirect('client_contract_detail', pk=contract.id)
+
     revision_notes = request.POST.get('revision_notes', '').strip()
     if not revision_notes:
         messages.error(request, "Please provide detailed revision notes explaining the adjustments required.")
         return redirect('client_contract_detail', pk=milestone.contract.id)
 
-    if milestone.status in ['submitted', 'approved']:
-        milestone.status = 'revision_requested'
-        milestone.revision_notes = revision_notes
-        milestone.save()
-        messages.info(
-            request,
-            f"Revision requested for '{milestone.title}'. The freelancer has been notified to make the required updates."
-        )
-    else:
-        messages.warning(request, "Revision can only be requested on submitted deliverables.")
+    if not milestone.can_request_revision(request.user):
+        messages.warning(request, f"Revision can only be requested on submitted deliverables for the active milestone.")
+        return redirect('client_contract_detail', pk=milestone.contract.id)
+
+    with transaction.atomic():
+        ms_locked = Milestone.objects.select_for_update().get(id=milestone.id)
+        if not ms_locked.can_request_revision(request.user):
+            messages.warning(request, "Milestone status changed.")
+            return redirect('client_contract_detail', pk=contract.id)
+
+        ms_locked.status = 'revision_requested'
+        ms_locked.revision_notes = revision_notes
+        ms_locked.save()
+
+    messages.info(
+        request,
+        f"Revision requested for Phase {ms_locked.order}: '{ms_locked.title}'. The freelancer has been notified to make the required updates."
+    )
     return redirect('client_contract_detail', pk=milestone.contract.id)
+
+
+@login_required
+def contract_milestone_submit_view(request, contract_id, milestone_id=None):
+    """Unified handler or alias for milestone submission across client/freelancer routes."""
+    from freelancer.views import submit_delivery_view as f_submit
+    return f_submit(request, contract_id=contract_id, milestone_id=milestone_id)
 
 
 @login_required
@@ -1295,14 +1489,39 @@ def client_payment_create_order_view(request):
     if milestone.status == 'paid':
         return JsonResponse({'status': 'error', 'message': 'This milestone has already been paid and verified.'}, status=400)
 
-    # Business rule: Final payment cannot be released before advance payment
-    if milestone.milestone_type == 'final' and not contract.is_advance_paid:
-        return JsonResponse({'status': 'error', 'message': 'Please pay the agreed advance payment first.'}, status=400)
+    # Strict server-side enforcement: Check can_pay()
+    if not milestone.can_pay(request.user):
+        if milestone.is_locked:
+            prev = milestone.previous_milestone
+            prev_order = prev.order if prev else 1
+            return JsonResponse({'status': 'error', 'message': f'Cannot pay Phase {milestone.order}: Phase {prev_order} must be paid first.'}, status=400)
+        if not milestone.is_active:
+            active = contract.get_active_milestone()
+            active_info = f"Phase {active.order}" if active else "None"
+            return JsonResponse({'status': 'error', 'message': f'Cannot pay Phase {milestone.order}: {active_info} is currently active and must be processed first.'}, status=400)
+        if milestone.status != 'approved' and milestone.milestone_type != 'advance' and milestone.order > 1:
+            return JsonResponse({'status': 'error', 'message': f'Please review and approve the submitted deliverables for Phase {milestone.order} first.'}, status=400)
+        return JsonResponse({'status': 'error', 'message': 'This milestone is not eligible for payment release at this time.'}, status=400)
 
-    if milestone.milestone_type == 'final' and milestone.status != 'approved':
-        return JsonResponse({'status': 'error', 'message': 'Please review and approve the submitted deliverables first.'}, status=400)
+    # Calculate charge amount & currency based on settings and client preference
+    rate = contract.exchange_rate_used or get_usd_inr_rate()
+    client_currency = getattr(getattr(request.user, 'profile', None), 'display_currency', 'INR')
+    payment_curr_setting = getattr(settings, 'PAYMENT_CURRENCY', 'INR').upper()
 
-    amount_in_paise = int(milestone.amount * 100)
+    if client_currency == 'USD' and payment_curr_setting == 'USD':
+        charge_currency = 'USD'
+        charge_amount = convert_inr_to_usd(milestone.amount, rate=rate)
+        amount_in_smallest_unit = int(round(charge_amount * 100))  # cents
+        charge_note = f"Charged in USD: ${charge_amount:.2f}"
+    else:
+        charge_currency = 'INR'
+        charge_amount = milestone.amount
+        amount_in_smallest_unit = int(round(charge_amount * 100))  # paise
+        if client_currency == 'USD':
+            usd_equiv = convert_inr_to_usd(milestone.amount, rate=rate)
+            charge_note = f"Your card will be charged ₹{charge_amount:,.2f} INR (approx. ${usd_equiv:.2f} USD at locked rate 1 USD = ₹{rate:.2f})."
+        else:
+            charge_note = f"Amount to pay: ₹{charge_amount:,.2f} INR"
 
     key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_TLXBjvTqPaTWJ1')
     key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '45nuecN4Qb0jbhowIKS8lEZN')
@@ -1312,14 +1531,18 @@ def client_payment_create_order_view(request):
         rzp_client = razorpay.Client(auth=(key_id, key_secret))
         order_receipt = f"rcpt_m{milestone.id}_{int(time.time())}"
         order_payload = {
-            'amount': amount_in_paise,
-            'currency': 'INR',
+            'amount': amount_in_smallest_unit,
+            'currency': charge_currency,
             'receipt': order_receipt,
             'payment_capture': 1,
             'notes': {
                 'contract_id': str(contract.id),
                 'milestone_id': str(milestone.id),
                 'project_id': str(contract.project.id),
+                'client_currency': client_currency,
+                'charge_currency': charge_currency,
+                'base_amount_inr': str(milestone.amount),
+                'exchange_rate': str(rate),
             }
         }
         rzp_order = rzp_client.order.create(data=order_payload)
@@ -1334,8 +1557,12 @@ def client_payment_create_order_view(request):
         'status': 'ok',
         'key_id': key_id,
         'order_id': order_id,
-        'amount': amount_in_paise,
-        'currency': 'INR',
+        'amount': amount_in_smallest_unit,
+        'currency': charge_currency,
+        'display_amount': float(charge_amount),
+        'charge_note': charge_note,
+        'base_amount_inr': float(milestone.amount),
+        'exchange_rate': float(rate),
         'milestone_id': milestone.id,
         'contract_id': contract.id,
         'milestone_title': milestone.title,
@@ -1413,14 +1640,54 @@ def client_payment_verify_view(request):
         ).hexdigest()
 
     with transaction.atomic():
+        ms_locked = Milestone.objects.select_for_update().get(id=milestone.id)
+        contract_locked = Contract.objects.select_for_update().get(id=contract.id)
+
+        # Idempotency check inside lock: prevent paying the same milestone twice
+        if ms_locked.status == 'paid' or Payment.objects.filter(milestone=ms_locked, status='completed').exists():
+            existing_payment = Payment.objects.filter(milestone=ms_locked, status='completed').first()
+            redirect_url = reverse('contract_review_create', kwargs={'contract_id': contract_locked.id}) if contract_locked.all_milestones_paid else reverse('client_contract_detail', kwargs={'pk': contract_locked.id})
+            if is_ajax:
+                return JsonResponse({
+                    'status': 'ok',
+                    'message': f"Phase {ms_locked.order}: '{ms_locked.title}' has already been paid and verified.",
+                    'redirect_url': redirect_url,
+                    'payment_id': existing_payment.id if existing_payment else 0,
+                    'invoice_number': existing_payment.invoice_number if existing_payment else '',
+                })
+            messages.info(request, f"Phase {ms_locked.order}: '{ms_locked.title}' has already been paid.")
+            return redirect(redirect_url)
+
+        # Validate that earlier milestones are paid
+        if ms_locked.is_locked:
+            if is_ajax:
+                return JsonResponse({'status': 'error', 'message': f'Cannot pay Phase {ms_locked.order}: previous milestones must be settled first.'}, status=400)
+            messages.error(request, "Earlier milestones must be paid first.")
+            return redirect('client_contract_detail', pk=contract_locked.id)
+
+        # Determine charge amount & currency based on settings and client currency
+        rate = contract_locked.exchange_rate_used or get_usd_inr_rate()
+        client_currency = getattr(getattr(request.user, 'profile', None), 'display_currency', 'INR')
+        payment_curr_setting = getattr(settings, 'PAYMENT_CURRENCY', 'INR').upper()
+
+        if client_currency == 'USD' and payment_curr_setting == 'USD':
+            charge_currency = 'USD'
+            charge_amount = convert_inr_to_usd(ms_locked.amount, rate=rate)
+        else:
+            charge_currency = 'INR'
+            charge_amount = ms_locked.amount
+
+        # Create single Payment and Invoice
         payment = Payment.objects.create(
             client=request.user,
-            freelancer=contract.freelancer,
-            contract=contract,
-            milestone=milestone,
-            payment_type=milestone.milestone_type,
-            amount=milestone.amount,
-            currency='INR',
+            freelancer=contract_locked.freelancer,
+            contract=contract_locked,
+            milestone=ms_locked,
+            payment_type=ms_locked.milestone_type,
+            amount=charge_amount,
+            currency=charge_currency,
+            base_amount_inr=ms_locked.amount,
+            exchange_rate=rate,
             payment_method=payment_method or 'Razorpay Online',
             razorpay_order_id=razorpay_order_id,
             razorpay_payment_id=razorpay_payment_id,
@@ -1428,34 +1695,32 @@ def client_payment_verify_view(request):
             status='completed',
         )
 
-        milestone.status = 'paid'
-        milestone.save()
+        ms_locked.status = 'paid'
+        ms_locked.save(update_fields=['status'])
 
-        # Step 5: Advance payment unlock
-        if milestone.milestone_type == 'advance':
-            final_ms = contract.final_milestone
-            if final_ms and final_ms.status == 'pending':
-                final_ms.status = 'in_progress'
-                final_ms.save()
-            success_msg = f"Agreed advance payment of ₹{milestone.amount:,.2f} paid successfully via Razorpay! Freelancer is now authorized to begin project work."
-        elif milestone.milestone_type == 'final':
-            contract.status = 'completed'
-            contract.end_date = timezone.now()
-            contract.save()
-
-            contract.project.status = 'completed'
-            contract.project.save()
-
-            success_msg = f"Remaining final payment of ₹{milestone.amount:,.2f} released via Razorpay! Project marked as COMPLETED."
+        # Activate the NEXT sequential milestone
+        next_ms = contract_locked.milestones.filter(order__gt=ms_locked.order).order_by('order').first()
+        if next_ms:
+            next_ms.status = 'in_progress'
+            next_ms.save(update_fields=['status'])
+            success_msg = f"Payment of ₹{ms_locked.amount:,.2f} for Phase {ms_locked.order} ('{ms_locked.title}') released via Razorpay! Phase {next_ms.order} ('{next_ms.title}') is now active."
         else:
-            success_msg = f"Payment of ₹{milestone.amount:,.2f} verified and paid successfully via Razorpay!"
+            success_msg = f"Final payment of ₹{ms_locked.amount:,.2f} for Phase {ms_locked.order} released via Razorpay!"
+
+        # Contract completed ONLY when EVERY milestone is paid
+        if contract_locked.all_milestones_paid:
+            contract_locked.status = 'completed'
+            contract_locked.end_date = timezone.now()
+            contract_locked.save(update_fields=['status', 'end_date'])
+
+            contract_locked.project.status = 'completed'
+            contract_locked.project.save(update_fields=['status'])
+            success_msg += " All contract milestones are paid — project marked as COMPLETED!"
+            redirect_url = reverse('contract_review_create', kwargs={'contract_id': contract_locked.id})
+        else:
+            redirect_url = reverse('client_contract_detail', kwargs={'pk': contract_locked.id})
 
     messages.success(request, success_msg)
-    if milestone.milestone_type == 'final':
-        redirect_url = reverse('contract_review_create', kwargs={'contract_id': contract.id})
-    else:
-        redirect_url = reverse('client_contract_detail', kwargs={'pk': contract.id})
-
     if is_ajax:
         return JsonResponse({
             'status': 'ok',
@@ -1464,9 +1729,7 @@ def client_payment_verify_view(request):
             'payment_id': payment.id,
             'invoice_number': payment.invoice_number,
         })
-    if milestone.milestone_type == 'final':
-        return redirect('contract_review_create', contract_id=contract.id)
-    return redirect('client_contract_detail', pk=contract.id)
+    return redirect(redirect_url)
 
 
 # ─────────────────────────── Accepted-Only Messaging & Chat (Part A) ───────────────────────────
@@ -2103,7 +2366,7 @@ def client_profile_view(request):
     profile = _get_or_create_profile(user)
 
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user=request.user)
         form.fields['first_name'].initial = user.first_name
         form.fields['last_name'].initial = user.last_name
         form.fields['email'].initial = user.email
@@ -2124,7 +2387,7 @@ def client_profile_view(request):
         else:
             messages.error(request, "Please fix the errors below.")
     else:
-        form = UserProfileForm(instance=profile, initial={
+        form = UserProfileForm(instance=profile, user=request.user, initial={
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
@@ -2190,3 +2453,22 @@ def client_confirm_delete_view(request, pk):
         messages.error(request, "Unauthorized.")
         return redirect('client_projects')
     return render(request, 'client/confirm_delete.html', {'project': project})
+
+
+def set_currency_view(request):
+    currency = request.GET.get('currency', '').strip().upper()
+    if currency not in ['INR', 'USD']:
+        currency = 'INR'
+
+    next_url = request.META.get('HTTP_REFERER') or '/'
+    if not next_url.startswith('/') and '127.0.0.1' not in next_url and 'localhost' not in next_url:
+        next_url = '/'
+
+    response = redirect(next_url)
+    response.set_cookie('gb_currency', currency, max_age=365 * 24 * 3600)
+
+    if request.user.is_authenticated and hasattr(request.user, 'profile'):
+        request.user.profile.display_currency = currency
+        request.user.profile.save(update_fields=['display_currency'])
+
+    return response

@@ -1,5 +1,6 @@
 {% extends 'freelancer/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
 {% block dashboard_title %}Contract #{{ contract.id }}: {{ contract.project.title }}{% endblock %}
@@ -295,7 +296,7 @@
         <div>
             <h1 class="cd-hero-title">{{ contract.project.title }}</h1>
             <p class="cd-hero-sub">
-                Engagement formed with <strong>{{ contract.client.get_full_name|default:contract.client.username }}</strong>. Total contract valuation: <strong>&#8377;{{ contract.total_amount|floatformat:2 }}</strong>.
+                Engagement formed with <strong>{{ contract.client.get_full_name|default:contract.client.username }}</strong>. Total contract valuation: <strong>{% contract_money contract contract.total_amount %}</strong>.
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -352,28 +353,28 @@
         </div>
         <!-- 05 -->
         <div class="col-6 col-md-3 col-lg mb-2">
-            <div class="cd-step-box {% if contract.is_advance_paid %}cd-step-done{% else %}cd-step-active{% endif %}">
+            <div class="cd-step-box {% if contract.is_advance_paid or contract.paid_amount > 0 %}cd-step-done{% else %}cd-step-active{% endif %}">
                 <span class="cd-step-num">STAGE // 05</span>
                 <span class="cd-step-name">Advance Escrow</span>
             </div>
         </div>
         <!-- 06 -->
         <div class="col-6 col-md-3 col-lg mb-2">
-            <div class="cd-step-box {% if final_ms.status == 'submitted' or final_ms.status == 'approved' or final_ms.status == 'paid' or contract.status == 'completed' %}cd-step-done{% elif contract.is_advance_paid %}cd-step-active{% else %}cd-step-pending{% endif %}">
+            <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' or active_ms.status == 'submitted' or active_ms.status == 'approved' %}cd-step-done{% elif active_ms and active_ms.status == 'in_progress' or active_ms.status == 'revision_requested' %}cd-step-active{% else %}cd-step-pending{% endif %}">
                 <span class="cd-step-num">STAGE // 06</span>
                 <span class="cd-step-name">Work Delivery</span>
             </div>
         </div>
         <!-- 07 -->
         <div class="col-6 col-md-3 col-lg mb-2">
-            <div class="cd-step-box {% if final_ms.status == 'approved' or final_ms.status == 'paid' or contract.status == 'completed' %}cd-step-done{% elif final_ms.status == 'submitted' %}cd-step-active{% else %}cd-step-pending{% endif %}">
+            <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' or active_ms.status == 'approved' %}cd-step-done{% elif active_ms and active_ms.status == 'submitted' %}cd-step-active{% else %}cd-step-pending{% endif %}">
                 <span class="cd-step-num">STAGE // 07</span>
                 <span class="cd-step-name">Client Approval</span>
             </div>
         </div>
         <!-- 08 -->
         <div class="col-6 col-md-3 col-lg mb-2">
-            <div class="cd-step-box {% if contract.status == 'completed' or final_ms.status == 'paid' %}cd-step-done{% else %}cd-step-pending{% endif %}">
+            <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' %}cd-step-done{% else %}cd-step-pending{% endif %}">
                 <span class="cd-step-num">STAGE // 08</span>
                 <span class="cd-step-name">Disbursed &amp; Paid</span>
             </div>
@@ -452,17 +453,21 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <span class="text-muted small">Total Contract Budget:</span>
-                        <strong class="text-dark fs-5">&#8377;{{ contract.total_amount|floatformat:2 }}</strong>
+                        <strong class="text-dark fs-5">{% contract_money contract contract.total_amount %}</strong>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-1">
-                        <span class="text-muted small">Step 5 Advance (Agreed):</span>
-                        <span class="badge {% if contract.is_advance_paid %}bg-success-subtle text-success border border-success-subtle{% else %}bg-warning-subtle text-warning-emphasis border border-warning-subtle{% endif %} fw-bold">
-                            &#8377;{{ contract.advance_amount|floatformat:2 }} {% if contract.is_advance_paid %}(Escrow Secured){% else %}(Awaiting Deposit){% endif %}
+                        <span class="text-muted small">Total Paid to Date:</span>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle fw-bold">
+                            {% contract_money contract contract.paid_amount %} (Settled)
                         </span>
                     </div>
                     <div class="d-flex justify-content-between align-items-center mb-2">
-                        <span class="text-muted small">Step 7 Final Delivery Due:</span>
-                        <strong class="text-primary">&#8377;{{ contract.final_amount|floatformat:2 }}</strong>
+                        <span class="text-muted small">Next Payment Due:</span>
+                        {% if active_ms %}
+                            <strong class="text-primary">Phase {{ active_ms.order }}: {% contract_money contract active_ms.amount %}</strong>
+                        {% else %}
+                            <span class="badge bg-success text-white">All Milestones Paid</span>
+                        {% endif %}
                     </div>
                 </div>
                 <div class="border-top pt-2 mt-auto">
@@ -522,49 +527,86 @@
 <div class="cd-panel">
     <div class="cd-section-head">
         <div>
-            <h4 class="cd-section-title">Stage 06 &bull; Project Deliverables Submission</h4>
+            <h4 class="cd-section-title">
+                Stage 06 &bull; Project Deliverables Submission
+                {% if active_ms %}
+                    <span class="badge bg-primary text-white ms-2 small">Phase {{ active_ms.order }}: {{ active_ms.title }}</span>
+                {% endif %}
+            </h4>
             <p class="cd-section-sub">Deliver your completed source code, build archives, repository links, and architecture notes for client approval.</p>
         </div>
         <div>
-            {% if contract.is_advance_paid %}
-                <span class="cd-pill bg-success-subtle text-success border border-success-subtle">
-                    Advance Secured: &#8377;{{ contract.advance_amount|floatformat:2 }}
+            {% if active_ms %}
+                <span class="cd-pill bg-primary-subtle text-primary border border-primary-subtle">
+                    Active: Phase {{ active_ms.order }} ({% contract_money contract active_ms.amount %})
                 </span>
-            {% else %}
-                <span class="cd-pill bg-warning-subtle text-warning border border-warning-subtle">
-                    Awaiting Client Advance Deposit
+            {% elif contract.all_milestones_paid %}
+                <span class="cd-pill bg-success-subtle text-success border border-success-subtle">
+                    All Milestones Settled
                 </span>
             {% endif %}
         </div>
     </div>
 
-    {% if not contract.is_advance_paid %}
+    {% if contract.all_milestones_paid or contract.status == 'completed' %}
+        <!-- Fully Completed Card -->
+        <div class="p-4 rounded-4 bg-success-subtle border border-success-subtle text-dark mb-4">
+            <h5 class="fw-bold mb-2 text-success">Contract Completed &amp; Fully Disbursed</h5>
+            <p class="mb-2 small text-secondary">
+                Full contract payments totaling <strong>{% contract_money contract contract.total_amount %}</strong> have been verified and settled.
+            </p>
+            {% if contract.review %}
+                <div class="p-3 bg-white rounded-3 border mt-3">
+                    <div class="d-flex justify-content-between align-items-center mb-1">
+                        <span class="small fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i> Client Rating: {{ contract.review.overall_rating }} / 5.0</span>
+                        <small class="text-muted">{{ contract.review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                    <p class="small text-secondary mb-2 fst-italic">"{{ contract.review.comment }}"</p>
+                    {% if contract.review.freelancer_reply %}
+                        <div class="p-2 bg-light rounded-2 border-start border-primary border-3 small">
+                            <strong class="text-primary d-block">Your Public Reply:</strong>
+                            {{ contract.review.freelancer_reply }}
+                        </div>
+                    {% else %}
+                        <a href="{% url 'freelancer_my_reviews' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
+                            <i class="bi bi-reply me-1"></i> Post Public Reply &rarr;
+                        </a>
+                    {% endif %}
+                </div>
+            {% else %}
+                <small class="text-muted d-block mt-2"><i class="bi bi-clock me-1"></i> Client rating &amp; feedback pending.</small>
+            {% endif %}
+        </div>
+    {% elif not active_ms %}
+        <div class="p-4 rounded-4 bg-light border text-muted">
+            No active milestones to submit at this time.
+        </div>
+    {% elif not contract.is_advance_paid and active_ms.order == 1 and active_ms.milestone_type == 'advance' and active_ms.status == 'pending' %}
         <!-- Advance Not Paid Notice -->
         <div class="p-4 rounded-4 bg-warning-subtle border border-warning-subtle text-dark">
             <h5 class="fw-bold mb-2 text-warning-emphasis">Escrow Advance Deposit Pending</h5>
             <p class="mb-2 small text-secondary">
-                Per GigBridge escrow protocols, the client must deposit the agreed <strong>&#8377;{{ contract.advance_amount|floatformat:2 }}</strong> advance before full project deliverables submission unlocks.
+                Per GigBridge escrow protocols, the client must deposit the agreed <strong>{% contract_money contract active_ms.amount %}</strong> advance before full project deliverables submission unlocks.
             </p>
             <p class="mb-0 small text-muted">
                 Once the client completes this deposit into escrow, this workroom will unlock for full submission.
             </p>
         </div>
-
     {% else %}
-        <!-- Advance Paid: Deliverables Status / Form -->
-        {% if final_ms.revision_notes and final_ms.status == 'revision_requested' %}
+        <!-- Active Milestone Submission Area -->
+        {% if active_ms.revision_notes and active_ms.status == 'revision_requested' %}
             <div class="p-4 rounded-4 bg-danger-subtle border border-danger-subtle mb-4">
-                <h5 class="fw-bold mb-2 text-danger">Client Revision Requested</h5>
+                <h5 class="fw-bold mb-2 text-danger">Client Revision Requested for Phase {{ active_ms.order }}: {{ active_ms.title }}</h5>
                 <p class="mb-2 small text-secondary">
                     The employer reviewed your initial submission and provided the following feedback:
                 </p>
                 <div class="p-3 bg-white rounded-3 border text-dark small" style="white-space: pre-line;">
-                    {{ final_ms.revision_notes }}
+                    {{ active_ms.revision_notes }}
                 </div>
             </div>
         {% endif %}
 
-        {% if final_ms.status == 'submitted' %}
+        {% if active_ms.status == 'submitted' %}
             <!-- Work Submitted Card -->
             <div class="p-4 rounded-4 bg-info-subtle border border-info-subtle mb-4">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-3">
@@ -572,29 +614,29 @@
                         <span class="cd-pill bg-info text-white mb-2">
                             Under Client Review
                         </span>
-                        <h5 class="fw-bold text-dark mb-1">Project Deliverables Submitted</h5>
-                        <small class="text-muted">Delivered on {{ final_ms.submitted_at|date:"F d, Y H:i" }}</small>
+                        <h5 class="fw-bold text-dark mb-1">Phase {{ active_ms.order }} Deliverables Submitted</h5>
+                        <small class="text-muted">Delivered on {{ active_ms.submitted_at|date:"F d, Y H:i" }}</small>
                     </div>
                     <span class="badge bg-white text-dark border px-3 py-2 fw-bold">
-                        Remaining Payment Due Upon Approval: &#8377;{{ final_ms.amount|floatformat:2 }}
+                        Payment Due Upon Approval: {% contract_money contract active_ms.amount %}
                     </span>
                 </div>
 
-                {% if final_ms.submission_notes %}
+                {% if active_ms.submission_notes %}
                     <div class="p-3 bg-white rounded-3 border mb-3 small text-secondary" style="white-space: pre-line;">
                         <strong class="text-dark d-block mb-1">Your Submission Notes:</strong>
-                        {{ final_ms.submission_notes }}
+                        {{ active_ms.submission_notes }}
                     </div>
                 {% endif %}
 
                 <div class="d-flex gap-2 flex-wrap">
-                    {% if final_ms.deliverable_link %}
-                        <a href="{{ final_ms.deliverable_link }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                    {% if active_ms.deliverable_link %}
+                        <a href="{{ active_ms.deliverable_link }}" target="_blank" class="btn btn-outline-primary btn-sm">
                             Live Demo / Repository Link &rarr;
                         </a>
                     {% endif %}
-                    {% if final_ms.submission_file %}
-                        <a href="{{ final_ms.submission_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
+                    {% if active_ms.submission_file %}
+                        <a href="{{ active_ms.submission_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm">
                             Download Deliverable Archive
                         </a>
                     {% endif %}
@@ -610,56 +652,25 @@
             <div class="collapse mt-3" id="reSubmitCollapse">
         {% endif %}
 
-        {% if final_ms.status == 'approved' %}
+        {% if active_ms.status == 'approved' %}
             <!-- Approved Card -->
             <div class="p-4 rounded-4 bg-success-subtle border border-success-subtle text-dark mb-4">
-                <h5 class="fw-bold mb-2 text-success">Deliverables Approved by Client!</h5>
+                <h5 class="fw-bold mb-2 text-success">Phase {{ active_ms.order }} Deliverables Approved by Client!</h5>
                 <p class="mb-0 small text-secondary">
-                    The client has authorized the final delivery. The remaining escrow disbursement of <strong>&#8377;{{ final_ms.amount|floatformat:2 }}</strong> is being processed.
+                    The client has authorized the deliverables for <strong>Phase {{ active_ms.order }}: {{ active_ms.title }}</strong>. Escrow disbursement of <strong>{% contract_money contract active_ms.amount %}</strong> is being processed.
                 </p>
             </div>
-
-        {% elif final_ms.status == 'paid' or contract.status == 'completed' %}
-            <!-- Fully Completed Card -->
-            <div class="p-4 rounded-4 bg-success-subtle border border-success-subtle text-dark mb-4">
-                <h5 class="fw-bold mb-2 text-success">Contract Completed &amp; Fully Disbursed</h5>
-                <p class="mb-2 small text-secondary">
-                    Full contract payments totaling <strong>&#8377;{{ contract.total_amount|floatformat:2 }}</strong> have been verified and settled.
-                </p>
-                {% if contract.review %}
-                    <div class="p-3 bg-white rounded-3 border mt-3">
-                        <div class="d-flex justify-content-between align-items-center mb-1">
-                            <span class="small fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i> Client Rating: {{ contract.review.overall_rating }} / 5.0</span>
-                            <small class="text-muted">{{ contract.review.created_at|date:"M d, Y" }}</small>
-                        </div>
-                        <p class="small text-secondary mb-2 fst-italic">"{{ contract.review.comment }}"</p>
-                        {% if contract.review.freelancer_reply %}
-                            <div class="p-2 bg-light rounded-2 border-start border-primary border-3 small">
-                                <strong class="text-primary d-block">Your Public Reply:</strong>
-                                {{ contract.review.freelancer_reply }}
-                            </div>
-                        {% else %}
-                            <a href="{% url 'freelancer_my_reviews' %}" class="btn btn-sm btn-primary rounded-pill px-3 fw-bold">
-                                <i class="bi bi-reply me-1"></i> Post Public Reply &rarr;
-                            </a>
-                        {% endif %}
-                    </div>
-                {% else %}
-                    <small class="text-muted d-block mt-2"><i class="bi bi-clock me-1"></i> Client rating &amp; feedback pending.</small>
-                {% endif %}
-            </div>
-
-        {% else %}
+        {% elif active_ms.status == 'in_progress' or active_ms.status == 'revision_requested' or active_ms.status == 'submitted' %}
             <!-- Delivery Form (Active) -->
-            <form method="POST" action="{% url 'freelancer_submit_delivery' contract.id %}" enctype="multipart/form-data" class="bg-light p-4 rounded-4 border">
+            <form method="POST" action="{% url 'freelancer_milestone_submit' contract.id active_ms.id %}" enctype="multipart/form-data" class="bg-light p-4 rounded-4 border">
                 {% csrf_token %}
-                <h5 class="fw-bold text-dark mb-3">Submit Source Code &amp; Project Assets</h5>
+                <h5 class="fw-bold text-dark mb-3">Submit Deliverables for Phase {{ active_ms.order }}: {{ active_ms.title }} ({% contract_money contract active_ms.amount %})</h5>
 
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-dark">
                         Architecture Notes &amp; Delivery Description <span class="text-danger">*</span>
                     </label>
-                    <textarea name="submission_notes" class="form-control" rows="5" placeholder="Detail your project delivery:&#10;- Frontend: UI components, styling, responsive layouts&#10;- Backend: Endpoints, business logic, integrations&#10;- Database: Schema setup, seed data&#10;- Instructions: Run commands, deployment credentials" required>{{ final_ms.submission_notes }}</textarea>
+                    <textarea name="submission_notes" class="form-control" rows="5" placeholder="Detail your project delivery for Phase {{ active_ms.order }}:&#10;- Frontend: UI components, styling, responsive layouts&#10;- Backend: Endpoints, business logic, integrations&#10;- Database: Schema setup, seed data&#10;- Instructions: Run commands, deployment credentials" required>{{ active_ms.submission_notes }}</textarea>
                 </div>
 
                 <div class="row g-3 mb-3">
@@ -667,7 +678,7 @@
                         <label class="form-label small fw-bold text-dark">
                             Repository or Live Deployment URL
                         </label>
-                        <input type="url" name="deliverable_link" class="form-control" placeholder="https://github.com/username/project or https://live-demo.com" value="{{ final_ms.deliverable_link }}">
+                        <input type="url" name="deliverable_link" class="form-control" placeholder="https://github.com/username/project or https://live-demo.com" value="{{ active_ms.deliverable_link }}">
                         <div class="form-text small">GitHub, GitLab, or cloud preview address</div>
                     </div>
                     <div class="col-md-6">
@@ -681,16 +692,16 @@
 
                 <div class="d-flex justify-content-between align-items-center pt-3 border-top flex-wrap gap-2">
                     <span class="text-muted small">
-                        Upon submission, client reviews files to authorize remaining disbursement of <strong>&#8377;{{ final_ms.amount|floatformat:2 }}</strong>.
+                        Upon submission, client reviews files to authorize disbursement of <strong>{% contract_money contract active_ms.amount %}</strong>.
                     </span>
                     <button type="submit" class="btn btn-primary fw-bold px-4 py-2 shadow-sm" style="background: var(--cd-primary); border-color: var(--cd-primary);">
-                        Submit Project Deliverables &rarr;
+                        Submit Phase {{ active_ms.order }} Deliverables &rarr;
                     </button>
                 </div>
             </form>
         {% endif %}
 
-        {% if final_ms.status == 'submitted' %}
+        {% if active_ms.status == 'submitted' %}
             </div>
         {% endif %}
     {% endif %}
@@ -718,13 +729,27 @@
             <tbody>
                 {% for ms in milestones %}
                     <tr>
-                        <td class="fw-bold text-dark">{{ ms.title }}</td>
+                        <td class="fw-bold text-dark">Phase {{ ms.order }}: {{ ms.title }}</td>
                         <td><span class="badge bg-light text-dark border">{{ ms.get_milestone_type_display }}</span></td>
-                        <td class="fw-bold text-success fs-6">&#8377;{{ ms.amount|floatformat:2 }}</td>
+                        <td class="fw-bold text-success fs-6">{% contract_money contract ms.amount %}</td>
                         <td>
-                            <span class="badge {% if ms.status == 'paid' %}bg-success text-white{% elif ms.status == 'approved' %}bg-primary text-white{% elif ms.status == 'submitted' %}bg-warning text-dark{% elif ms.status == 'revision_requested' %}bg-danger text-white{% elif ms.status == 'in_progress' %}bg-info text-white{% else %}bg-secondary text-white{% endif %} px-2 py-1 rounded-pill">
-                                {{ ms.get_status_display }}
-                            </span>
+                            {% if ms.status == 'paid' %}
+                                <span class="badge bg-success text-white px-2 py-1 rounded-pill"><i class="bi bi-check-circle-fill me-1"></i> Paid</span>
+                            {% elif ms.status == 'approved' %}
+                                <span class="badge bg-primary text-white px-2 py-1 rounded-pill"><i class="bi bi-check2-circle me-1"></i> Approved (Awaiting Payment)</span>
+                            {% elif ms.status == 'submitted' %}
+                                <span class="badge bg-warning text-dark px-2 py-1 rounded-pill"><i class="bi bi-hourglass-split me-1"></i> Under Client Review</span>
+                            {% elif ms.status == 'revision_requested' %}
+                                <span class="badge bg-danger text-white px-2 py-1 rounded-pill"><i class="bi bi-arrow-repeat me-1"></i> Revision Requested</span>
+                            {% elif ms.status == 'in_progress' %}
+                                <span class="badge bg-info text-dark px-2 py-1 rounded-pill"><i class="bi bi-play-circle-fill me-1"></i> In Progress</span>
+                            {% elif ms.is_locked %}
+                                <span class="badge bg-secondary text-white px-2 py-1 rounded-pill" title="Locked until earlier phases are paid">
+                                    <i class="bi bi-lock-fill me-1"></i> Locked until Phase {{ ms.order|add:"-1" }} is paid
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary text-white px-2 py-1 rounded-pill">Pending</span>
+                            {% endif %}
                         </td>
                         <td>{{ ms.due_date|date:"M d, Y"|default:"Flexible timeline" }}</td>
                     </tr>
@@ -764,7 +789,7 @@
                     <tr>
                         <td class="fw-bold text-dark font-monospace">{{ p.invoice_number }}</td>
                         <td>{{ p.milestone.title|default:"Agreed Milestone" }}</td>
-                        <td class="fw-bold text-success">&#8377;{{ p.amount|floatformat:2 }}</td>
+                        <td class="fw-bold text-success">{% contract_money contract p.amount %}</td>
                         <td><span class="badge bg-light text-secondary border">{{ p.payment_method }}</span></td>
                         <td><span class="font-monospace text-muted" style="font-size: 0.75rem;">{{ p.razorpay_payment_id }}</span></td>
                         <td>{{ p.created_at|date:"M d, Y H:i" }}</td>

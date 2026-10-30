@@ -8,64 +8,118 @@
 {% block dashboard_content %}
 <style>
     /* ==========================================================================
-       GigBridge Interactive Rating & Review Styles
+       GIGBRIDGE EDITORIAL LUXURY LIGHT BLUE - REVIEW & RATING
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
        ========================================================================== */
+    :root {
+        --rev-primary: #0284C7;
+        --rev-primary-dark: #0369A1;
+        --rev-navy: #0F172A;
+        --rev-sky-50: #F0F9FF;
+        --rev-sky-100: #E0F2FE;
+        --rev-sky-200: #BAE6FD;
+        --rev-slate-500: #64748B;
+        --rev-slate-700: #334155;
+        --rev-border: #E2E8F0;
+        --rev-gold: #F59E0B;
+    }
+
     .gb-review-container {
-        max-width: 920px;
+        max-width: 960px;
         margin: 0 auto;
     }
 
+    /* ── 1. LUMINOUS HERO BANNER ── */
     .gb-review-hero {
-        background: linear-gradient(135deg, #0F172A 0%, #0369A1 100%);
-        border-radius: 20px;
-        padding: 32px 36px;
-        color: #FFFFFF;
-        margin-bottom: 24px;
-        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.25);
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: 18px;
+        padding: 30px 34px;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
     }
 
-    .gb-review-hero::after {
-        content: '';
-        position: absolute;
-        width: 300px;
-        height: 300px;
-        background: radial-gradient(circle, rgba(56, 189, 248, 0.2) 0%, transparent 70%);
-        top: -100px;
-        right: -100px;
+    .gb-review-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: var(--rev-primary-dark);
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .gb-review-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
         border-radius: 50%;
-        pointer-events: none;
+        background: var(--rev-primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
     }
 
+    .gb-review-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--rev-navy);
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+
+    .gb-review-sub {
+        font-size: 0.92rem;
+        color: var(--rev-slate-700);
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ── 2. EDITORIAL FORM CARD ── */
     .gb-card-luxury {
         background: #FFFFFF;
-        border: 1.5px solid #E2E8F0;
+        border: 1px solid var(--rev-border);
         border-radius: 18px;
         padding: 32px 36px;
         box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
         margin-bottom: 24px;
     }
 
-    .gb-avatar-md {
-        width: 64px;
-        height: 64px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
-        color: #FFFFFF;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 1.5rem;
-        font-weight: 800;
-        flex-shrink: 0;
-        border: 3px solid rgba(255, 255, 255, 0.2);
+    .gb-section-head {
+        padding-bottom: 14px;
+        margin-bottom: 22px;
+        border-bottom: 1px solid #F1F5F9;
     }
 
-    /* Category Star Row */
+    .gb-section-title {
+        font-size: 1.15rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        color: var(--rev-navy);
+        margin-bottom: 2px;
+    }
+
+    .gb-section-sub {
+        font-size: 0.82rem;
+        color: var(--rev-slate-500);
+        margin-bottom: 0;
+    }
+
+    /* ── 3. CATEGORY STAR ROWS (ICON-CLEAN) ── */
     .gb-rating-row {
         background: #F8FAFC;
-        border: 1px solid #E2E8F0;
+        border: 1.5px solid #E2E8F0;
         border-radius: 14px;
         padding: 16px 20px;
         margin-bottom: 14px;
@@ -74,14 +128,13 @@
     .gb-rating-row:hover {
         background: #FFFFFF;
         border-color: #BAE6FD;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.08);
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.06);
     }
 
     .gb-star-group {
         display: inline-flex;
         align-items: center;
         gap: 6px;
-        cursor: pointer;
     }
 
     .gb-star-btn {
@@ -95,59 +148,71 @@
         transition: transform 0.15s ease, color 0.15s ease;
     }
     .gb-star-btn:hover {
-        transform: scale(1.2);
+        transform: scale(1.15);
     }
     .gb-star-btn.active {
-        color: #F59E0B;
+        color: var(--rev-gold);
     }
 
-    /* Overall Live Score Display */
+    /* ── 4. LIVE OVERALL SCORE CARD ── */
     .gb-overall-box {
         background: linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%);
         border: 1.5px solid #BAE6FD;
         border-radius: 16px;
-        padding: 24px;
+        padding: 26px 22px;
         text-align: center;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
     }
 
     .gb-overall-score {
-        font-size: 3rem;
+        font-size: 3.2rem;
         font-weight: 900;
-        color: #0F172A;
+        letter-spacing: -0.03em;
+        color: var(--rev-navy);
         line-height: 1;
-        margin-bottom: 4px;
+        margin-bottom: 6px;
     }
 
-    /* Quick Tag Chips */
+    .gb-overall-stars {
+        font-size: 1.35rem;
+        color: var(--rev-gold);
+        margin-bottom: 8px;
+    }
+
+    /* ── 5. CLEAN TEXT-ONLY TAG PILLS (NO NOISY ICONS) ── */
     .gb-tag-chip {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background: #F1F5F9;
+        display: inline-block;
+        background: #F8FAFC;
         color: #334155;
         border: 1.5px solid #E2E8F0;
         border-radius: 999px;
-        padding: 7px 16px;
+        padding: 7px 18px;
         font-size: 0.82rem;
         font-weight: 600;
         cursor: pointer;
         user-select: none;
         transition: all 0.18s ease;
         margin: 4px;
+        line-height: 1.4;
     }
     .gb-tag-chip:hover {
         border-color: #93C5FD;
-        color: #0284C7;
+        color: var(--rev-primary);
         background: #F0F9FF;
+        transform: translateY(-1px);
     }
     .gb-tag-chip.selected {
-        background: #0284C7;
-        border-color: #0284C7;
+        background: var(--rev-primary);
+        border-color: var(--rev-primary);
         color: #FFFFFF;
-        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
     }
 
-    /* Counter */
+    /* ── 6. CHAR COUNTER ── */
     .gb-char-counter {
         font-size: 0.78rem;
         font-weight: 600;
@@ -159,41 +224,56 @@
     .gb-char-counter.valid {
         color: #166534;
     }
+
+    .gb-avatar-md {
+        width: 58px;
+        height: 58px;
+        border-radius: 14px;
+        background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+        color: #FFFFFF;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.35rem;
+        font-weight: 800;
+        flex-shrink: 0;
+    }
 </style>
 
 <div class="gb-review-container">
     <div class="mb-3">
-        <a href="{% url 'client_contract_detail' contract.id %}" class="small text-decoration-none fw-semibold text-primary">
-            <i class="bi bi-arrow-left me-1"></i> Back to Contract #{{ contract.id }}
+        <a href="{% url 'client_contract_detail' contract.id %}" class="small text-decoration-none fw-bold" style="color: var(--rev-primary);">
+            &larr; Back to Contract #{{ contract.id }}
         </a>
     </div>
 
-    <!-- Hero Card -->
+    <!-- 1. Luminous Hero Banner -->
     <div class="gb-review-hero">
         <div class="row align-items-center g-3">
             <div class="col-md-8">
-                <span class="badge bg-white text-dark rounded-pill px-3 py-1 fw-bold small mb-2 text-uppercase" style="letter-spacing: 0.06em;">
-                    <i class="bi bi-shield-check text-success me-1"></i> Verified Contract Completion
-                </span>
-                <h2 class="fw-bold mb-1 fs-3">
-                    {% if is_edit %}Update Your Review{% else %}Rate &amp; Review Freelancer{% endif %}
-                </h2>
-                <p class="mb-0 text-white-50 small">
-                    Contract #{{ contract.id }}: <strong>{{ contract.project.title }}</strong> &bull; Total Value: &#8377;{{ contract.total_amount|floatformat:0 }}
+                <div class="gb-review-badge">
+                    <span class="pulse-dot"></span>
+                    <span>VERIFIED CONTRACT FEEDBACK &bull; CONTRACT #{{ contract.id }}</span>
+                </div>
+                <h1 class="gb-review-title">
+                    {% if is_edit %}Update Your Review{% else %}Rate &amp; Review Specialist{% endif %}
+                </h1>
+                <p class="gb-review-sub">
+                    Project: <strong>{{ contract.project.title }}</strong> &bull; Valuation: <strong>&#8377;{{ contract.total_amount|floatformat:2 }}</strong>. Share verified performance feedback to conclude the engagement.
                 </p>
             </div>
             <div class="col-md-4 text-md-end">
-                <div class="d-inline-flex align-items-center gap-3 bg-white bg-opacity-10 rounded-4 p-2 pe-3 text-start">
+                <div class="d-inline-flex align-items-center gap-3 bg-white p-2 pe-3 rounded-4 border shadow-sm text-start">
                     <div class="gb-avatar-md">
                         {% if freelancer_user.profile.avatar %}
-                            <img src="{{ freelancer_user.profile.avatar.url }}" alt="{{ freelancer_user.username }}" class="w-100 h-100 rounded-circle object-fit-cover">
+                            <img src="{{ freelancer_user.profile.avatar.url }}" alt="{{ freelancer_user.username }}" class="w-100 h-100 rounded-3 object-fit-cover">
                         {% else %}
                             {{ freelancer_user.first_name|default:freelancer_user.username|slice:":2"|upper }}
                         {% endif %}
                     </div>
                     <div>
-                        <div class="fw-bold text-white small">{{ freelancer_user.get_full_name|default:freelancer_user.username }}</div>
-                        <small class="text-white-50 d-block" style="font-size: 0.72rem;">{{ freelancer_user.profile.title|default:"Independent Specialist" }}</small>
+                        <div class="fw-bold text-navy small">{{ freelancer_user.get_full_name|default:freelancer_user.username }}</div>
+                        <small class="text-muted d-block" style="font-size: 0.74rem;">{{ freelancer_user.profile.title|default:"Independent Specialist" }}</small>
                     </div>
                 </div>
             </div>
@@ -202,10 +282,7 @@
 
     {% if form.errors %}
         <div class="alert alert-danger border-0 rounded-4 p-3 mb-4 shadow-sm">
-            <div class="d-flex align-items-center gap-2 mb-1">
-                <i class="bi bi-exclamation-triangle-fill fs-5 text-danger"></i>
-                <strong class="text-danger">Please fix the following issues:</strong>
-            </div>
+            <div class="fw-bold text-danger mb-1">Please fix the following issues:</div>
             <ul class="mb-0 small text-danger ps-4">
                 {% for field, errors in form.errors.items %}
                     {% for error in errors %}
@@ -216,7 +293,7 @@
         </div>
     {% endif %}
 
-    <!-- Review Form Card -->
+    <!-- 2. Form Luxury Card -->
     <div class="gb-card-luxury">
         <form method="POST" id="gigbridgeReviewForm" novalidate>
             {% csrf_token %}
@@ -228,17 +305,15 @@
             <input type="hidden" name="professionalism" id="id_professionalism" value="{{ form.professionalism.value|default:5 }}">
             <input type="hidden" name="tags" id="id_selected_tags" value="{{ form.tags.value|default:'' }}">
 
-            <div class="row g-4 mb-4">
-                <!-- Left 8 cols: 4 Rating Categories -->
+            <div class="row g-4 mb-4 align-items-stretch">
+                <!-- Left 8 cols: 4 Clean Rating Dimensions -->
                 <div class="col-lg-8">
-                    <h5 class="fw-bold text-dark mb-3">
-                        <i class="bi bi-star-fill text-warning me-2"></i> Performance Assessment
-                    </h5>
-                    <p class="text-muted small mb-3">
-                        Rate the freelancer across the 4 key delivery dimensions. The overall score is calculated as the precise average.
-                    </p>
+                    <div class="gb-section-head">
+                        <h4 class="gb-section-title">Performance Assessment</h4>
+                        <p class="gb-section-sub">Rate the specialist across 4 core delivery dimensions. Overall score is calculated automatically.</p>
+                    </div>
 
-                    <!-- Category 1: Quality of Work -->
+                    <!-- Dimension 1: Quality of Work -->
                     <div class="gb-rating-row" data-category="quality_of_work">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
                             <div>
@@ -252,13 +327,13 @@
                         <div class="gb-star-group mt-2" data-target="id_quality_of_work" data-label="label_quality_of_work">
                             {% for i in "12345" %}
                                 <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
-                                    <i class="bi bi-star-fill"></i>
+                                    ★
                                 </button>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Category 2: Communication -->
+                    <!-- Dimension 2: Communication -->
                     <div class="gb-rating-row" data-category="communication">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
                             <div>
@@ -272,13 +347,13 @@
                         <div class="gb-star-group mt-2" data-target="id_communication" data-label="label_communication">
                             {% for i in "12345" %}
                                 <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
-                                    <i class="bi bi-star-fill"></i>
+                                    ★
                                 </button>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Category 3: Deadline Adherence -->
+                    <!-- Dimension 3: Deadline Adherence -->
                     <div class="gb-rating-row" data-category="deadline_adherence">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
                             <div>
@@ -292,13 +367,13 @@
                         <div class="gb-star-group mt-2" data-target="id_deadline_adherence" data-label="label_deadline_adherence">
                             {% for i in "12345" %}
                                 <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
-                                    <i class="bi bi-star-fill"></i>
+                                    ★
                                 </button>
                             {% endfor %}
                         </div>
                     </div>
 
-                    <!-- Category 4: Professionalism -->
+                    <!-- Dimension 4: Professionalism -->
                     <div class="gb-rating-row" data-category="professionalism">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-1">
                             <div>
@@ -312,33 +387,29 @@
                         <div class="gb-star-group mt-2" data-target="id_professionalism" data-label="label_professionalism">
                             {% for i in "12345" %}
                                 <button type="button" class="gb-star-btn" data-val="{{ forloop.counter }}" title="{{ forloop.counter }} stars" aria-label="Rate {{ forloop.counter }} stars">
-                                    <i class="bi bi-star-fill"></i>
+                                    ★
                                 </button>
                             {% endfor %}
                         </div>
                     </div>
                 </div>
 
-                <!-- Right 4 cols: Live Overall Score Card -->
+                <!-- Right 4 cols: Live Overall Score Card & Recommendation -->
                 <div class="col-lg-4 d-flex flex-column justify-content-between">
                     <div class="gb-overall-box">
-                        <small class="text-uppercase fw-bold text-muted small" style="letter-spacing: 0.08em;">
-                            Calculated Overall Score
+                        <small class="text-uppercase fw-bold text-muted" style="letter-spacing: 0.08em; font-size: 0.72rem;">
+                            Overall Score
                         </small>
-                        <div class="gb-overall-score mt-2" id="liveOverallNumber">5.0</div>
-                        <div class="fs-4 text-warning mb-2" id="liveOverallStars">
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
-                            <i class="bi bi-star-fill"></i>
+                        <div class="gb-overall-score" id="liveOverallNumber">5.0</div>
+                        <div class="gb-overall-stars" id="liveOverallStars">
+                            ★★★★★
                         </div>
                         <span class="badge bg-primary text-white rounded-pill px-3 py-1 fw-bold small" id="liveOverallBadge">
                             Exceptional Partner
                         </span>
-                        <hr class="my-3 text-secondary opacity-25">
+                        <hr class="w-100 my-3 text-secondary opacity-25">
                         <small class="text-muted d-block lh-sm" style="font-size: 0.74rem;">
-                            Overall rating automatically rounds to 1 decimal place and updates the freelancer's public reputation score.
+                            Score automatically updates the freelancer's public reputation average upon submission.
                         </small>
                     </div>
 
@@ -349,7 +420,7 @@
                                 <label class="form-check-label fw-bold text-dark small d-block" for="wouldRecommendSwitch">
                                     Recommend to Other Clients?
                                 </label>
-                                <small class="text-muted" style="font-size: 0.72rem;">Adds to freelancer's recommendation rate</small>
+                                <small class="text-muted" style="font-size: 0.72rem;">Contributes to talent satisfaction score</small>
                             </div>
                             <input class="form-check-input ms-2" type="checkbox" role="switch" name="would_recommend" id="wouldRecommendSwitch" {% if form.would_recommend.value != False %}checked{% endif %} style="width: 2.5em; height: 1.3em;">
                         </div>
@@ -357,30 +428,30 @@
                 </div>
             </div>
 
-            <!-- Quick Positive Tag Chips -->
+            <!-- 3. Clean Text-Only Highlights (List of Icons Removed) -->
             <div class="mb-4 pt-3 border-top">
-                <label class="form-label fw-bold text-dark d-block mb-1">
-                    <i class="bi bi-tags-fill text-primary me-1"></i> Quick Positive Highlights (Click to add)
-                </label>
-                <small class="text-muted d-block mb-3">Select the key strengths that best describe your collaboration with this freelancer:</small>
+                <div class="gb-section-head mb-2">
+                    <h5 class="gb-section-title">Key Strengths &amp; Highlights (Optional)</h5>
+                    <p class="gb-section-sub">Select the positive attributes that best describe your collaboration:</p>
+                </div>
 
                 <div class="d-flex flex-wrap" id="tagChipsContainer">
-                    <span class="gb-tag-chip" data-tag="Fast Delivery"><i class="bi bi-lightning-charge"></i> Fast Delivery</span>
-                    <span class="gb-tag-chip" data-tag="Great Communicator"><i class="bi bi-chat-quote"></i> Great Communicator</span>
-                    <span class="gb-tag-chip" data-tag="Clean Code"><i class="bi bi-code-slash"></i> Clean Code</span>
-                    <span class="gb-tag-chip" data-tag="Went Above and Beyond"><i class="bi bi-rocket-takeoff"></i> Went Above and Beyond</span>
-                    <span class="gb-tag-chip" data-tag="Expert Knowledge"><i class="bi bi-mortarboard"></i> Expert Knowledge</span>
-                    <span class="gb-tag-chip" data-tag="Pixel Perfect"><i class="bi bi-palette"></i> Pixel Perfect</span>
-                    <span class="gb-tag-chip" data-tag="Highly Recommended"><i class="bi bi-hand-thumbs-up"></i> Highly Recommended</span>
-                    <span class="gb-tag-chip" data-tag="Proactive Problem Solver"><i class="bi bi-lightbulb"></i> Proactive Problem Solver</span>
+                    <span class="gb-tag-chip" data-tag="Fast Delivery">Fast Delivery</span>
+                    <span class="gb-tag-chip" data-tag="Great Communicator">Great Communicator</span>
+                    <span class="gb-tag-chip" data-tag="Clean Code">Clean Code</span>
+                    <span class="gb-tag-chip" data-tag="Went Above &amp; Beyond">Went Above &amp; Beyond</span>
+                    <span class="gb-tag-chip" data-tag="Expert Knowledge">Expert Knowledge</span>
+                    <span class="gb-tag-chip" data-tag="Pixel Perfect">Pixel Perfect</span>
+                    <span class="gb-tag-chip" data-tag="Highly Recommended">Highly Recommended</span>
+                    <span class="gb-tag-chip" data-tag="Proactive Problem Solver">Proactive Problem Solver</span>
                 </div>
             </div>
 
-            <!-- Detailed Written Feedback -->
+            <!-- 4. Detailed Written Feedback -->
             <div class="mb-4 pt-3 border-top">
                 <div class="d-flex align-items-center justify-content-between mb-2">
                     <label class="form-label fw-bold text-dark mb-0" for="reviewCommentTextarea">
-                        <i class="bi bi-pencil-square text-primary me-1"></i> Written Review &amp; Detailed Feedback <span class="text-danger">*</span>
+                        Written Testimonial &amp; Detailed Feedback <span class="text-danger">*</span>
                     </label>
                     <span class="gb-char-counter" id="charCounter">0 / 1000 characters (min. 20 required)</span>
                 </div>
@@ -390,7 +461,7 @@
                     class="form-control rounded-3 p-3 {% if form.comment.errors %}is-invalid{% endif %}"
                     rows="5"
                     maxlength="1000"
-                    placeholder="Describe your experience: What went well? How was the technical competence, milestone adherence, and responsiveness? Your honest feedback helps both the freelancer and future clients..."
+                    placeholder="Describe your collaboration: technical competence, delivery speed, milestones, and responsiveness. Your feedback helps both the specialist and future clients..."
                     required
                 >{{ form.comment.value|default:'' }}</textarea>
                 {% if form.comment.errors %}
@@ -399,19 +470,18 @@
                     </div>
                 {% endif %}
                 <small class="text-muted d-block mt-2" style="font-size: 0.74rem;">
-                    <i class="bi bi-lock me-1"></i> You can edit this review for up to 7 days after submission. After 7 days, the review will lock permanently.
+                    You can edit this review for up to 7 days after submission. After 7 days, the review locks permanently.
                 </small>
             </div>
 
-            <!-- Submit Button & Action Bar -->
+            <!-- 5. Submit Button & Action Bar -->
             <div class="d-flex align-items-center justify-content-between pt-3 border-top flex-wrap gap-2">
                 <a href="{% url 'client_contract_detail' contract.id %}" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold">
                     Cancel
                 </a>
-                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="submitReviewBtn">
+                <button type="submit" class="btn btn-primary rounded-pill px-5 py-2 fw-bold shadow-sm" id="submitReviewBtn" style="background: var(--rev-primary); border-color: var(--rev-primary);">
                     <span class="submit-spinner spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true"></span>
-                    <i class="bi bi-check2-circle me-1"></i>
-                    {% if is_edit %}Save Changes{% else %}Submit Verified Review{% endif %}
+                    {% if is_edit %}Save Changes{% else %}Submit Verified Review &rarr;{% endif %}
                 </button>
             </div>
         </form>
@@ -520,18 +590,16 @@ document.addEventListener('DOMContentLoaded', function () {
             let html = '';
             for (let i = 1; i <= 5; i++) {
                 if (avg >= i) {
-                    html += '<i class="bi bi-star-fill text-warning me-1"></i>';
-                } else if (avg >= (i - 0.5)) {
-                    html += '<i class="bi bi-star-half text-warning me-1"></i>';
+                    html += '★ ';
                 } else {
-                    html += '<i class="bi bi-star text-muted opacity-50 me-1"></i>';
+                    html += '☆ ';
                 }
             }
-            liveStars.innerHTML = html;
+            liveStars.textContent = html.trim();
         }
     }
 
-    // 3. Tag chips toggle
+    // 3. Tag chips toggle (No noisy icons)
     const tagsInput = document.getElementById('id_selected_tags');
     const chipContainer = document.getElementById('tagChipsContainer');
     const existingTags = (tagsInput.value || '').split(',').map(t => t.trim()).filter(Boolean);
@@ -580,7 +648,7 @@ document.addEventListener('DOMContentLoaded', function () {
             e.preventDefault();
             commentArea.classList.add('is-invalid');
             commentArea.focus();
-            alert('Please write at least 20 characters describing your experience with the freelancer.');
+            alert('Please write at least 20 characters describing your experience with the specialist.');
             return false;
         }
 

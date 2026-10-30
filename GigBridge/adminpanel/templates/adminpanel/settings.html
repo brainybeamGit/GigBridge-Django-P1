@@ -1,0 +1,139 @@
+{% extends 'adminpanel/base.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block title %}Currency & System Settings{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-4">
+    <!-- Breadcrumb & Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+        <div>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-1 small text-muted">
+                    <li class="breadcrumb-item"><a href="{% url 'adminpanel_dashboard' %}" class="text-decoration-none">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Currency &amp; Platform Settings</li>
+                </ol>
+            </nav>
+            <h1 class="h3 fw-bold text-dark mb-0">Currency &amp; Exchange Rate Settings</h1>
+        </div>
+        <div>
+            <form method="POST" class="d-inline">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="refresh">
+                <button type="submit" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm">
+                    <i class="bi bi-arrow-repeat me-1"></i> Refresh Live Market Rate
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Overview Cards -->
+    <div class="row g-4 mb-4">
+        <!-- Active Rate Card -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase">Active Exchange Rate</span>
+                    <span class="badge bg-success-subtle text-success rounded-pill px-2 py-1 small">Live In-App</span>
+                </div>
+                <div class="h2 fw-bold text-dark mb-1">
+                    1 USD = ₹{{ current_rate|floatformat:4 }} INR
+                </div>
+                <p class="text-muted small mb-0">
+                    Used for live conversion for non-Indian clients (US, UK, UAE, etc.).
+                </p>
+                <div class="mt-3 pt-3 border-top text-muted small d-flex justify-content-between">
+                    <span>Last Updated:</span>
+                    <span class="fw-semibold text-dark">{{ rate_obj.updated_at|date:"M d, Y H:i"|default:"Using Settings Fallback" }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Base Accounting Currency -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase">Base Accounting Currency</span>
+                    <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 small">Single Source of Truth</span>
+                </div>
+                <div class="h2 fw-bold text-primary mb-1">
+                    INR (₹ Indian Rupee)
+                </div>
+                <p class="text-muted small mb-0">
+                    All contracts, budgets, bids, and milestone deliverables remain stored in base INR.
+                </p>
+                <div class="mt-3 pt-3 border-top text-muted small d-flex justify-content-between">
+                    <span>Default Env Rate:</span>
+                    <span class="fw-semibold text-dark">1 USD = ₹{{ env_rate }} INR</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Razorpay Gateway Config -->
+        <div class="col-lg-4 col-md-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white h-100">
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <span class="text-muted small fw-bold text-uppercase">Payment Gateway Currency</span>
+                    <span class="badge bg-info-subtle text-info rounded-pill px-2 py-1 small">Razorpay</span>
+                </div>
+                <div class="h2 fw-bold text-dark mb-1">
+                    {{ payment_currency }}
+                </div>
+                <p class="text-muted small mb-0">
+                    {% if payment_currency == 'INR' %}
+                        Charges processed in INR paise. Non-Indian clients see USD conversion and clear checkout note.
+                    {% else %}
+                        International multi-currency enabled. Non-Indian clients charged in USD cents.
+                    {% endif %}
+                </p>
+                <div class="mt-3 pt-3 border-top text-muted small d-flex justify-content-between">
+                    <span>Mode:</span>
+                    <span class="fw-semibold text-dark font-monospace">{{ razorpay_key_id|slice:":8" }}...</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manual Rate Adjustment Card -->
+    <div class="row g-4 mb-4">
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold text-dark mb-2">Override Exchange Rate Manually</h5>
+                <p class="text-muted small mb-4">
+                    Set a fixed exchange rate if the external API is unreachable or you wish to peg a custom rate.
+                </p>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="set_manual">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-dark">Exchange Rate (1 USD = ₹ INR)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light fw-bold">₹</span>
+                            <input type="number" step="0.0001" min="1" name="manual_rate" class="form-control" value="{{ current_rate|floatformat:4 }}" required>
+                            <span class="input-group-text bg-light text-muted">INR</span>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-outline-primary rounded-pill px-4 fw-semibold">
+                        <i class="bi bi-check2-circle me-1"></i> Save Custom Rate
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-6">
+            <div class="card border-0 shadow-sm rounded-4 p-4 bg-white">
+                <h5 class="fw-bold text-dark mb-2">Contract Currency Lock Policy</h5>
+                <p class="text-muted small mb-3">
+                    GigBridge enforces a strict <strong>Contract Currency Lock</strong> guarantee:
+                </p>
+                <ul class="text-muted small ps-3 mb-0" style="line-height: 1.8;">
+                    <li>When a contract is created, the active exchange rate is permanently recorded on the contract record (<code>exchange_rate_used</code>).</li>
+                    <li>Milestone releases and client invoices always calculate from this locked rate, preventing currency fluctuation disputes.</li>
+                    <li>Both clients (in USD) and freelancers (in INR) see consistent numbers throughout the contract lifecycle.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

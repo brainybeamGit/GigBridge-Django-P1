@@ -1,0 +1,247 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load currency_tags %}
+
+{% block title %}Saved Projects | GigBridge{% endblock %}
+
+{% block content %}
+<section class="gb-pl-hero py-5">
+    <div class="container position-relative" style="z-index: 2;">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb mb-2 small text-white-50">
+                <li class="breadcrumb-item">
+                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                        <i class="bi bi-house-door me-1"></i> Home
+                    </a>
+                </li>
+                <li class="breadcrumb-item">
+                    <a href="{% url 'project_list' %}" class="text-white-50 text-decoration-none">
+                        Browse Projects
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-white" aria-current="page">Saved Projects</li>
+            </ol>
+        </nav>
+
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <div class="gb-pl-pill-badge">
+                    <i class="bi bi-bookmark-star-fill text-warning"></i> Personal Bookmarks
+                </div>
+                <h1 class="gb-pl-hero-title mb-1">Your Saved Projects</h1>
+                <p class="gb-pl-hero-subtitle mb-0">Quickly review and submit proposals to gigs you've marked for follow-up.</p>
+            </div>
+            <div>
+                <a href="{% url 'project_list' %}" class="btn gb-pl-btn-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Back to Browse Projects
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 gb-pl-main-section">
+    <div class="container">
+        <!-- Results Toolbar -->
+        <div class="gb-pl-results-toolbar mb-4">
+            <div class="d-flex align-items-center gap-2">
+                <span class="text-muted small">
+                    Showing <strong class="text-dark">{{ total_results }}</strong> saved project{{ total_results|pluralize }}
+                </span>
+            </div>
+        </div>
+
+        <div class="row g-4 projects-list-container" id="projectsContainer">
+            {% for project in page_obj %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="gb-pl-card" data-project-id="{{ project.id }}">
+                        <div class="gb-pl-card-body">
+                            <!-- Top meta row -->
+                            <div class="gb-pl-card-top">
+                                <span class="gb-pl-cat-pill">
+                                    <i class="bi {{ project.category.icon|default:'bi-briefcase' }}"></i>
+                                    {{ project.category.name|default:"General" }}
+                                </span>
+                                <div class="d-flex align-items-center gap-2">
+                                    {% if project.status == 'open' %}
+                                        <span class="gb-pl-status-pill gb-pl-status-open">
+                                            <span class="gb-pl-pulse-dot"></span> Open
+                                        </span>
+                                    {% elif project.status == 'in_progress' %}
+                                        <span class="gb-pl-status-pill gb-pl-status-progress">In Progress</span>
+                                    {% elif project.status == 'completed' %}
+                                        <span class="gb-pl-status-pill gb-pl-status-completed">Completed</span>
+                                    {% endif %}
+                                    <button type="button"
+                                            class="gb-pl-bookmark-btn is-bookmarked"
+                                            data-project-id="{{ project.id }}"
+                                            aria-label="Remove saved project"
+                                            title="Remove from saved"
+                                            onclick="toggleProjectBookmark(this, {{ project.id }})">
+                                        <i class="bi bi-bookmark-fill"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Title -->
+                            <h3 class="gb-pl-card-title">
+                                <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
+                            </h3>
+
+                            <!-- Client row -->
+                            <div class="gb-pl-client-row">
+                                <span class="gb-pl-client-avatar">
+                                    {{ project.client.first_name|default:project.client.username|slice:":1"|upper }}
+                                </span>
+                                <span class="gb-pl-client-name text-truncate">
+                                    {{ project.client.get_full_name|default:project.client.username }}
+                                </span>
+                                {% if project.client.profile and project.client.profile.is_approved %}
+                                    <i class="bi bi-patch-check-fill text-primary small" title="Verified Client"></i>
+                                {% endif %}
+                                <span class="gb-pl-meta-dot">&bull;</span>
+                                <span class="text-muted small text-nowrap">{{ project.created_at|timesince }} ago</span>
+                            </div>
+
+                            <!-- Description -->
+                            <p class="gb-pl-card-desc">
+                                {{ project.description }}
+                            </p>
+
+                            <!-- Skills -->
+                            <div class="gb-pl-skills-wrap">
+                                {% for skill in project.skills_list|slice:":4" %}
+                                    <span class="gb-pl-skill-chip">{{ skill }}</span>
+                                {% empty %}
+                                    <span class="gb-pl-skill-chip">Freelance</span>
+                                {% endfor %}
+                                {% if project.skills_list|length > 4 %}
+                                    <span class="gb-pl-skill-chip text-muted">+{{ project.skills_list|length|add:"-4" }} more</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="gb-pl-card-footer">
+                            <div class="gb-pl-budget-wrap">
+                                <div class="gb-pl-budget-value">
+                                    {% money_range project.budget_min project.budget_max request.user project.budget_type %}
+                                </div>
+                                <div class="gb-pl-meta-details">
+                                    <span>{{ project.get_budget_type_display }}</span>
+                                    <span>&bull;</span>
+                                    <span>{{ project.proposals_count }} proposal{{ project.proposals_count|pluralize }}</span>
+                                </div>
+                            </div>
+                            <a href="{% url 'project_detail' project.id %}" class="btn gb-pl-btn-bid">
+                                <span>View &amp; Bid</span>
+                                <i class="bi bi-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% empty %}
+                <div class="col-12">
+                    <div class="gb-pl-empty-state">
+                        <div class="gb-pl-empty-icon">
+                            <i class="bi bi-bookmark-heart"></i>
+                        </div>
+                        <h3 class="gb-pl-empty-title">No Saved Projects Yet</h3>
+                        <p class="gb-pl-empty-text">
+                            Bookmark interesting gigs as you browse to review them later, compare scopes, or prepare detailed proposals.
+                        </p>
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'project_list' %}" class="btn gb-pl-btn-primary">
+                                <i class="bi bi-search me-1"></i> Browse Open Projects
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if page_obj.has_other_pages %}
+            <nav class="mt-5" aria-label="Saved projects navigation">
+                <ul class="pagination justify-content-center gb-pl-pagination">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                        </li>
+                    {% endif %}
+                    {% for num in page_obj.paginator.page_range %}
+                        <li class="page-item {% if page_obj.number == num %}active{% endif %}">
+                            <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                        </li>
+                    {% endfor %}
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    async function toggleProjectBookmark(btn, projectId) {
+        const icon = btn.querySelector('i');
+        const isBookmarked = btn.classList.contains('is-bookmarked');
+
+        // Optimistic UI update
+        btn.classList.toggle('is-bookmarked');
+        if (icon) {
+            if (isBookmarked) {
+                icon.className = 'bi bi-bookmark';
+            } else {
+                icon.className = 'bi bi-bookmark-fill';
+            }
+        }
+
+        try {
+            const res = await fetch(`/projects/${projectId}/bookmark/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            if (res.status === 401) {
+                const data = await res.json();
+                window.location.href = data.login_url || '{% url "login" %}';
+                return;
+            }
+
+            const data = await res.json();
+            if (data.status === 'ok') {
+                if (data.bookmarked) {
+                    btn.classList.add('is-bookmarked');
+                    if (icon) icon.className = 'bi bi-bookmark-fill';
+                } else {
+                    btn.classList.remove('is-bookmarked');
+                    if (icon) icon.className = 'bi bi-bookmark';
+                    // If on saved projects page, smoothly remove the card
+                    const cardCol = btn.closest('.col-md-6, .col-lg-4');
+                    if (cardCol) {
+                        cardCol.style.transition = 'all 0.3s ease';
+                        cardCol.style.opacity = '0';
+                        cardCol.style.transform = 'scale(0.95)';
+                        setTimeout(() => cardCol.remove(), 300);
+                    }
+                }
+            }
+        } catch(err) {
+            // Revert on error
+            btn.classList.toggle('is-bookmarked');
+            if (icon) {
+                icon.className = isBookmarked ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
+            }
+        }
+    }
+</script>
+{% endblock %}

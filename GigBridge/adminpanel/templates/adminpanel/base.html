@@ -483,6 +483,13 @@
                 </span>
                 <span class="admin-nav-index">10</span>
             </a>
+            <a href="{% url 'adminpanel_settings' %}" class="admin-nav-item {% if active_tab == 'settings' or request.resolver_match.url_name == 'adminpanel_settings' %}active{% endif %}">
+                <span class="d-flex align-items-center gap-2">
+                    <i class="bi bi-currency-exchange text-success"></i>
+                    <span>Currency &amp; Rates</span>
+                </span>
+                <span class="admin-nav-index">11</span>
+            </a>
 
             <div class="mt-auto pt-3 border-top mx-3 mb-3">
                 <a href="{% url 'admin:index' %}" target="_blank" class="admin-nav-item px-2 py-2">

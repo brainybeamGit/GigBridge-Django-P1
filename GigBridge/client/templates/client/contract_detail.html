@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
 {% block dashboard_title %}Contract #{{ contract.id }}: {{ contract.project.title }}{% endblock %}
@@ -449,7 +450,7 @@
                 <div class="mb-3">
                     {% for tag in contract.review.tags_list %}
                         <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1 small">
-                            <i class="bi bi-tag-fill me-1"></i>{{ tag }}
+                            {{ tag }}
                         </span>
                     {% endfor %}
                 </div>
@@ -469,64 +470,38 @@
 {% endif %}
 
 <!-- =========================================================================
-     2. 25%, 50%, 25% AGREEMENT CONTRACT STRUCTURE CARD
+     2. DYNAMIC MILESTONE ESCROW CONTRACT STRUCTURE CARD
      ========================================================================= -->
 <div class="cd-card">
     <div class="cd-section-title">
-        <span>Agreed Contract Milestone Structure (25% &bull; 50% &bull; 25%)</span>
-        <span class="badge bg-light text-secondary border small">Escrow Agreement Terms</span>
+        <span>Agreed Contract Milestone Pipeline</span>
+        <span class="badge bg-light text-secondary border small">Sequential Escrow Release</span>
     </div>
 
     <p class="text-secondary small mb-3">
-        This contract is executed under the <strong>25% Advance Kickoff, 50% Progress Milestone, and 25% Final Delivery</strong> escrow model. Funds are safely held in escrow and released per verified deliverables.
+        This contract is executed under structured sequential milestones. Funds are securely held in escrow and disbursed sequentially upon your review and approval of deliverables.
     </p>
 
-    <!-- 3-Phase Stepper -->
-    <div class="cd-step-grid">
-        <!-- Phase 1: 25% Advance Kickoff -->
-        <div class="cd-step-box {% if contract.is_advance_paid %}step-completed{% else %}step-active{% endif %}">
-            <div class="cd-step-kicker">
-                <span style="color: {% if contract.is_advance_paid %}#166534{% else %}#0284C7{% endif %};">Phase 1 &bull; 25% Kickoff</span>
-                <span class="badge {% if contract.is_advance_paid %}bg-success-subtle text-success{% else %}bg-primary-subtle text-primary{% endif %} rounded-pill small">
-                    {% if contract.is_advance_paid %}Verified &amp; Paid{% else %}Action Required{% endif %}
-                </span>
+    <!-- Dynamic Milestones Stepper -->
+    <div class="cd-step-grid" style="grid-template-columns: repeat({{ milestones|length|default:3 }}, 1fr);">
+        {% for ms in milestones %}
+            <div class="cd-step-box {% if ms.status == 'paid' %}step-completed{% elif ms.is_active %}step-active{% endif %}">
+                <div class="cd-step-kicker">
+                    <span style="color: {% if ms.status == 'paid' %}#166534{% elif ms.is_active %}#0284C7{% else %}#64748B{% endif %};">
+                        Phase {{ ms.order }} &bull; {{ ms.get_milestone_type_display }}
+                    </span>
+                    <span class="badge {% if ms.status == 'paid' %}bg-success-subtle text-success{% elif ms.is_active %}bg-primary-subtle text-primary{% else %}bg-light text-muted{% endif %} rounded-pill small">
+                        {% if ms.status == 'paid' %}Verified &amp; Paid{% elif ms.is_active %}{{ ms.get_status_display }}{% else %}Locked{% endif %}
+                    </span>
+                </div>
+                <div class="cd-step-title">{{ ms.title }}</div>
+                <div class="cd-step-amount">{% contract_money contract ms.amount %}</div>
+                <p class="cd-step-desc">
+                    {% if ms.due_date %}Target Date: {{ ms.due_date|date:"M d, Y" }}{% else %}Flexible delivery timeline{% endif %}
+                    {% if ms.description %}&bull; {{ ms.description|truncatechars:70 }}{% endif %}
+                </p>
             </div>
-            <div class="cd-step-title">Advance Initiation</div>
-            <div class="cd-step-amount">&#8377;{{ contract.advance_amount|floatformat:2 }}</div>
-            <p class="cd-step-desc">
-                25% initial escrow deposit to authorize the freelancer to begin architecture, database modeling, and setup.
-            </p>
-        </div>
-
-        <!-- Phase 2: 50% Progress Milestone -->
-        <div class="cd-step-box {% if contract.progress_percentage >= 50 %}step-completed{% elif contract.is_advance_paid %}step-active{% endif %}">
-            <div class="cd-step-kicker">
-                <span style="color: {% if contract.progress_percentage >= 50 %}#166534{% else %}#0284C7{% endif %};">Phase 2 &bull; 50% Development</span>
-                <span class="badge {% if contract.progress_percentage >= 50 %}bg-success-subtle text-success{% elif contract.is_advance_paid %}bg-info-subtle text-info{% else %}bg-light text-muted{% endif %} rounded-pill small">
-                    {% if contract.progress_percentage >= 50 %}Completed{% elif contract.is_advance_paid %}In Progress{% else %}Locked{% endif %}
-                </span>
-            </div>
-            <div class="cd-step-title">Core Implementation</div>
-            <div class="cd-step-amount">&#8377;{% widthratio contract.total_amount 1 0.5 as fifty_pct %}{{ fifty_pct|default:"9.00" }}</div>
-            <p class="cd-step-desc">
-                50% mid-project milestone for complete API routes, database schema, functional logic, and initial test demo.
-            </p>
-        </div>
-
-        <!-- Phase 3: 25% Final Completion -->
-        <div class="cd-step-box {% if contract.status == 'completed' %}step-completed{% endif %}">
-            <div class="cd-step-kicker">
-                <span style="color: {% if contract.status == 'completed' %}#166534{% else %}#64748B{% endif %};">Phase 3 &bull; 25% Completion</span>
-                <span class="badge {% if contract.status == 'completed' %}bg-success-subtle text-success{% else %}bg-light text-muted{% endif %} rounded-pill small">
-                    {% if contract.status == 'completed' %}Verified &amp; Released{% else %}Final Handover{% endif %}
-                </span>
-            </div>
-            <div class="cd-step-title">Final Delivery &amp; Source Code</div>
-            <div class="cd-step-amount">&#8377;{{ contract.final_amount|floatformat:2 }}</div>
-            <p class="cd-step-desc">
-                25% final balance released after full review of documentation, postman collection, bugfixes, and code repository handover.
-            </p>
-        </div>
+        {% endfor %}
     </div>
 
     <!-- Financial & Progress Overview Grid -->
@@ -534,13 +509,13 @@
         <div class="col-sm-6 col-md-3">
             <div class="cd-metric-card text-center">
                 <small class="text-muted fw-bold d-block mb-1">TOTAL PROJECT BUDGET</small>
-                <div class="fw-bold fs-4 text-dark">&#8377;{{ contract.total_amount|floatformat:2 }}</div>
+                <div class="fw-bold fs-4 text-dark">{% contract_money contract contract.total_amount %}</div>
             </div>
         </div>
         <div class="col-sm-6 col-md-3">
             <div class="cd-metric-card text-center">
                 <small class="text-muted fw-bold d-block mb-1">PAID TO DATE</small>
-                <div class="fw-bold fs-4 text-success">&#8377;{{ contract.paid_amount|floatformat:2 }}</div>
+                <div class="fw-bold fs-4 text-success">{% contract_money contract contract.paid_amount %}</div>
             </div>
         </div>
         <div class="col-sm-6 col-md-3">
@@ -636,30 +611,20 @@
                             <span class="badge {% if ms.status == 'paid' %}bg-success{% elif ms.status == 'approved' %}bg-primary{% elif ms.status == 'submitted' %}bg-warning text-dark{% elif ms.status == 'revision_requested' %}bg-danger text-white{% elif ms.status == 'in_progress' %}bg-info text-white{% else %}bg-secondary{% endif %} px-3 py-1 rounded-pill small">
                                 {{ ms.get_status_display }}
                             </span>
-                            {% if ms.milestone_type == 'advance' %}
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">
-                                    Phase 1: 25% Advance Kickoff
-                                </span>
-                            {% elif ms.milestone_type == 'regular' %}
-                                <span class="badge bg-info-subtle text-info border border-info-subtle rounded-pill small">
-                                    Phase 2: 50% Development Progress
-                                </span>
-                            {% elif ms.milestone_type == 'final' %}
-                                <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">
-                                    Phase 3: 25% Final Completion
-                                </span>
-                            {% endif %}
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">
+                                Phase {{ ms.order }}: {{ ms.get_milestone_type_display }}
+                            </span>
                         </div>
 
-                        <h5 class="fw-bold text-navy mb-1">{{ ms.title }}</h5>
+                        <h5 class="fw-bold text-navy mb-1">Phase {{ ms.order }}: {{ ms.title }}</h5>
                         {% if ms.due_date %}
                             <small class="text-muted d-block">Target Due Date: {{ ms.due_date|date:"M d, Y" }}</small>
                         {% endif %}
                     </div>
 
                     <div class="text-end">
-                        <span class="fw-bold text-navy fs-4">&#8377;{{ ms.amount|floatformat:2 }}</span>
-                        <small class="text-muted d-block">INR Escrow</small>
+                        <span class="fw-bold text-navy fs-4">{% contract_money contract ms.amount %}</span>
+                        <small class="text-muted d-block">{{ contract.contract_currency|default:"INR" }} Escrow</small>
                     </div>
                 </div>
 
@@ -708,48 +673,51 @@
 
                 <!-- Action Controls for Milestone -->
                 <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top flex-wrap">
-                    <!-- Case 1: Advance payment pending -->
-                    {% if ms.milestone_type == 'advance' and ms.status == 'pending' %}
-                        <button type="button" class="btn-cd-primary" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
-                            Pay 25% Advance (&#8377;{{ ms.amount|floatformat:2 }}) &rarr;
-                        </button>
+                    <!-- Case 1: Milestone Paid -->
+                    {% if ms.status == 'paid' %}
+                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 small fw-bold">
+                            <i class="bi bi-check-circle-fill me-1"></i> Payment Verified &amp; Released
+                        </span>
 
-                    <!-- Case 2: Work Submitted for Review -->
-                    {% elif ms.status == 'submitted' %}
+                    <!-- Case 2: Work Submitted for Review (can_approve) -->
+                    {% elif ms.can_approve %}
                         <button type="button" class="btn-cd-warning" data-bs-toggle="modal" data-bs-target="#revisionModal{{ ms.id }}">
-                            Request Revision
+                            <i class="bi bi-arrow-repeat me-1"></i> Request Revision
                         </button>
-                        <form method="POST" action="{% url 'client_milestone_approve' ms.id %}">
+                        <form method="POST" action="{% url 'client_contract_milestone_approve' contract.id ms.id %}" class="d-inline">
                             {% csrf_token %}
-                            <button type="submit" class="btn-cd-success" onclick="return confirm('Approve these deliverables? You will then be able to release the escrow payment.');">
-                                Approve Deliverables &rarr;
+                            <button type="submit" class="btn-cd-success" onclick="return confirm('Approve Phase {{ ms.order }} deliverables? You will then be able to release the escrow payment.');">
+                                <i class="bi bi-check2-circle me-1"></i> Approve Deliverables &rarr;
                             </button>
                         </form>
 
-                    <!-- Case 3: Approved Deliverable, ready for release payment -->
-                    {% elif ms.status == 'approved' %}
-                        <button type="button" class="btn-cd-success" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
-                            Release Escrow Payment (&#8377;{{ ms.amount|floatformat:2 }}) &rarr;
+                    <!-- Case 3: Ready for Escrow Payment (can_pay: either Advance or Approved Milestone) -->
+                    {% elif ms.can_pay %}
+                        <button type="button" class="btn-cd-primary" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
+                            {% if ms.milestone_type == 'advance' %}Pay Advance Initiation ({% contract_money contract ms.amount %}) &rarr;{% else %}Release Escrow Payment ({% contract_money contract ms.amount %}) &rarr;{% endif %}
                         </button>
 
-                    <!-- Case 4: Milestone Paid -->
-                    {% elif ms.status == 'paid' %}
-                        <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 small fw-bold">
-                            Payment Verified &amp; Released
-                        </span>
-
-                    <!-- Case 5: Waiting for Freelancer Submission -->
-                    {% elif not contract.is_advance_paid and ms.milestone_type != 'advance' %}
-                        <span class="text-muted small">
-                            Locked: Release Phase 1 Advance Payment to authorize work initiation.
-                        </span>
+                    <!-- Case 4: Revision Requested -->
                     {% elif ms.status == 'revision_requested' %}
                         <span class="text-warning fw-semibold small">
-                            Awaiting revised submission from freelancer...
+                            <i class="bi bi-arrow-repeat me-1"></i> Awaiting revised deliverables from freelancer...
                         </span>
+
+                    <!-- Case 5: In Progress -->
+                    {% elif ms.status == 'in_progress' %}
+                        <span class="text-primary small">
+                            <i class="bi bi-hourglass-split me-1"></i> Freelancer is currently developing Phase {{ ms.order }} deliverables...
+                        </span>
+
+                    <!-- Case 6: Locked -->
+                    {% elif ms.is_locked %}
+                        <span class="text-muted small">
+                            <i class="bi bi-lock-fill me-1"></i> Locked: Complete and settle Phase {{ ms.order|add:"-1" }} first.
+                        </span>
+
                     {% else %}
                         <span class="text-muted small">
-                            Freelancer is currently developing project deliverables...
+                            Pending initiation
                         </span>
                     {% endif %}
                 </div>
@@ -760,10 +728,10 @@
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                         <div class="modal-header bg-navy text-white p-4">
-                            <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for {{ ms.title }}</h5>
+                            <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for Phase {{ ms.order }}: {{ ms.title }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <form method="POST" action="{% url 'client_milestone_revision' ms.id %}">
+                        <form method="POST" action="{% url 'client_contract_milestone_revision' contract.id ms.id %}">
                             {% csrf_token %}
                             <div class="modal-body p-4">
                                 <label class="form-label small fw-bold text-navy mb-2">What adjustments or fixes are required?</label>

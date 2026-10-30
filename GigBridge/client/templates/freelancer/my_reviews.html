@@ -8,123 +8,257 @@
 {% block dashboard_content %}
 <style>
     /* ==========================================================================
-       Freelancer Reviews & Reputation Management
+       EDITORIAL LUXURY LIGHT BLUE - FREELANCER REPUTATION & REVIEWS
+       Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
        ========================================================================== */
+    :root {
+        --cd-primary: #0284C7;
+        --cd-primary-dark: #0369A1;
+        --cd-navy: #0F172A;
+        --cd-sky-50: #F0F9FF;
+        --cd-sky-100: #E0F2FE;
+        --cd-sky-200: #BAE6FD;
+        --cd-slate-500: #64748B;
+        --cd-slate-700: #334155;
+        --cd-border: #E2E8F0;
+        --cd-radius: 18px;
+    }
+
+    /* ── 1. LUMINOUS HERO BANNER ── */
+    .fr-hero {
+        background:
+            radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
+            radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
+            linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
+        border: 1px solid #BAE6FD;
+        border-radius: var(--cd-radius);
+        padding: 28px 32px;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+    }
+
+    .fr-hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: #FFFFFF;
+        color: var(--cd-primary-dark);
+        border: 1px solid #BAE6FD;
+        border-radius: 999px;
+        padding: 5px 14px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+    }
+
+    .fr-hero-badge .pulse-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--cd-primary);
+        box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25);
+    }
+
+    .fr-hero-title {
+        font-size: 1.75rem;
+        font-weight: 800;
+        letter-spacing: -0.025em;
+        color: var(--cd-navy);
+        margin-bottom: 6px;
+        line-height: 1.25;
+    }
+
+    .fr-hero-sub {
+        font-size: 0.92rem;
+        color: var(--cd-slate-700);
+        max-width: 680px;
+        line-height: 1.5;
+        margin-bottom: 0;
+    }
+
+    /* ── 2. NUMBERED METRIC CARDS (ZERO NOISY ICONS) ── */
     .fr-stat-card {
         background: #FFFFFF;
         border: 1.5px solid #E2E8F0;
-        border-radius: 16px;
+        border-radius: 14px;
         padding: 20px 22px;
-        text-align: center;
         height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
         box-shadow: 0 2px 8px rgba(15, 23, 42, 0.03);
-        transition: transform 0.2s ease, border-color 0.2s ease;
+        transition: all 0.2s ease;
+        position: relative;
+        overflow: hidden;
     }
     .fr-stat-card:hover {
         transform: translateY(-2px);
         border-color: #BAE6FD;
         box-shadow: 0 6px 18px rgba(2, 132, 199, 0.08);
     }
-    .fr-stat-num {
-        font-size: 2rem;
+    .fr-stat-index {
+        font-size: 0.72rem;
         font-weight: 800;
+        letter-spacing: 0.08em;
+        color: #94A3B8;
+        text-transform: uppercase;
+        margin-bottom: 6px;
+    }
+    .fr-stat-num {
+        font-size: 2.1rem;
+        font-weight: 900;
         line-height: 1;
+        letter-spacing: -0.03em;
+        color: var(--cd-navy);
         margin-bottom: 4px;
     }
     .fr-stat-label {
-        font-size: 0.74rem;
+        font-size: 0.84rem;
         font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-        color: #64748B;
+        color: var(--cd-navy);
+        margin-bottom: 2px;
+    }
+    .fr-stat-sub {
+        font-size: 0.74rem;
+        color: var(--cd-slate-500);
+    }
+
+    /* ── 3. REVIEWS LIST & CARDS ── */
+    .fr-card-panel {
+        background: #FFFFFF;
+        border: 1px solid var(--cd-border);
+        border-radius: 18px;
+        padding: 26px 30px;
+        margin-bottom: 24px;
+        box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.04);
     }
 
     .fr-review-card {
-        background: #FFFFFF;
+        background: #F8FAFC;
         border: 1.5px solid #E2E8F0;
-        border-radius: 16px;
-        padding: 24px;
+        border-radius: 14px;
+        padding: 22px 24px;
         margin-bottom: 18px;
-        box-shadow: 0 2px 10px rgba(15, 23, 42, 0.03);
-        transition: border-color 0.2s ease;
+        transition: all 0.2s ease;
     }
     .fr-review-card:hover {
+        background: #FFFFFF;
         border-color: #BAE6FD;
+        box-shadow: 0 4px 16px rgba(2, 132, 199, 0.06);
     }
 
     .fr-reply-box {
-        background: #F8FAFC;
-        border-left: 4px solid #0284C7;
-        border-radius: 0 12px 12px 0;
-        padding: 16px 20px;
+        background: #F0F9FF;
+        border: 1px solid #BAE6FD;
+        border-left: 4px solid var(--cd-primary);
+        border-radius: 10px;
+        padding: 16px 18px;
         margin-top: 14px;
     }
 
+    /* Clean text pills for tags */
+    .fr-tag-pill {
+        display: inline-block;
+        background: #FFFFFF;
+        color: #334155;
+        border: 1px solid #CBD5E1;
+        border-radius: 999px;
+        padding: 4px 12px;
+        font-size: 0.74rem;
+        font-weight: 600;
+        margin-right: 6px;
+        margin-bottom: 4px;
+    }
+
     .fr-progress-track {
-        height: 6px;
+        height: 7px;
         border-radius: 999px;
         background: #E2E8F0;
         overflow: hidden;
-        margin-top: 4px;
+        margin-top: 5px;
     }
     .fr-progress-fill {
         height: 100%;
         border-radius: 999px;
-        background: #0284C7;
+        background: linear-gradient(90deg, #0284C7, #38BDF8);
     }
 </style>
 
-<div class="mb-4">
-    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+<!-- 1. Luminous Hero Banner -->
+<div class="fr-hero">
+    <div class="fr-hero-badge">
+        <span class="pulse-dot"></span>
+        <span>VERIFIED SPECIALIST REPUTATION &bull; WORKPLACE AUDIT</span>
+    </div>
+    <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
-            <h4 class="fw-bold text-navy mb-1">Your Reputation &amp; Client Feedback</h4>
-            <p class="text-secondary small mb-0">
-                Track how clients evaluate your work across milestones. Transparent reviews help attract top enterprise clients.
+            <h1 class="fr-hero-title">Your Reputation &amp; Client Feedback</h1>
+            <p class="fr-hero-sub">
+                Track how clients evaluate your work across milestones. Transparent verified reviews build credibility and attract premium engagements.
             </p>
         </div>
-        <a href="{% url 'freelancer_public_profile' user.id %}" target="_blank" class="btn btn-outline-primary btn-sm rounded-pill px-3 fw-semibold">
-            <i class="bi bi-box-arrow-up-right me-1"></i> View Public Profile
-        </a>
+        <div>
+            <a href="{% url 'freelancer_public_profile' user.id %}" target="_blank" class="btn btn-outline-secondary bg-white fw-bold px-3 py-2 rounded-3 border shadow-sm">
+                View Public Profile &rarr;
+            </a>
+        </div>
     </div>
 </div>
 
-<!-- 1. Reputation Overview Metrics Row -->
+<!-- 2. Four Editorial Metric Cards (Icon-Free) -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-3 col-md-6 col-6">
+    <div class="col-xl-3 col-sm-6">
         <div class="fr-stat-card">
-            <div class="fr-stat-num text-warning">
-                {% if profile.total_reviews > 0 %}
-                    {{ profile.average_rating }} <span class="fs-6 text-muted">★</span>
-                {% else %}
-                    <span class="fs-4 text-muted">--</span>
-                {% endif %}
+            <div class="fr-stat-index">01 / Overall Score</div>
+            <div>
+                <div class="fr-stat-num" style="color: #0284C7;">
+                    {% if profile.total_reviews > 0 %}
+                        {{ profile.average_rating }} <span class="fs-6 text-muted">★</span>
+                    {% else %}
+                        <span class="fs-4 text-muted">--</span>
+                    {% endif %}
+                </div>
+                <div class="fr-stat-label">Community Rating</div>
+                <div class="fr-stat-sub">{{ profile.total_reviews }} Verified Review{{ profile.total_reviews|pluralize }}</div>
             </div>
-            <div class="fr-stat-label">Overall Rating</div>
-            <small class="text-muted" style="font-size: 0.72rem;">{{ profile.total_reviews }} Verified Review{{ profile.total_reviews|pluralize }}</small>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 col-6">
+    <div class="col-xl-3 col-sm-6">
         <div class="fr-stat-card">
-            <div class="fr-stat-num text-success">{{ profile.recommend_percentage }}%</div>
-            <div class="fr-stat-label">Client Recommendation</div>
-            <small class="text-muted" style="font-size: 0.72rem;">Satisfaction Rate</small>
+            <div class="fr-stat-index">02 / Recommendation</div>
+            <div>
+                <div class="fr-stat-num" style="color: #059669;">{{ profile.recommend_percentage }}%</div>
+                <div class="fr-stat-label">Client Recommendation</div>
+                <div class="fr-stat-sub">Satisfaction approval rate</div>
+            </div>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 col-6">
+    <div class="col-xl-3 col-sm-6">
         <div class="fr-stat-card">
-            <div class="fr-stat-num text-info">{{ profile.on_time_delivery_rate }}%</div>
-            <div class="fr-stat-label">On-Time Delivery</div>
-            <small class="text-muted" style="font-size: 0.72rem;">Deadlines Met</small>
+            <div class="fr-stat-index">03 / Timeliness</div>
+            <div>
+                <div class="fr-stat-num" style="color: #0284C7;">{{ profile.on_time_delivery_rate }}%</div>
+                <div class="fr-stat-label">On-Time Delivery</div>
+                <div class="fr-stat-sub">Milestone deadlines honored</div>
+            </div>
         </div>
     </div>
 
-    <div class="col-xl-3 col-md-6 col-6">
+    <div class="col-xl-3 col-sm-6">
         <div class="fr-stat-card">
-            <div class="fr-stat-num text-primary">{{ profile.repeat_clients_count }}</div>
-            <div class="fr-stat-label">Repeat Clients</div>
-            <small class="text-muted" style="font-size: 0.72rem;">Multiple Contracts</small>
+            <div class="fr-stat-index">04 / Retention</div>
+            <div>
+                <div class="fr-stat-num" style="color: #0F172A;">{{ profile.repeat_clients_count }}</div>
+                <div class="fr-stat-label">Repeat Clients</div>
+                <div class="fr-stat-sub">Multi-project partnerships</div>
+            </div>
         </div>
     </div>
 </div>
@@ -132,17 +266,17 @@
 <div class="row g-4">
     <!-- Left Column: Reviews Stream with Reply Option -->
     <div class="col-lg-8">
-        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
-            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
-                <h5 class="fw-bold text-navy mb-0">
-                    <i class="bi bi-chat-heart-fill text-danger me-2"></i> Client Reviews Received
-                </h5>
+        <div class="fr-card-panel">
+            <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4 pb-2 border-bottom">
+                <div>
+                    <h5 class="fw-bold text-dark mb-0">Client Reviews Received</h5>
+                    <small class="text-muted">Total: {{ total_reviews }} verified evaluation{{ total_reviews|pluralize }}</small>
+                </div>
 
                 <!-- Sort Filter -->
                 <div class="dropdown">
-                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-pill px-3 fw-semibold" type="button" data-bs-toggle="dropdown">
-                        <i class="bi bi-sort-down me-1"></i>
-                        {% if sort == 'highest' %}Highest Rating{% elif sort == 'lowest' %}Lowest Rating{% else %}Newest First{% endif %}
+                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle rounded-3 px-3 fw-semibold" type="button" data-bs-toggle="dropdown">
+                        Sort: {% if sort == 'highest' %}Highest Rating{% elif sort == 'lowest' %}Lowest Rating{% else %}Newest First{% endif %}
                     </button>
                     <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                         <li><a class="dropdown-item {% if sort == 'newest' or not sort %}active{% endif %}" href="?sort=newest">Newest First</a></li>
@@ -157,25 +291,24 @@
                     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-2">
                         <div class="d-flex align-items-center gap-2">
                             <span class="fw-bold text-dark fs-6">{{ r.reviewer|reviewer_display_name }}</span>
-                            <span class="badge bg-light text-muted border small">Verified Client</span>
+                            <span class="badge bg-white text-muted border small">Verified Employer</span>
                             {% if r.would_recommend %}
                                 <span class="badge bg-success-subtle text-success small rounded-pill">
-                                    <i class="bi bi-hand-thumbs-up-fill me-1"></i> Recommended
+                                    Recommended
                                 </span>
                             {% endif %}
                         </div>
                         <small class="text-muted">{{ r.created_at|date:"M d, Y" }}</small>
                     </div>
 
-                    <!-- Stars & Category Pills -->
+                    <!-- Clean Score & Category Pills -->
                     <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-                        <div>{% render_stars r.overall_rating %}</div>
-                        <span class="fw-bold text-dark small">{{ r.overall_rating }} / 5.0</span>
+                        <span class="badge bg-warning text-dark fw-bold px-2 py-1 small">{{ r.overall_rating }} ★</span>
                         <div class="vr mx-1 d-none d-sm-block"></div>
-                        <span class="badge bg-light text-secondary border small">Quality: {{ r.quality_of_work }}★</span>
-                        <span class="badge bg-light text-secondary border small">Comm: {{ r.communication }}★</span>
-                        <span class="badge bg-light text-secondary border small">Deadline: {{ r.deadline_adherence }}★</span>
-                        <span class="badge bg-light text-secondary border small">Prof: {{ r.professionalism }}★</span>
+                        <span class="badge bg-white text-secondary border small">Quality: {{ r.quality_of_work }}★</span>
+                        <span class="badge bg-white text-secondary border small">Comm: {{ r.communication }}★</span>
+                        <span class="badge bg-white text-secondary border small">Deadline: {{ r.deadline_adherence }}★</span>
+                        <span class="badge bg-white text-secondary border small">Prof: {{ r.professionalism }}★</span>
                     </div>
 
                     <small class="text-muted d-block mb-2" style="font-size: 0.76rem;">
@@ -183,17 +316,15 @@
                     </small>
 
                     <!-- Client Comment -->
-                    <p class="text-secondary small mb-2 lh-base">
-                        "{{ r.comment }}"
+                    <p class="text-secondary small mb-3 lh-base" style="font-style: italic;">
+                        &ldquo;{{ r.comment }}&rdquo;
                     </p>
 
-                    <!-- Tags -->
+                    <!-- Clean Text Tags (No Icon Clutter) -->
                     {% if r.tags_list %}
                         <div class="mb-3">
                             {% for tag in r.tags_list %}
-                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1 small">
-                                    <i class="bi bi-tag-fill me-1"></i>{{ tag }}
-                                </span>
+                                <span class="fr-tag-pill">{{ tag }}</span>
                             {% endfor %}
                         </div>
                     {% endif %}
@@ -203,18 +334,16 @@
                         <!-- Already Replied -->
                         <div class="fr-reply-box">
                             <div class="d-flex align-items-center justify-content-between mb-1">
-                                <span class="small fw-bold text-primary">
-                                    <i class="bi bi-reply-fill me-1"></i> Your Public Response
-                                </span>
+                                <span class="small fw-bold text-primary">Your Public Response</span>
                                 <small class="text-muted" style="font-size: 0.72rem;">{{ r.replied_at|date:"M d, Y" }}</small>
                             </div>
-                            <p class="mb-0 text-dark small fst-italic">"{{ r.freelancer_reply }}"</p>
+                            <p class="mb-0 text-dark small">&ldquo;{{ r.freelancer_reply }}&rdquo;</p>
                         </div>
                     {% else %}
-                        <!-- Not Yet Replied: Show Reply Button & Modal Trigger -->
+                        <!-- Not Yet Replied: Show Reply Button -->
                         <div class="pt-2 border-top d-flex justify-content-end">
-                            <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#replyModal{{ r.id }}">
-                                <i class="bi bi-reply me-1"></i> Post Public Reply
+                            <button type="button" class="btn btn-sm btn-outline-primary rounded-3 px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#replyModal{{ r.id }}">
+                                Post Public Reply &rarr;
                             </button>
                         </div>
 
@@ -234,7 +363,7 @@
                                         <div class="modal-body p-4">
                                             <div class="p-3 bg-light rounded-3 mb-3 small text-secondary">
                                                 <strong class="text-dark d-block mb-1">Client Feedback:</strong>
-                                                "{{ r.comment }}"
+                                                &ldquo;{{ r.comment }}&rdquo;
                                             </div>
                                             <label class="form-label small fw-bold text-navy mb-1" for="replyTextarea{{ r.id }}">
                                                 Your Public Response <span class="text-danger">*</span>
@@ -246,19 +375,19 @@
                                                 rows="4"
                                                 minlength="5"
                                                 maxlength="500"
-                                                placeholder="Thank the client for the opportunity and highlight key deliverables accomplished together..."
+                                                placeholder="Thank the client for the collaboration and summarize the deliverables achieved..."
                                                 required
                                             ></textarea>
                                             <div class="d-flex justify-content-between align-items-center mt-2">
                                                 <small class="text-muted" style="font-size: 0.72rem;">
-                                                    <i class="bi bi-info-circle me-1"></i> Responses cannot be edited once published.
+                                                    Responses cannot be edited once published.
                                                 </small>
                                                 <small class="text-muted reply-counter" id="counter{{ r.id }}">0 / 500</small>
                                             </div>
                                         </div>
                                         <div class="modal-footer border-0 p-3 bg-light">
-                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-pill" data-bs-dismiss="modal">Cancel</button>
-                                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-pill">Publish Response</button>
+                                            <button type="button" class="btn btn-outline-secondary btn-sm px-3 rounded-3" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary btn-sm fw-bold px-4 rounded-3" style="background: var(--cd-primary); border-color: var(--cd-primary);">Publish Response &rarr;</button>
                                         </div>
                                     </form>
                                 </div>
@@ -268,15 +397,14 @@
                 </div>
             {% empty %}
                 <div class="text-center py-5">
-                    <div class="display-6 text-muted mb-2"><i class="bi bi-star"></i></div>
-                    <h6 class="fw-bold text-dark">No client reviews yet</h6>
-                    <p class="text-muted small mb-0">When clients approve and finalize your contracts, their reviews will appear here.</p>
+                    <h6 class="fw-bold text-dark mb-1">No client reviews yet</h6>
+                    <p class="text-muted small mb-0">When clients approve and finalize your contracts, their verified reviews will appear here.</p>
                 </div>
             {% endfor %}
 
             <!-- Pagination -->
             {% if page_obj.has_other_pages %}
-                <nav class="d-flex justify-content-center mt-3">
+                <nav class="d-flex justify-content-center mt-4">
                     <ul class="pagination pagination-sm mb-0">
                         {% if page_obj.has_previous %}
                             <li class="page-item">
@@ -297,11 +425,9 @@
 
     <!-- Right Column: Rating Distribution & Dimension Scores -->
     <div class="col-lg-4">
-        <!-- Dimension Score Card -->
-        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
-            <h6 class="fw-bold text-navy mb-3">
-                <i class="bi bi-speedometer2 text-primary me-2"></i> Category Performance
-            </h6>
+        <!-- Dimension Score Card (Clean, Icon-Free) -->
+        <div class="fr-card-panel p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3">Dimension Performance</h6>
 
             <div class="mb-3">
                 <div class="d-flex justify-content-between small">
@@ -345,10 +471,8 @@
         </div>
 
         <!-- Star Distribution Card -->
-        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white mb-4">
-            <h6 class="fw-bold text-navy mb-3">
-                <i class="bi bi-bar-chart-fill text-warning me-2"></i> Star Distribution
-            </h6>
+        <div class="fr-card-panel p-4 mb-4">
+            <h6 class="fw-bold text-dark mb-3">Star Distribution</h6>
 
             {% for b in rating_breakdown %}
                 <div class="d-flex align-items-center gap-2 mb-2 font-monospace small">
@@ -362,12 +486,10 @@
         </div>
 
         <!-- Reputation Tips Card -->
-        <div class="card border-0 rounded-4 shadow-sm p-4 bg-white">
-            <h6 class="fw-bold text-navy mb-2">
-                <i class="bi bi-lightbulb-fill text-warning me-2"></i> Pro Reputation Tip
-            </h6>
-            <p class="small text-secondary mb-0">
-                Responding professionally to client reviews demonstrates reliability and proactive communication. Future clients read both the review and your response when deciding whom to hire.
+        <div class="fr-card-panel p-4">
+            <h6 class="fw-bold text-dark mb-2">Pro Reputation Insight</h6>
+            <p class="small text-secondary mb-0" style="line-height: 1.55;">
+                Responding professionally to reviews demonstrates dependability and transparent communication. Prospective clients review both testimonials and responses prior to hiring.
             </p>
         </div>
     </div>

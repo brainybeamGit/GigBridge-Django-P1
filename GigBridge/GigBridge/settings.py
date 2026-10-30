@@ -60,6 +60,7 @@ TEMPLATES = [
                 'django.contrib.messages.context_processors.messages',
                 'adminpanel.context_processors.admin_messages_badge',
                 'client.context_processors.unread_messages_count',
+                'client.context_processors.currency_context',
             ],
         },
     },
@@ -147,3 +148,7 @@ RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_TLXBjvTqPaTWJ1')
 RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '45nuecN4Qb0jbhowIKS8lEZN')
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
+
+# Currency and Exchange Rate Configuration
+USD_INR_RATE = float(os.getenv('USD_INR_RATE', '83.0'))
+PAYMENT_CURRENCY = os.getenv('PAYMENT_CURRENCY', 'INR')  # Razorpay charge currency (INR default)

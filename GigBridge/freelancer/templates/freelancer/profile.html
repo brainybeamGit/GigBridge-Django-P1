@@ -5,6 +5,12 @@
 {% block dashboard_title %}Freelancer Profile &amp; Settings{% endblock %}
 
 {% block dashboard_content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+<style>
+    .iti { width: 100% !important; display: block !important; }
+    .iti__country-list { z-index: 9999 !important; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.12); max-height: 220px; font-size: 0.88rem; }
+    .iti--separate-dial-code .iti__selected-flag { background-color: #F8FAFC; border-right: 1px solid #E2E8F0; border-radius: 8px 0 0 8px; }
+</style>
 <style>
     /* ═══════════════════════════════════════════════════════════════════
        EDITORIAL LUXURY LIGHT BLUE THEME - FREELANCER PROFILE
@@ -356,10 +362,13 @@
                         {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
                     </div>
                     <div class="col-sm-6">
-                        <label class="form-label small fw-bold text-dark mb-1" for="id_phone">
+                        <label class="form-label small fw-bold text-dark mb-1" for="id_profile_phone">
                             Phone Number
                         </label>
                         {{ form.phone }}
+                        <div id="flPhoneNotice" class="text-muted mt-1" style="font-size: 0.72rem;">
+                            <i class="bi bi-globe2 me-1 text-primary"></i> <span id="flPhoneNoticeText">India (+91) &bull; Prices in INR (₹)</span>
+                        </div>
                         {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
                     </div>
                 </div>
@@ -563,4 +572,63 @@
         </div>
     </div>
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const phoneEl = document.getElementById('id_profile_phone');
+        const countryEl = document.getElementById('id_profile_country');
+        const dialCodeEl = document.getElementById('id_profile_phone_country_code');
+        const numberEl = document.getElementById('id_profile_phone_number');
+        const noticeText = document.getElementById('flPhoneNoticeText');
+
+        if (phoneEl && window.intlTelInput) {
+            const initCountry = (countryEl && countryEl.value) ? countryEl.value.toLowerCase() : 'in';
+            const iti = window.intlTelInput(phoneEl, {
+                initialCountry: initCountry,
+                preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                separateDialCode: true,
+                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+            });
+
+            function syncFlPhone() {
+                const data = iti.getSelectedCountryData();
+                if (data && data.iso2) {
+                    const iso = data.iso2.toUpperCase();
+                    if (countryEl) countryEl.value = iso;
+                    if (dialCodeEl) dialCodeEl.value = '+' + (data.dialCode || '91');
+                    if (noticeText) {
+                        if (iso === 'IN') {
+                            noticeText.innerHTML = '<strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>';
+                        } else {
+                            noticeText.innerHTML = '<strong>' + data.name + ' (+' + data.dialCode + ')</strong> &bull; Currency: <strong>USD ($)</strong>';
+                        }
+                    }
+                }
+                if (numberEl) {
+                    numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
+                }
+            }
+
+            phoneEl.addEventListener('countrychange', syncFlPhone);
+            phoneEl.addEventListener('input', syncFlPhone);
+            phoneEl.addEventListener('blur', syncFlPhone);
+            syncFlPhone();
+        }
+
+        // Live hourly rate converter if USD
+        const rateInput = document.getElementById('id_hourly_rate');
+        const rateCalc = document.getElementById('flRateInrCalc');
+        const usdRate = parseFloat('{{ usd_inr_rate|default:83.0 }}');
+
+        if (rateInput && rateCalc) {
+            function updateRateCalc() {
+                const val = parseFloat(rateInput.value) || 0;
+                const inr = (val * usdRate).toFixed(2);
+                rateCalc.innerHTML = `&asymp; ₹${Number(inr).toLocaleString()} base INR for Indian clients`;
+            }
+            rateInput.addEventListener('input', updateRateCalc);
+            updateRateCalc();
+        }
+    });
+</script>
 {% endblock %}

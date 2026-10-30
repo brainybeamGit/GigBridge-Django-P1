@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}{{ project.title }} | GigBridge Freelance Project{% endblock %}
 
@@ -239,7 +240,7 @@
                                 <div class="col-sm-6">
                                     <div class="bg-light p-3 rounded-3">
                                         <span class="text-muted small d-block mb-1">Your Bid Amount</span>
-                                        <div class="fw-bold text-navy fs-4">${{ user_proposal.bid_amount }}</div>
+                                        <div class="fw-bold text-navy fs-4">{{ user_proposal.bid_amount|money:request.user }}</div>
                                     </div>
                                 </div>
                                 <div class="col-sm-6">
@@ -277,7 +278,7 @@
                                     </p>
                                 </div>
                                 <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold">
-                                    Budget: ${{ project.budget_min|floatformat:0 }} – ${{ project.budget_max|floatformat:0 }}
+                                    Budget: {% money_range project.budget_min project.budget_max request.user project.budget_type %}
                                 </span>
                             </div>
 
@@ -289,13 +290,20 @@
                                         <!-- Bid Amount -->
                                         <div class="col-md-6">
                                             <label class="form-label small fw-bold text-navy">
-                                                Your Bid Amount (USD $) <span class="text-danger">*</span>
+                                                Your Bid Amount ({{ currency_symbol }} {{ user_currency }}) <span class="text-danger">*</span>
                                             </label>
                                             <div class="input-group">
-                                                <span class="input-group-text bg-light text-navy fw-bold">$</span>
+                                                <span class="input-group-text bg-light text-navy fw-bold">{{ currency_symbol }}</span>
                                                 {{ proposal_form.bid_amount }}
                                             </div>
-                                            <div class="form-text small">Client's range: ${{ project.budget_min|floatformat:0 }} – ${{ project.budget_max|floatformat:0 }} ({{ project.get_budget_type_display }})</div>
+                                            <div class="form-text small">
+                                                Client's range: {% money_range project.budget_min project.budget_max request.user project.budget_type %}
+                                                {% if user_currency == 'USD' %}
+                                                    <div id="proposalBidInrPreview" class="text-primary mt-1" style="font-size: 0.76rem;">
+                                                        <i class="bi bi-arrow-repeat me-1"></i> <span id="proposalBidInrText">&asymp; ₹0.00 base INR for escrow</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
                                             {% if proposal_form.bid_amount.errors %}
                                                 <div class="text-danger small mt-1">{{ proposal_form.bid_amount.errors }}</div>
                                             {% endif %}
@@ -388,11 +396,7 @@
                     <div class="gb-budget-highlight-tile">
                         <span class="text-muted small fw-semibold text-uppercase letter-spacing-1 d-block mb-1">Project Budget</span>
                         <div class="gb-budget-hero-number">
-                            {% if project.budget_max > 0 and project.budget_max != project.budget_min %}
-                                ${{ project.budget_min|floatformat:0 }} – ${{ project.budget_max|floatformat:0 }}
-                            {% else %}
-                                ${{ project.budget_min|floatformat:0 }}
-                            {% endif %}
+                            {% money_range project.budget_min project.budget_max request.user project.budget_type %}
                         </div>
                         <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold px-3 py-1 mt-1">
                             {{ project.get_budget_type_display }}
@@ -522,7 +526,7 @@
                                     <div class="gb-budget-display">
                                         <div class="gb-budget-figure fs-5">
                                             {% if sim_project.budget_max > 0 %}
-                                                ${{ sim_project.budget_min|floatformat:0 }} – ${{ sim_project.budget_max|floatformat:0 }}
+                                                {% money_range sim_project.budget_min sim_project.budget_max request.user sim_project.budget_type %}
                                             {% else %}
                                                 ${{ sim_project.budget_min|floatformat:0 }}
                                             {% endif %}

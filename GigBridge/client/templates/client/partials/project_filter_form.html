@@ -1,0 +1,190 @@
+{% load currency_tags %}
+{# Shared Filter Form Partial for Desktop Sidebar and Mobile Offcanvas Drawer #}
+<form action="{% url 'project_list' %}" method="GET" class="gb-pl-filter-form" id="{{ prefix|default:'gb' }}FilterForm" data-prefix="{{ prefix|default:'gb' }}">
+    {% if not show_sort and sort %}
+        <input type="hidden" name="sort" value="{{ sort }}">
+    {% endif %}
+
+    <!-- 1. Search Query -->
+    <div class="gb-pl-filter-group">
+        <label class="gb-pl-filter-label" for="{{ prefix }}_q">
+            <i class="bi bi-search me-1 text-primary"></i> Keyword Search
+        </label>
+        <div class="gb-pl-input-group">
+            <span class="gb-pl-input-icon"><i class="bi bi-search"></i></span>
+            <input type="text"
+                   name="q"
+                   id="{{ prefix }}_q"
+                   value="{{ q }}"
+                   class="form-control gb-pl-input"
+                   placeholder="Title, skills (e.g. Django, React)..."
+                   autocomplete="off">
+            {% if q %}
+                <a href="?{% query_transform q=None page=None %}" class="gb-pl-input-clear" title="Clear keyword">
+                    <i class="bi bi-x-circle-fill"></i>
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 2. Category Selector -->
+    <div class="gb-pl-filter-group">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="gb-pl-filter-label mb-0">
+                <i class="bi bi-grid me-1 text-primary"></i> Category
+            </label>
+            {% if selected_category %}
+                <a href="?{% query_transform category=None page=None %}" class="gb-pl-clear-link">
+                    Clear
+                </a>
+            {% endif %}
+        </div>
+        <div class="gb-pl-cat-list" role="radiogroup" aria-label="Project Categories">
+            <label class="gb-pl-cat-item {% if not selected_category %}active{% endif %}">
+                <input type="radio"
+                       name="category"
+                       value=""
+                       class="d-none"
+                       {% if not selected_category %}checked{% endif %}
+                       data-auto-submit="true">
+                <span class="gb-pl-cat-name">
+                    <i class="bi bi-grid-fill"></i> All Categories
+                </span>
+                <span class="gb-pl-cat-count">{{ total_count }}</span>
+            </label>
+            {% for cat in categories %}
+                <label class="gb-pl-cat-item {% if selected_category == cat.slug %}active{% endif %}">
+                    <input type="radio"
+                           name="category"
+                           value="{{ cat.slug }}"
+                           class="d-none"
+                           {% if selected_category == cat.slug %}checked{% endif %}
+                           data-auto-submit="true">
+                    <span class="gb-pl-cat-name">
+                        <i class="bi {{ cat.icon|default:'bi-briefcase' }}"></i> {{ cat.name }}
+                    </span>
+                    <span class="gb-pl-cat-count">{{ cat.open_project_count }}</span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- 3. Budget Type Segmented Control -->
+    <div class="gb-pl-filter-group">
+        <label class="gb-pl-filter-label">
+            <i class="bi bi-cash-stack me-1 text-primary"></i> Budget Type
+        </label>
+        <div class="gb-pl-segmented" role="radiogroup" aria-label="Budget Type">
+            <label class="gb-pl-seg-option {% if not budget_type %}active{% endif %}" for="{{ prefix }}_bt_all">
+                <input type="radio" name="budget_type" id="{{ prefix }}_bt_all" value="" {% if not budget_type %}checked{% endif %} data-auto-submit="true">
+                <span>All</span>
+            </label>
+            <label class="gb-pl-seg-option {% if budget_type == 'fixed' %}active{% endif %}" for="{{ prefix }}_bt_fixed">
+                <input type="radio" name="budget_type" id="{{ prefix }}_bt_fixed" value="fixed" {% if budget_type == 'fixed' %}checked{% endif %} data-auto-submit="true">
+                <span>Fixed</span>
+            </label>
+            <label class="gb-pl-seg-option {% if budget_type == 'hourly' %}active{% endif %}" for="{{ prefix }}_bt_hourly">
+                <input type="radio" name="budget_type" id="{{ prefix }}_bt_hourly" value="hourly" {% if budget_type == 'hourly' %}checked{% endif %} data-auto-submit="true">
+                <span>Hourly</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- 4. Budget Range Inputs & Quick Presets -->
+    <div class="gb-pl-filter-group">
+        <div class="d-flex justify-content-between align-items-center mb-1">
+            <label class="gb-pl-filter-label mb-0">
+                <i class="bi bi-tag me-1 text-primary"></i> Budget Range ({{ currency_symbol }})
+            </label>
+            {% if min_budget or max_budget %}
+                <a href="?{% query_transform min_budget=None max_budget=None budget_min=None budget_max=None page=None %}" class="gb-pl-clear-link">
+                    Clear
+                </a>
+            {% endif %}
+        </div>
+        <div class="row g-2 mb-2">
+            <div class="col-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text gb-pl-ig-addon">{{ currency_symbol }}</span>
+                    <input type="number"
+                           id="{{ prefix }}_min_budget"
+                           name="min_budget"
+                           value="{{ min_budget }}"
+                           class="form-control gb-pl-input gb-pl-budget-input"
+                           placeholder="Min"
+                           min="0"
+                           step="any">
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text gb-pl-ig-addon">{{ currency_symbol }}</span>
+                    <input type="number"
+                           id="{{ prefix }}_max_budget"
+                           name="max_budget"
+                           value="{{ max_budget }}"
+                           class="form-control gb-pl-input gb-pl-budget-input"
+                           placeholder="Max"
+                           min="0"
+                           step="any">
+                </div>
+            </div>
+        </div>
+
+        <!-- Dynamic Currency-Aware Budget Presets -->
+        <div class="gb-pl-presets-wrap">
+            {% if user_currency == 'INR' %}
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', '', 5000)">Under ₹5k</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 5000, 25000)">₹5k - ₹25k</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 25000, 100000)">₹25k - ₹1L</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 100000, '')">₹1L+</button>
+            {% else %}
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', '', 100)">Under $100</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 100, 500)">$100 - $500</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 500, 1500)">$500 - $1.5k</button>
+                <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 1500, '')">$1.5k+</button>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- 5. Status Filter -->
+    <div class="gb-pl-filter-group">
+        <label class="gb-pl-filter-label" for="{{ prefix }}_status">
+            <i class="bi bi-clock-history me-1 text-primary"></i> Project Status
+        </label>
+        <select name="status" id="{{ prefix }}_status" class="form-select form-select-sm gb-pl-select" data-auto-submit="true">
+            <option value="open" {% if status_filter == 'open' %}selected{% endif %}>Open for Bidding</option>
+            <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+            <option value="all" {% if status_filter == 'all' %}selected{% endif %}>All Statuses</option>
+        </select>
+    </div>
+
+    <!-- 6. Mobile Only: Sort Selector in Offcanvas -->
+    {% if show_sort %}
+        <div class="gb-pl-filter-group">
+            <label class="gb-pl-filter-label" for="{{ prefix }}_sort">
+                <i class="bi bi-arrow-down-up me-1 text-primary"></i> Sort Results By
+            </label>
+            <select name="sort" id="{{ prefix }}_sort" class="form-select form-select-sm gb-pl-select">
+                <option value="newest" {% if sort == 'newest' or sort == '-created_at' %}selected{% endif %}>Newest First</option>
+                <option value="budget_high" {% if sort == 'budget_high' or sort == '-budget_max' %}selected{% endif %}>Highest Budget</option>
+                <option value="budget_low" {% if sort == 'budget_low' or sort == 'budget_min' %}selected{% endif %}>Lowest Budget</option>
+                <option value="proposals" {% if sort == 'proposals' or sort == 'proposals_many' %}selected{% endif %}>Most Proposals</option>
+                <option value="views" {% if sort == 'views' %}selected{% endif %}>Most Viewed</option>
+                <option value="oldest" {% if sort == 'oldest' or sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+            </select>
+        </div>
+    {% endif %}
+
+    <!-- 7. Action Buttons -->
+    <div class="gb-pl-filter-actions">
+        <button type="submit" class="btn gb-pl-btn-apply w-100">
+            <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+        </button>
+        {% if active_filters_count > 0 %}
+            <a href="{% url 'project_list' %}" class="btn gb-pl-btn-reset w-100 mt-2">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset All Filters
+            </a>
+        {% endif %}
+    </div>
+</form>

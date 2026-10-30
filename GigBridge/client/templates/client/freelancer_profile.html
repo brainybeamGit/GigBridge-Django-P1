@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 {% load messaging_tags %}
 {% load review_tags %}
 
@@ -346,7 +347,7 @@
                         <span><i class="bi bi-calendar3 me-1"></i>Member since {{ freelancer_user.date_joined|date:"M Y" }}</span>
                         {% if profile.hourly_rate > 0 %}
                             <span>&bull;</span>
-                            <span class="fw-bold text-dark fs-6">&#8377;{{ profile.hourly_rate|floatformat:0 }}/hr</span>
+                            <span class="fw-bold text-dark fs-6">{{ profile.hourly_rate|money:request.user }}/hr</span>
                         {% endif %}
                     </div>
 

@@ -10,11 +10,12 @@ from django.contrib import messages
 from django.contrib.auth.models import User
 from django.db.models import Sum, Avg, Count, Q
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
+from django.db import transaction
 
 from client.models import (
     Project, Proposal, Contract, Milestone, Payment, Review, UserProfile, Category,
-    Conversation, Message
+    Conversation, Message, Submission
 )
 from client.forms import UserProfileForm, FreelancerReplyForm
 
@@ -144,7 +145,7 @@ def profile_view(request):
     profile, _ = UserProfile.objects.get_or_create(user=user)
 
     if request.method == 'POST':
-        form = UserProfileForm(request.POST, request.FILES, instance=profile)
+        form = UserProfileForm(request.POST, request.FILES, instance=profile, user=user)
         form.fields['first_name'].initial = user.first_name
         form.fields['last_name'].initial = user.last_name
         form.fields['email'].initial = user.email
@@ -165,7 +166,7 @@ def profile_view(request):
         else:
             messages.error(request, "Please correct the errors below.")
     else:
-        form = UserProfileForm(instance=profile, initial={
+        form = UserProfileForm(instance=profile, user=user, initial={
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
@@ -325,44 +326,57 @@ def contract_detail_view(request, pk):
     )
     if contract.freelancer != user and not user.is_superuser:
         messages.error(request, "You are not authorized to view this contract.")
-        return redirect('freelancer_contracts')
+        return HttpResponseForbidden("You are not authorized to view this contract.")
 
-    milestones = contract.milestones.all().order_by('created_at')
+    milestones = contract.milestones.all().order_by('order', 'id')
     payments = contract.payments.filter(status='completed').order_by('-created_at')
-    advance_ms = contract.advance_milestone
-    final_ms = contract.final_milestone
+    active_ms = contract.get_active_milestone()
 
     context = {
         'contract': contract,
         'milestones': milestones,
         'payments': payments,
-        'advance_ms': advance_ms,
-        'final_ms': final_ms,
+        'active_ms': active_ms,
+        'advance_ms': contract.advance_milestone,
+        'final_ms': contract.final_milestone,
     }
     return render(request, 'freelancer/contract_detail.html', context)
 
 
 @login_required
-def submit_delivery_view(request, contract_id):
+def submit_delivery_view(request, contract_id, milestone_id=None):
     if request.method != 'POST':
         return redirect('freelancer_contract_detail', pk=contract_id)
 
     contract = get_object_or_404(Contract, id=contract_id)
     if contract.freelancer != request.user and not request.user.is_superuser:
-        messages.error(request, "Unauthorized action.")
-        return redirect('freelancer_contracts')
+        messages.error(request, "Unauthorized action. You are not the freelancer assigned to this contract.")
+        return HttpResponseForbidden("Unauthorized action. You are not the freelancer assigned to this contract.")
 
-    # Step 5 & 6 Business rule: Advance payment must be verified before work submission
-    if not contract.is_advance_paid:
-        messages.error(request, "Cannot submit work: The client has not yet paid the agreed advance payment.")
+    # The active milestone is the only one that can receive submissions
+    active_ms = contract.get_active_milestone()
+    if not active_ms:
+        messages.error(request, "All milestones for this contract are already completed and paid.")
         return redirect('freelancer_contract_detail', pk=contract.id)
 
-    final_ms = contract.final_milestone
-    if not final_ms:
-        final_ms = contract.milestones.order_by('-created_at').first()
+    # Server-side validation: if milestone_id provided, it MUST be the active milestone
+    if milestone_id:
+        target_ms = get_object_or_404(Milestone, id=milestone_id, contract_id=contract.id)
+        if target_ms.id != active_ms.id:
+            messages.error(
+                request,
+                f"Cannot submit deliverables for Phase {target_ms.order} ('{target_ms.title}'). "
+                f"Phase {active_ms.order} ('{active_ms.title}') is the active milestone and must be completed first."
+            )
+            return redirect('freelancer_contract_detail', pk=contract.id)
+    else:
+        target_ms = active_ms
 
-    if not final_ms:
-        messages.error(request, "No deliverable milestone found for this contract.")
+    if not target_ms.can_submit(request.user):
+        messages.error(
+            request,
+            f"Deliverables cannot be submitted for Phase {target_ms.order} ('{target_ms.title}') while in '{target_ms.get_status_display()}' state."
+        )
         return redirect('freelancer_contract_detail', pk=contract.id)
 
     submission_notes = request.POST.get('submission_notes', '').strip()
@@ -373,18 +387,34 @@ def submit_delivery_view(request, contract_id):
         messages.error(request, "Please provide description notes, a repository/demo link, or upload your source code deliverable.")
         return redirect('freelancer_contract_detail', pk=contract.id)
 
-    final_ms.submission_notes = submission_notes
-    if deliverable_link:
-        final_ms.deliverable_link = deliverable_link
-    if submission_file:
-        final_ms.submission_file = submission_file
-    final_ms.status = 'submitted'
-    final_ms.submitted_at = timezone.now()
-    final_ms.save()
+    with transaction.atomic():
+        ms_locked = Milestone.objects.select_for_update().get(id=target_ms.id)
+        if not ms_locked.can_submit(request.user):
+            messages.error(request, "Submission rejected: Milestone status changed.")
+            return redirect('freelancer_contract_detail', pk=contract.id)
+
+        # Create submission record
+        Submission.objects.create(
+            milestone=ms_locked,
+            contract=contract,
+            freelancer=request.user,
+            submission_notes=submission_notes,
+            deliverable_link=deliverable_link,
+            submission_file=submission_file,
+        )
+
+        ms_locked.submission_notes = submission_notes
+        if deliverable_link:
+            ms_locked.deliverable_link = deliverable_link
+        if submission_file:
+            ms_locked.submission_file = submission_file
+        ms_locked.status = 'submitted'
+        ms_locked.submitted_at = timezone.now()
+        ms_locked.save()
 
     messages.success(
         request,
-        "Complete project deliverables and source code submitted successfully! The client has been notified to review your work."
+        f"Deliverables for Phase {ms_locked.order}: '{ms_locked.title}' submitted successfully! Awaiting client review."
     )
     return redirect('freelancer_contract_detail', pk=contract.id)
 

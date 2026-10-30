@@ -143,16 +143,16 @@
                         <span class="fw-semibold text-dark small">{{ r.project.title|truncatechars:32 }}</span>
                     </td>
                     <td>
-                        <span class="fw-bold text-dark"><i class="bi bi-star-fill text-warning me-1"></i>{{ r.overall_rating|floatformat:1 }} / 5.0</span>
+                        <span class="fw-bold text-dark">{{ r.overall_rating|floatformat:1 }} ★</span>
                     </td>
                     <td>
                         {% if r.is_hidden %}
                             <span class="badge bg-danger text-white rounded-pill px-2 py-1 small">
-                                <i class="bi bi-eye-slash-fill me-1"></i> Hidden
+                                Hidden
                             </span>
                         {% else %}
                             <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-2 py-1 small">
-                                <i class="bi bi-eye-fill me-1"></i> Visible
+                                Visible
                             </span>
                         {% endif %}
                     </td>
@@ -181,9 +181,9 @@
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item rounded-2 small py-2 {% if r.is_hidden %}text-success{% else %}text-warning{% endif %}">
                                             {% if r.is_hidden %}
-                                                <i class="bi bi-eye me-1"></i> Restore / Unhide Review
+                                                Restore / Unhide Review
                                             {% else %}
-                                                <i class="bi bi-eye-slash me-1"></i> Hide from Platform
+                                                Hide from Platform
                                             {% endif %}
                                         </button>
                                     </form>
@@ -236,8 +236,8 @@
 
                 <div class="p-3 bg-light rounded-3 border mb-3 text-center">
                     <span class="text-muted small d-block mb-1">Overall Rating Score</span>
-                    <h3 class="fw-bold text-dark mb-0"><i class="bi bi-star-fill text-warning me-1"></i>{{ r.overall_rating|floatformat:1 }} / 5.0</h3>
-                    <small class="text-muted">{% if r.would_recommend %}<i class="bi bi-hand-thumbs-up-fill text-success me-1"></i> Would Recommend Freelancer{% else %}<i class="bi bi-hand-thumbs-down text-danger me-1"></i> Would Not Recommend{% endif %}</small>
+                    <h3 class="fw-bold text-dark mb-0">{{ r.overall_rating|floatformat:1 }} ★</h3>
+                    <small class="text-muted">{% if r.would_recommend %}Would Recommend Specialist{% else %}Would Not Recommend{% endif %}</small>
                 </div>
 
                 <div class="row g-2 mb-3 text-center">
@@ -281,7 +281,7 @@
 
                 {% if r.freelancer_reply %}
                     <div class="p-3 rounded-3 border-start border-primary border-3 bg-white border">
-                        <span class="text-primary fw-bold small d-block mb-1"><i class="bi bi-reply-fill"></i> Freelancer Reply ({{ r.replied_at|date:"M d, Y" }}):</span>
+                        <span class="text-primary fw-bold small d-block mb-1">Freelancer Reply ({{ r.replied_at|date:"M d, Y" }}):</span>
                         <p class="mb-0 text-dark small" style="white-space:pre-line;">{{ r.freelancer_reply }}</p>
                     </div>
                 {% endif %}

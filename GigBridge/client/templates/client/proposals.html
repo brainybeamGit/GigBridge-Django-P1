@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Proposals{% endblock %}
 {% block dashboard_title %}Received Proposals &amp; Talent Submissions{% endblock %}
@@ -550,7 +551,7 @@
                 <div class="mt-2 text-muted small" style="font-size: 0.78rem;">
                     <div>Rating &bull; <strong class="text-dark">{{ prop.freelancer.profile.average_rating|default:"5.0" }}</strong> / 5.0</div>
                     {% if prop.freelancer.profile.hourly_rate %}
-                        <div>Hourly &bull; ${{ prop.freelancer.profile.hourly_rate }}/hr</div>
+                        <div>Hourly &bull; {{ prop.freelancer.profile.hourly_rate|money:request.user }}/hr</div>
                     {% endif %}
                 </div>
             </div>
@@ -560,7 +561,7 @@
                 <div class="d-flex align-items-center gap-3 mb-2">
                     <div>
                         <span class="small text-muted d-block" style="font-size: 0.72rem;">Bid Amount</span>
-                        <span class="fw-bold" style="font-size: 1.25rem; color: #0284C7;">${{ prop.bid_amount|floatformat:0 }}</span>
+                        <span class="fw-bold" style="font-size: 1.25rem; color: #0284C7;">{{ prop.bid_amount|money:request.user }}</span>
                     </div>
                     <div class="border-start ps-3">
                         <span class="small text-muted d-block" style="font-size: 0.72rem;">Estimated Delivery</span>
@@ -649,7 +650,7 @@
                         <div class="d-flex align-items-center gap-4 flex-wrap">
                             <div>
                                 <small class="text-muted d-block" style="font-size: 0.72rem;">Proposed Bid</small>
-                                <strong class="text-primary fs-6">${{ prop.bid_amount|floatformat:0 }}</strong>
+                                <strong class="text-primary fs-6">{{ prop.bid_amount|money:request.user }}</strong>
                             </div>
                             <div>
                                 <small class="text-muted d-block" style="font-size: 0.72rem;">Delivery Time</small>

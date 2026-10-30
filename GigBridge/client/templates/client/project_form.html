@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}{% if is_edit %}Edit Project{% else %}Post Project{% endif %}{% endblock %}
 {% block dashboard_title %}{% if is_edit %}Edit Project Listing{% else %}Create Project Brief{% endif %}{% endblock %}
@@ -295,15 +296,25 @@
                             {{ form.budget_type }}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Minimum Budget ($)</label>
+                            <label class="form-label">Minimum Budget ({{ currency_symbol }} {{ user_currency }})</label>
                             {{ form.budget_min }}
+                            {% if user_currency == 'USD' %}
+                                <div class="text-muted mt-1" style="font-size: 0.74rem;">
+                                    <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="minBudgetInrPreview">&asymp; ₹0 INR for Indian freelancers</span>
+                                </div>
+                            {% endif %}
                             {% if form.budget_min.errors %}
                                 <div class="text-danger small mt-1">{{ form.budget_min.errors.0 }}</div>
                             {% endif %}
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Maximum Budget ($)</label>
+                            <label class="form-label">Maximum Budget ({{ currency_symbol }} {{ user_currency }})</label>
                             {{ form.budget_max }}
+                            {% if user_currency == 'USD' %}
+                                <div class="text-muted mt-1" style="font-size: 0.74rem;">
+                                    <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="maxBudgetInrPreview">&asymp; ₹0 INR for Indian freelancers</span>
+                                </div>
+                            {% endif %}
                             {% if form.budget_max.errors %}
                                 <div class="text-danger small mt-1">{{ form.budget_max.errors.0 }}</div>
                             {% endif %}

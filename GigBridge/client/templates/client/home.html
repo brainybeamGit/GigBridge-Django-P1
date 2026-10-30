@@ -1,110 +1,219 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block title %}GigBridge | Find the Right Talent. Bring Your Ideas to Life.{% endblock %}
 
+{% block extra_css %}
+<!-- Google Fonts: Fraunces Display Serif -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,600;0,9..144,700;1,9..144,600;1,9..144,700&display=swap" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
 <!-- ═══════════════════════════════════════════════════════════
-     HERO SECTION
+     1. HERO SECTION (Dark Luxury Navy with Glass Elements)
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-hero-clean">
-    <div class="container">
+<section class="gb-hm-hero" aria-label="Welcome to GigBridge">
+    <div class="container position-relative" style="z-index: 2;">
         <div class="row align-items-center g-5">
-            <!-- Left Hero Text & Search -->
-            <div class="col-lg-6">
-                <!-- Freelance Marketplace Badge -->
-                <div class="gb-badge-pill mb-3">
-                    <span class="gb-badge-sparkle">✦</span> Freelance Marketplace
+            <!-- Left Column: Copy, Search & Trust Proofs -->
+            <div class="col-lg-6 gb-hm-reveal">
+                <!-- Freelance Marketplace Pill Badge -->
+                <div class="gb-hm-hero-pill mb-3">
+                    <span class="gb-hm-sparkle" aria-hidden="true">✦</span>
+                    <span>Freelance Marketplace</span>
                 </div>
 
-                <!-- Main Hero Headline -->
-                <h1 class="gb-hero-title">
+                <!-- Main Display Headline -->
+                <h1 class="gb-hm-hero-title">
                     Find the Right Talent.<br>
-                    Bring Your Ideas to Life.
+                    <span class="gb-hm-gradient-text">Bring Your Ideas to Life.</span>
                 </h1>
 
-                <!-- Hero Subtitle -->
-                <p class="gb-hero-subtitle">
-                    Connect with skilled freelancers and get your projects done on time, on budget.
+                <!-- Refined Subtitle -->
+                <p class="gb-hm-hero-subtitle">
+                    Connect with vetted specialists, collaborate through structured escrow milestones, and build ambitious projects with complete peace of mind.
                 </p>
 
-                <!-- Clean Search Bar -->
-                <form action="{% url 'project_list' %}" method="GET" class="gb-search-bar">
-                    <div class="gb-search-input-wrap">
-                        <i class="bi bi-search gb-search-icon"></i>
-                        <input type="text" name="q" class="gb-search-input" placeholder="What service are you looking for?..." autocomplete="off">
-                    </div>
-                    <button type="submit" class="gb-search-btn">Search</button>
+                <!-- Glass Search Bar -->
+                <form action="{% url 'project_list' %}" method="GET" class="gb-hm-search-wrap" role="search">
+                    <i class="bi bi-search gb-hm-search-icon" aria-hidden="true"></i>
+                    <input type="text" name="q" class="gb-hm-search-input" placeholder="What service are you looking for? (e.g. Django, UI/UX, Mobile)..." autocomplete="off" aria-label="Search open projects">
+                    <button type="submit" class="gb-hm-search-btn">Search</button>
                 </form>
 
-                <!-- 3 Hero Stat Counters -->
-                <div class="gb-hero-stats">
-                    <div class="gb-stat-item">
-                        <div class="gb-stat-icon-circle">
-                            <i class="bi bi-briefcase-fill"></i>
-                        </div>
-                        <div>
-                            <div class="gb-stat-number">10K+</div>
-                            <div class="gb-stat-label">Projects Completed</div>
-                        </div>
-                    </div>
+                <!-- Quick-Search Keyword Chips -->
+                <div class="gb-hm-quick-chips">
+                    <span class="gb-hm-quick-label">Popular:</span>
+                    <a href="{% url 'project_list' %}?q=Web+Development" class="gb-hm-quick-chip">Web Development</a>
+                    <a href="{% url 'project_list' %}?q=UI%2FUX" class="gb-hm-quick-chip">UI/UX &amp; Design</a>
+                    <a href="{% url 'project_list' %}?q=Mobile+Apps" class="gb-hm-quick-chip">Mobile Apps</a>
+                    <a href="{% url 'project_list' %}?q=Data" class="gb-hm-quick-chip">Data &amp; AI</a>
+                </div>
 
-                    <div class="gb-stat-item">
-                        <div class="gb-stat-icon-circle">
-                            <i class="bi bi-people-fill"></i>
-                        </div>
-                        <div>
-                            <div class="gb-stat-number">5K+</div>
-                            <div class="gb-stat-label">Skilled Freelancers</div>
-                        </div>
+                <!-- Trust Chips Row -->
+                <div class="gb-hm-trust-row">
+                    <div class="gb-hm-trust-item">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                        <span>Escrow Protected</span>
                     </div>
+                    <div class="gb-hm-trust-item">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                        <span>Verified Talent</span>
+                    </div>
+                    <div class="gb-hm-trust-item">
+                        <i class="bi bi-receipt" aria-hidden="true"></i>
+                        <span>Zero Hidden Fees</span>
+                    </div>
+                </div>
 
-                    <div class="gb-stat-item">
-                        <div class="gb-stat-icon-circle">
-                            <i class="bi bi-patch-check-fill"></i>
-                        </div>
-                        <div>
-                            <div class="gb-stat-number">98%</div>
-                            <div class="gb-stat-label">Client Satisfaction</div>
-                        </div>
+                <!-- Real Platform Dynamic Counters -->
+                <div class="gb-hm-stats-row">
+                    <div class="gb-hm-stat-card">
+                        {% if completed_contracts_count %}
+                            <div class="gb-hm-stat-num">{{ completed_contracts_count }}+</div>
+                            <div class="gb-hm-stat-lbl">Completed Projects</div>
+                        {% else %}
+                            <div class="gb-hm-stat-tag">Active</div>
+                            <div class="gb-hm-stat-lbl">Milestones Underway</div>
+                        {% endif %}
+                    </div>
+                    <div class="gb-hm-stat-card">
+                        {% if freelancers_count %}
+                            <div class="gb-hm-stat-num">{{ freelancers_count }}+</div>
+                            <div class="gb-hm-stat-lbl">Verified Specialists</div>
+                        {% else %}
+                            <div class="gb-hm-stat-tag">Curated</div>
+                            <div class="gb-hm-stat-lbl">Freelance Talent</div>
+                        {% endif %}
+                    </div>
+                    <div class="gb-hm-stat-card">
+                        {% if open_projects_count %}
+                            <div class="gb-hm-stat-num">{{ open_projects_count }}+</div>
+                            <div class="gb-hm-stat-lbl">Open Gigs Available</div>
+                        {% else %}
+                            <div class="gb-hm-stat-tag">Razorpay</div>
+                            <div class="gb-hm-stat-lbl">Escrow Security</div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
 
-            <!-- Right Hero Visual with Floating 3D Badges -->
-            <div class="col-lg-6">
-                <div class="gb-hero-visual-wrapper">
-                    <!-- Soft Ambient Background Glows -->
-                    <div class="gb-hero-glow gb-hero-glow-1"></div>
-                    <div class="gb-hero-glow gb-hero-glow-2"></div>
+            <!-- Right Column: Visual Frame & Floating Glass Badges -->
+            <div class="col-lg-6 gb-hm-reveal">
+                <div class="gb-hm-visual-wrap">
+                    <!-- Soft Ambient Glow -->
+                    <div class="gb-hm-hero-glow" aria-hidden="true"></div>
 
-                    <!-- Main Freelancer Illustration -->
-                    <div class="gb-hero-image-container">
-                        <img src="{% static 'images/hero_freelance_man.jpg' %}" alt="Freelancer working with laptop" class="gb-hero-main-img img-fluid">
+                    <!-- Framed Hero Photo -->
+                    <div class="gb-hm-hero-frame">
+                        <img src="{% static 'images/hero_freelance_man.jpg' %}"
+                             alt="Freelancer working on a digital project"
+                             class="gb-hm-hero-img"
+                             width="600"
+                             height="448"
+                             loading="eager"
+                             decoding="async">
+                    </div>
 
-                        <!-- Floating Badge 1: Web Development -->
-                        <div class="gb-floating-badge gb-float-badge-1">
-                            <span class="gb-floating-icon gb-icon-blue">
-                                <i class="bi bi-laptop"></i>
-                            </span>
-                            <span class="gb-floating-text">Web Development</span>
+                    <!-- Floating Badge 1: Web Development (Top-Left) -->
+                    <div class="gb-hm-float-badge gb-hm-float-1 d-none d-lg-inline-flex" aria-hidden="true">
+                        <span class="gb-hm-float-icon">
+                            <i class="bi bi-laptop"></i>
+                        </span>
+                        <span>Web Development</span>
+                    </div>
+
+                    <!-- Floating Badge 2: UI/UX & Design (Right) -->
+                    <div class="gb-hm-float-badge gb-hm-float-2 d-none d-lg-inline-flex" aria-hidden="true">
+                        <span class="gb-hm-float-icon">
+                            <i class="bi bi-palette"></i>
+                        </span>
+                        <span>UI/UX &amp; Design</span>
+                    </div>
+
+                    <!-- Floating Badge 3: Mobile & AI (Bottom-Left) -->
+                    <div class="gb-hm-float-badge gb-hm-float-3 d-none d-lg-inline-flex" aria-hidden="true">
+                        <span class="gb-hm-float-icon">
+                            <i class="bi bi-phone"></i>
+                        </span>
+                        <span>Mobile &amp; AI</span>
+                    </div>
+
+                    <!-- Floating Badge 4: Payment Protected (Bottom-Right) -->
+                    <div class="gb-hm-float-badge gb-hm-float-protected d-none d-lg-inline-flex" aria-hidden="true">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <div>
+                            <span class="gb-hm-float-title">Payment Protected</span>
+                            <span class="gb-hm-float-sub">Escrow Milestone Hold</span>
                         </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-                        <!-- Floating Badge 2: Graphic Design -->
-                        <div class="gb-floating-badge gb-float-badge-2">
-                            <span class="gb-floating-icon gb-icon-purple">
-                                <i class="bi bi-palette-fill"></i>
-                            </span>
-                            <span class="gb-floating-text">Graphic Design</span>
-                        </div>
+    <!-- Curved SVG Wave Divider -->
+    <div class="gb-hm-hero-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 60" preserveAspectRatio="none" fill="#ffffff">
+            <path d="M0,0 C320,40 640,60 960,40 C1200,25 1360,10 1440,0 L1440,60 L0,60 Z"></path>
+        </svg>
+    </div>
+</section>
 
-                        <!-- Floating Badge 3: Video Editing -->
-                        <div class="gb-floating-badge gb-float-badge-3">
-                            <span class="gb-floating-icon gb-icon-cyan">
-                                <i class="bi bi-camera-reels-fill"></i>
-                            </span>
-                            <span class="gb-floating-text">Video Editing</span>
-                        </div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     2. TRUSTED BY / PLATFORM HIGHLIGHT STRIP
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-hm-strip" aria-label="Platform Highlights">
+    <div class="container">
+        <div class="row g-3 row-cols-1 row-cols-sm-2 row-cols-lg-4">
+            <div class="col">
+                <div class="gb-hm-strip-item">
+                    <div class="gb-hm-strip-icon">
+                        <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="gb-hm-strip-text">Escrow Protected Payments</div>
+                        <small class="text-muted">Funds released only after sign-off</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="gb-hm-strip-item">
+                    <div class="gb-hm-strip-icon">
+                        <i class="bi bi-patch-check" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="gb-hm-strip-text">Verified Freelancers</div>
+                        <small class="text-muted">Curated talent with proven skills</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="gb-hm-strip-item">
+                    <div class="gb-hm-strip-icon">
+                        <i class="bi bi-star-half" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="gb-hm-strip-text">Transparent Reviews</div>
+                        <small class="text-muted">From completed, paid contracts only</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="gb-hm-strip-item">
+                    <div class="gb-hm-strip-icon">
+                        <i class="bi bi-headset" aria-hidden="true"></i>
+                    </div>
+                    <div>
+                        <div class="gb-hm-strip-text">Dedicated Dispute Support</div>
+                        <small class="text-muted">Fair resolution for every milestone</small>
                     </div>
                 </div>
             </div>
@@ -114,31 +223,41 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     POPULAR CATEGORIES SECTION (6 Columns)
+     3. POPULAR CATEGORIES (6 Columns, Single Royal Blue Accent)
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-section-clean py-5">
+<section class="gb-hm-section" aria-labelledby="cat-heading">
     <div class="container">
         <!-- Section Header -->
-        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
             <div>
-                <h2 class="gb-section-title">Popular Categories</h2>
-                <p class="gb-section-subtitle">Explore top categories to find the perfect talent or project.</p>
+                <h2 id="cat-heading" class="gb-hm-heading">Popular Categories</h2>
+                <p class="gb-hm-subheading">Explore top categories to find the perfect talent or project.</p>
             </div>
-            <a href="{% url 'category_list' %}" class="gb-link-viewall">
-                View All
+            <a href="{% url 'category_list' %}" class="gb-hm-link-viewall">
+                <span>View All Categories</span>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </a>
         </div>
 
-        <!-- Categories Grid -->
+        <!-- 6 Category Cards Grid -->
         <div class="row g-3 g-lg-4 row-cols-2 row-cols-md-3 row-cols-lg-6">
             {% for cat in categories|slice:":6" %}
             <div class="col">
-                <a href="{% url 'project_list' %}?category={{ cat.slug }}" class="gb-category-card">
-                    <div class="gb-category-icon-box gb-cat-blue">
-                        <i class="bi {{ cat.icon|default:'bi-briefcase' }}"></i>
+                <a href="{% url 'project_list' %}?category={{ cat.slug }}" class="gb-hm-cat-card">
+                    <div class="gb-hm-cat-icon">
+                        <i class="bi {{ cat.icon|default:'bi-briefcase' }}" aria-hidden="true"></i>
                     </div>
-                    <h5 class="gb-category-name">{{ cat.name }}</h5>
-                    <span class="gb-category-subtext">{{ cat.proj_count }} Project{{ cat.proj_count|pluralize }}</span>
+                    <h3 class="gb-hm-cat-name">{{ cat.name }}</h3>
+                    <span class="gb-hm-cat-subtext">
+                        {% if cat.proj_count %}
+                            {{ cat.proj_count }} Open Project{{ cat.proj_count|pluralize }}
+                        {% else %}
+                            No open projects yet
+                        {% endif %}
+                    </span>
+                    <span class="gb-hm-cat-arrow" aria-hidden="true">
+                        <i class="bi bi-arrow-right"></i>
+                    </span>
                 </a>
             </div>
             {% endfor %}
@@ -148,72 +267,78 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     FEATURED PROJECTS SECTION
+     4. FEATURED PROJECTS
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-section-clean py-5">
+<section class="gb-hm-section gb-hm-section-alt" aria-labelledby="proj-heading">
     <div class="container">
         <!-- Section Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="gb-section-title mb-0">Featured Projects</h2>
-            <a href="{% url 'project_list' %}" class="gb-link-viewall">
-                View All
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+            <div>
+                <h2 id="proj-heading" class="gb-hm-heading">Featured Projects</h2>
+                <p class="gb-hm-subheading">Browse active opportunities waiting for your proposals.</p>
+            </div>
+            <a href="{% url 'project_list' %}" class="gb-hm-link-viewall">
+                <span>View All Projects</span>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
             </a>
         </div>
 
-        <!-- Dynamic Projects Row -->
+        <!-- Dynamic Projects Grid (3 cols desktop, 1 col mobile) -->
         <div class="row g-4">
             {% for project in featured_projects %}
             <div class="col-lg-4 col-md-6">
-                <div class="gb-project-card">
-                    <div class="gb-project-thumb-wrap d-flex align-items-center justify-content-center" style="background: linear-gradient(135deg, #0b132b 0%, #1e3a8a 100%); min-height: 140px;">
-                        <div class="text-center text-white p-3">
-                            <i class="bi {{ project.category.icon|default:'bi-laptop' }}" style="font-size: 2.5rem; opacity: 0.9;"></i>
-                            <div class="small text-white-50 mt-1 fw-semibold">{{ project.category.name|default:"General" }}</div>
-                        </div>
+                <article class="gb-hm-proj-card">
+                    <!-- Refined Dark Banner Header -->
+                    <div class="gb-hm-proj-header">
+                        <span class="gb-hm-proj-cat-badge">
+                            <i class="bi {{ project.category.icon|default:'bi-briefcase' }}" aria-hidden="true"></i>
+                            <span>{{ project.category.name|default:"General" }}</span>
+                        </span>
+                        <span class="gb-hm-status-pill">
+                            <span class="gb-hm-pulse-dot" aria-hidden="true"></span>
+                            <span>Open</span>
+                        </span>
                     </div>
-                    <div class="gb-project-body">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <span class="badge bg-primary-subtle text-primary fw-semibold px-2 py-1 rounded-pill small">
-                                {{ project.category.name|default:"General" }}
-                            </span>
-                            <span class="badge bg-success-subtle text-success fw-semibold px-2 py-1 rounded-pill small">
-                                <span class="status-pulse-dot me-1"></span> Open
-                            </span>
-                        </div>
-                        <h4 class="gb-project-title">
+
+                    <!-- Card Body -->
+                    <div class="gb-hm-proj-body">
+                        <h3 class="gb-hm-proj-title">
                             <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
-                        </h4>
-                        <p class="text-muted small mb-3 flex-grow-1" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">
+                        </h3>
+                        <p class="gb-hm-proj-desc">
                             {{ project.description }}
                         </p>
-                        <div class="gb-project-meta text-muted small mb-3">
-                            <i class="bi bi-person-circle me-1"></i> {{ project.client.get_full_name|default:project.client.username }}
-                            &bull; <i class="bi bi-clock me-1"></i> {{ project.created_at|timesince }} ago
+                        <div class="gb-hm-proj-meta">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            <span>{{ project.client.get_full_name|default:project.client.username }}</span>
+                            <span aria-hidden="true">&bull;</span>
+                            <i class="bi bi-clock" aria-hidden="true"></i>
+                            <span>{{ project.created_at|timesince }} ago</span>
                         </div>
-                        <div class="gb-project-footer pt-3 border-top d-flex justify-content-between align-items-center mt-auto">
-                            <span class="gb-project-price fw-bold text-primary">
-                                {% if project.budget_type == 'hourly' %}
-                                    ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}/hr
-                                {% else %}
-                                    ${{ project.budget_min|floatformat:0 }} - ${{ project.budget_max|floatformat:0 }}
-                                {% endif %}
+
+                        <!-- Card Footer -->
+                        <div class="gb-hm-proj-footer">
+                            <span class="gb-hm-proj-price">
+                                {% money_range project.budget_min project.budget_max request.user project.budget_type %}
                             </span>
-                            <a href="{% url 'project_detail' project.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                                View Details
+                            <a href="{% url 'project_detail' project.id %}" class="gb-hm-proj-btn">
+                                <span>View Details</span>
+                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
                             </a>
                         </div>
                     </div>
-                </div>
+                </article>
             </div>
             {% empty %}
-            <div class="col-12 text-center py-5">
-                <div class="card border-0 bg-light rounded-4 p-5 shadow-sm">
-                    <i class="bi bi-folder2-open text-muted fs-1 mb-3"></i>
-                    <h5 class="fw-bold text-dark">No Open Projects Currently</h5>
+            <div class="col-12 text-center py-4">
+                <div class="card border-0 bg-white rounded-4 p-5 shadow-sm">
+                    <i class="bi bi-folder2-open text-muted fs-1 mb-3" aria-hidden="true"></i>
+                    <h3 class="fw-bold text-dark fs-5">No Open Projects Currently</h3>
                     <p class="text-muted small mb-3">Be the first to post a new project and receive proposals from top freelancers.</p>
                     <div>
-                        <a href="{% url 'client_project_create' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
-                            <i class="bi bi-plus-circle me-1"></i> Post a Project
+                        <a href="{% url 'client_project_create' %}" class="gb-hm-btn-primary">
+                            <i class="bi bi-plus-circle" aria-hidden="true"></i>
+                            <span>Post a Project</span>
                         </a>
                     </div>
                 </div>
@@ -225,43 +350,73 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     TOP RATED FREELANCERS SECTION
+     5. TOP RATED FREELANCERS
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-section-clean py-5">
+<section class="gb-hm-section" aria-labelledby="talent-heading">
     <div class="container">
         <!-- Section Header -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="gb-section-title mb-0">Top Rated Freelancers</h2>
-            {% if top_freelancers %}
-            <a href="{% url 'project_list' %}" class="gb-link-viewall">
-                View All
-            </a>
-            {% endif %}
+        <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-3">
+            <div>
+                <h2 id="talent-heading" class="gb-hm-heading">Top Rated Freelancers</h2>
+                <p class="gb-hm-subheading">Work with India's highest rated specialists with verified portfolios.</p>
+            </div>
         </div>
 
-        <!-- Freelancers Row -->
+        <!-- Freelancers Grid -->
         <div class="row g-4">
             {% for freelancer in top_freelancers %}
-            <div class="col-lg-3 col-md-6">
-                <div class="gb-freelancer-card">
-                    <div class="gb-freelancer-avatar-wrap">
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-hm-talent-card">
+                    <!-- Blue Ring Avatar -->
+                    <div class="gb-hm-avatar-ring">
                         {% if freelancer.profile.avatar %}
-                            <img src="{{ freelancer.profile.avatar.url }}" alt="{{ freelancer.get_full_name|default:freelancer.username }}" class="gb-freelancer-avatar">
+                            <img src="{{ freelancer.profile.avatar.url }}" alt="{{ freelancer.get_full_name|default:freelancer.username }}" class="gb-hm-avatar-img">
                         {% else %}
-                            <div class="gb-freelancer-avatar d-flex align-items-center justify-content-center bg-primary text-white fw-bold fs-4 mx-auto" style="width:72px; height:72px; border-radius:50%;">
+                            <div class="gb-hm-avatar-placeholder">
                                 {{ freelancer.first_name|default:freelancer.username|slice:":1"|upper }}
                             </div>
                         {% endif %}
                     </div>
-                    <h5 class="gb-freelancer-name mt-2">{{ freelancer.get_full_name|default:freelancer.username }}</h5>
-                    <p class="gb-freelancer-role">{{ freelancer.profile.title|default:"Freelance Specialist" }}</p>
-                    <div class="gb-freelancer-rating">
-                        <i class="bi bi-star-fill text-warning"></i>
-                        <span class="fw-bold text-dark">{{ freelancer.avg_rating|default:5.0|floatformat:1 }}</span>
+
+                    <!-- Details -->
+                    <h3 class="gb-hm-talent-name">{{ freelancer.get_full_name|default:freelancer.username }}</h3>
+                    <div class="gb-hm-talent-role">{{ freelancer.profile.title|default:"Freelance Specialist" }}</div>
+
+                    <!-- Rating Row -->
+                    <div class="gb-hm-talent-rating">
+                        {% if freelancer.review_count and freelancer.avg_rating %}
+                            <i class="bi bi-star-fill gb-hm-rating-star" aria-hidden="true"></i>
+                            <span class="fw-bold text-dark">{{ freelancer.avg_rating|floatformat:1 }}</span>
+                            <span class="text-muted small">({{ freelancer.review_count }} review{{ freelancer.review_count|pluralize }})</span>
+                        {% else %}
+                            <span class="badge bg-primary-subtle text-primary rounded-pill px-2 py-1 small fw-semibold">New Talent</span>
+                        {% endif %}
                     </div>
-                    <div class="gb-freelancer-rate-row">
-                        <span class="gb-freelancer-projects">{{ freelancer.profile.location|default:"Remote" }}</span>
-                        <span class="gb-freelancer-price">${{ freelancer.profile.hourly_rate|default:25|floatformat:0 }}/hr</span>
+
+                    <!-- Skill Chips -->
+                    <div class="gb-hm-skill-chips">
+                        {% if freelancer.skills_list %}
+                            {% for skill in freelancer.skills_list %}
+                                <span class="gb-hm-skill-chip">{{ skill }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="gb-hm-skill-chip">Verified Pro</span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Card Footer -->
+                    <div class="gb-hm-talent-footer">
+                        <div class="gb-hm-talent-rate-row">
+                            <span class="gb-hm-talent-location">
+                                <i class="bi bi-geo-alt me-1" aria-hidden="true"></i>{{ freelancer.profile.location|default:"Remote" }}
+                            </span>
+                            <span class="gb-hm-talent-rate">
+                                {{ freelancer.profile.hourly_rate|default:500|money:request.user }}/hr
+                            </span>
+                        </div>
+                        <a href="{% url 'freelancer_public_profile' freelancer.id %}" class="gb-hm-btn-outline">
+                            View Profile
+                        </a>
                     </div>
                 </div>
             </div>
@@ -269,15 +424,16 @@
             <div class="col-12 text-center py-4">
                 <div class="card border-0 bg-white rounded-4 p-5 shadow-sm text-center">
                     <div class="d-inline-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle mb-3 mx-auto" style="width: 64px; height: 64px;">
-                        <i class="bi bi-person-badge fs-2"></i>
+                        <i class="bi bi-person-badge fs-2" aria-hidden="true"></i>
                     </div>
-                    <h5 class="fw-bold text-dark">Join as a Freelancer</h5>
+                    <h3 class="fw-bold text-dark fs-5">Join as a Freelancer</h3>
                     <p class="text-muted small mx-auto mb-3" style="max-width: 480px;">
                         Connect with verified clients, submit proposals for active gigs, and get paid securely. Register your freelancer profile to get started!
                     </p>
                     <div>
-                        <a href="{% url 'register' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-semibold">
-                            <i class="bi bi-person-plus me-1"></i> Register as Freelancer
+                        <a href="{% url 'register' %}" class="gb-hm-btn-primary">
+                            <i class="bi bi-person-plus me-1" aria-hidden="true"></i>
+                            <span>Register as Freelancer</span>
                         </a>
                     </div>
                 </div>
@@ -289,73 +445,235 @@
 
 
 <!-- ═══════════════════════════════════════════════════════════
-     HOW GIGBRIDGE WORKS SECTION (4 Steps + CTA)
+     6. WHY GIGBRIDGE (4 Trust Pillars, Single Royal Blue Accent)
      ═══════════════════════════════════════════════════════════ -->
-<section class="gb-how-section py-5">
+<section class="gb-hm-section gb-hm-section-alt" aria-labelledby="why-heading">
     <div class="container">
-        <!-- Centered Title -->
-        <h2 class="gb-how-main-title text-center mb-5">How GigBridge Works</h2>
+        <!-- Section Header -->
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <h2 id="why-heading" class="gb-hm-heading">Why Choose GigBridge</h2>
+            <p class="gb-hm-subheading">Built from the ground up for transparency, verified trust, and seamless collaboration.</p>
+        </div>
 
-        <!-- 4 Step Cards -->
-        <div class="row g-4 mb-5 position-relative">
-            <!-- Step 1: Post a Project -->
+        <!-- 4 Pillars Grid -->
+        <div class="row g-4">
             <div class="col-lg-3 col-sm-6">
-                <div class="gb-step-card">
-                    <div class="gb-step-icon-wrap gb-step-blue">
-                        <i class="bi bi-pencil-square"></i>
+                <div class="gb-hm-why-card">
+                    <div class="gb-hm-why-icon">
+                        <i class="bi bi-shield-lock-fill" aria-hidden="true"></i>
                     </div>
-                    <h4 class="gb-step-title">1. Post a Project</h4>
-                    <p class="gb-step-desc">Share your requirements and budget.</p>
+                    <h3 class="gb-hm-why-title">Milestone Escrow</h3>
+                    <p class="gb-hm-why-desc">
+                        Funds are reserved in advance and released only after your milestone sign-off. Full protection for both parties.
+                    </p>
                 </div>
             </div>
 
-            <!-- Step 2: Get Proposals -->
             <div class="col-lg-3 col-sm-6">
-                <div class="gb-step-card">
-                    <div class="gb-step-icon-wrap gb-step-orange">
-                        <i class="bi bi-file-earmark-text"></i>
+                <div class="gb-hm-why-card">
+                    <div class="gb-hm-why-icon">
+                        <i class="bi bi-patch-check-fill" aria-hidden="true"></i>
                     </div>
-                    <h4 class="gb-step-title">2. Get Proposals</h4>
-                    <p class="gb-step-desc">Freelancers send their best bids.</p>
+                    <h3 class="gb-hm-why-title">Verified Reviews</h3>
+                    <p class="gb-hm-why-desc">
+                        Every review is strictly tied to a completed, paid contract. Zero fake testimonials or manipulated ratings.
+                    </p>
                 </div>
             </div>
 
-            <!-- Step 3: Hire & Collaborate -->
             <div class="col-lg-3 col-sm-6">
-                <div class="gb-step-card">
-                    <div class="gb-step-icon-wrap gb-step-purple">
-                        <i class="bi bi-people-fill"></i>
+                <div class="gb-hm-why-card">
+                    <div class="gb-hm-why-icon">
+                        <i class="bi bi-chat-dots-fill" aria-hidden="true"></i>
                     </div>
-                    <h4 class="gb-step-title">3. Hire &amp; Collaborate</h4>
-                    <p class="gb-step-desc">Chat, set milestones and get work done.</p>
+                    <h3 class="gb-hm-why-title">Private Messaging</h3>
+                    <p class="gb-hm-why-desc">
+                        Direct, focused collaboration with accepted freelancers only. Spam-free project discussions and file sharing.
+                    </p>
                 </div>
             </div>
 
-            <!-- Step 4: Make Payment -->
             <div class="col-lg-3 col-sm-6">
-                <div class="gb-step-card">
-                    <div class="gb-step-icon-wrap gb-step-cyan">
-                        <i class="bi bi-credit-card-fill"></i>
+                <div class="gb-hm-why-card">
+                    <div class="gb-hm-why-icon">
+                        <i class="bi bi-receipt-cutoff" aria-hidden="true"></i>
                     </div>
-                    <h4 class="gb-step-title">4. Make Payment</h4>
-                    <p class="gb-step-desc">Release payment after approval.</p>
+                    <h3 class="gb-hm-why-title">Transparent Invoicing</h3>
+                    <p class="gb-hm-why-desc">
+                        Auto-generated milestone receipts and Razorpay audit trails for every rupee spent, ready for your accounting.
+                    </p>
                 </div>
             </div>
         </div>
+    </div>
+</section>
 
-        <!-- Ready to get started CTA -->
-        <div class="text-center pt-3">
-            <div class="gb-cta-sparkle mb-2">✦</div>
-            <h4 class="gb-cta-question mb-4">Ready to get started?</h4>
+
+<!-- ═══════════════════════════════════════════════════════════
+     7. HOW IT WORKS TIMELINE (4 Steps)
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-hm-section" aria-labelledby="how-heading">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="text-center max-w-700 mx-auto mb-4">
+            <h2 id="how-heading" class="gb-hm-heading">How GigBridge Works</h2>
+            <p class="gb-hm-subheading">A straightforward 4-step workflow to hire, deliver, and get paid with complete safety.</p>
+        </div>
+
+        <!-- 4 Step Horizontal / Vertical Timeline -->
+        <div class="gb-hm-timeline">
+            <!-- Node 1 -->
+            <div class="gb-hm-step-node">
+                <div class="gb-hm-step-circle">
+                    <span class="gb-hm-step-num">01</span>
+                    <i class="bi bi-pencil-square gb-hm-step-icon" aria-hidden="true"></i>
+                </div>
+                <h3 class="gb-hm-step-title">Post a Project</h3>
+                <p class="gb-hm-step-desc">Publish your scope, deliverables, and budget to invite proposals from top specialists.</p>
+            </div>
+
+            <!-- Node 2 -->
+            <div class="gb-hm-step-node">
+                <div class="gb-hm-step-circle">
+                    <span class="gb-hm-step-num">02</span>
+                    <i class="bi bi-file-earmark-text gb-hm-step-icon" aria-hidden="true"></i>
+                </div>
+                <h3 class="gb-hm-step-title">Review Proposals</h3>
+                <p class="gb-hm-step-desc">Compare bids, inspect verified ratings, and interview freelancers directly.</p>
+            </div>
+
+            <!-- Node 3 -->
+            <div class="gb-hm-step-node">
+                <div class="gb-hm-step-circle">
+                    <span class="gb-hm-step-num">03</span>
+                    <i class="bi bi-people-fill gb-hm-step-icon" aria-hidden="true"></i>
+                </div>
+                <h3 class="gb-hm-step-title">Hire &amp; Collaborate</h3>
+                <p class="gb-hm-step-desc">Fund milestones into escrow, collaborate via private chat, and track deliverables.</p>
+            </div>
+
+            <!-- Node 4 -->
+            <div class="gb-hm-step-node">
+                <div class="gb-hm-step-circle">
+                    <span class="gb-hm-step-num">04</span>
+                    <i class="bi bi-shield-check gb-hm-step-icon" aria-hidden="true"></i>
+                </div>
+                <h3 class="gb-hm-step-title">Approve &amp; Pay</h3>
+                <p class="gb-hm-step-desc">Inspect work and release escrow funds. Rate your freelancer with an authentic review.</p>
+            </div>
+        </div>
+
+        <!-- Guide Link -->
+        <div class="text-center">
+            <a href="{% url 'how_it_works' %}" class="gb-hm-link-viewall">
+                <span>See the full step-by-step guide</span>
+                <i class="bi bi-arrow-right" aria-hidden="true"></i>
+            </a>
+        </div>
+    </div>
+</section>
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     8. TESTIMONIALS (Only Rendered if Real Reviews >= 3)
+     ═══════════════════════════════════════════════════════════ -->
+{% if testimonials and testimonials|length >= 3 %}
+<section class="gb-hm-section gb-hm-section-alt" aria-labelledby="testi-heading">
+    <div class="container">
+        <!-- Section Header -->
+        <div class="text-center max-w-700 mx-auto mb-5">
+            <h2 id="testi-heading" class="gb-hm-heading">Client Success Stories</h2>
+            <p class="gb-hm-subheading">Verified feedback from real businesses who completed projects on GigBridge.</p>
+        </div>
+
+        <!-- 3 Review Cards Grid -->
+        <div class="row g-4">
+            {% for t in testimonials %}
+            <div class="col-lg-4 col-md-6">
+                <div class="gb-hm-testi-card">
+                    <div class="gb-hm-testi-stars" aria-label="{{ t.overall_rating }} out of 5 stars">
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                        <i class="bi bi-star-fill" aria-hidden="true"></i>
+                    </div>
+                    <blockquote class="gb-hm-testi-quote">
+                        &ldquo;{{ t.comment|truncatechars:180 }}&rdquo;
+                    </blockquote>
+                    <div>
+                        <div class="gb-hm-testi-client">{{ t.reviewer.get_full_name|default:t.reviewer.username }}</div>
+                        <div class="gb-hm-testi-project">
+                            <i class="bi bi-briefcase me-1" aria-hidden="true"></i>{{ t.project.title|truncatechars:40 }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+
+<!-- ═══════════════════════════════════════════════════════════
+     9. FINAL HIGH-CONVERSION CTA
+     ═══════════════════════════════════════════════════════════ -->
+<section class="gb-hm-section" aria-label="Get Started with GigBridge">
+    <div class="container">
+        <div class="gb-hm-cta-box gb-hm-reveal">
+            <h2 class="gb-hm-cta-title">Ready to scale your business or start freelancing?</h2>
+            <p class="gb-hm-cta-sub">
+                Join thousands of businesses and talent on India's most secure freelance bridge. Post your project or create your profile in minutes.
+            </p>
             <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
-                <button type="button" class="btn gb-btn-navy-pill" data-bs-toggle="modal" data-bs-target="#joinRoleModal">
-                    <i class="bi bi-person-plus-fill me-1"></i> Join GigBridge
+                <button type="button" class="gb-hm-btn-primary" data-bs-toggle="modal" data-bs-target="#joinRoleModal">
+                    <i class="bi bi-person-plus-fill" aria-hidden="true"></i>
+                    <span>Join GigBridge</span>
                 </button>
-                <a href="{% url 'login' %}" class="btn gb-btn-outline-pill">
-                    <i class="bi bi-box-arrow-in-right me-1"></i> Member Sign In
+                <a href="{% url 'login' %}" class="gb-hm-btn-ghost">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>
+                    <span>Member Sign In</span>
                 </a>
             </div>
         </div>
     </div>
 </section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Subtle IntersectionObserver for Scroll Reveal
+    (function () {
+        'use strict';
+        if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+            document.querySelectorAll('.gb-hm-reveal').forEach(function (el) {
+                el.classList.add('is-revealed');
+            });
+            return;
+        }
+
+        if ('IntersectionObserver' in window) {
+            var observer = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('is-revealed');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: 0.12,
+                rootMargin: '0px 0px -40px 0px'
+            });
+
+            document.querySelectorAll('.gb-hm-reveal').forEach(function (el) {
+                observer.observe(el);
+            });
+        } else {
+            document.querySelectorAll('.gb-hm-reveal').forEach(function (el) {
+                el.classList.add('is-revealed');
+            });
+        }
+    })();
+</script>
 {% endblock %}

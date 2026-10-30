@@ -1,27 +1,27 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
 
-{% block breadcrumb_current %}Review Freelancer{% endblock %}
-{% block dashboard_title %}Review &amp; Rate Freelancer{% endblock %}
+{% block breadcrumb_current %}Review Specialist{% endblock %}
+{% block dashboard_title %}Review &amp; Rate Specialist{% endblock %}
 
 {% block dashboard_content %}
 <div class="row justify-content-center">
     <div class="col-lg-7">
         <div class="card border-0 shadow-sm rounded-4 p-4 p-md-5 bg-white">
             <div class="text-center mb-4">
-                <div class="user-avatar-sm mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem; background: linear-gradient(135deg, #2563eb, #3b82f6);">
+                <div class="user-avatar-sm mx-auto mb-3" style="width: 58px; height: 58px; font-size: 1.4rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800;">
                     {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
                 </div>
-                <h4 class="fw-bold text-navy mb-1">Rate Your Experience with {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h4>
-                <p class="text-muted small">Project: {{ contract.project.title }} (Contract #{{ contract.id }})</p>
+                <h4 class="fw-bold text-dark mb-1">Rate Your Experience with {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h4>
+                <p class="text-muted small">Project: {{ contract.project.title }} &bull; Contract #{{ contract.id }}</p>
             </div>
 
             <form method="POST">
                 {% csrf_token %}
 
-                <!-- Rating Stars / Select -->
+                <!-- Rating -->
                 <div class="mb-4 text-center">
-                    <label class="form-label small fw-bold text-navy d-block mb-2">Overall Rating (1 to 5 Stars)</label>
+                    <label class="form-label small fw-bold text-dark d-block mb-2">Overall Rating (1 to 5 Stars)</label>
                     <div class="d-inline-block" style="max-width: 250px;">
                         {{ form.rating }}
                     </div>
@@ -29,18 +29,18 @@
 
                 <!-- Written Review Comment -->
                 <div class="mb-4">
-                    <label class="form-label small fw-bold text-navy">Detailed Feedback &amp; Testimonial</label>
+                    <label class="form-label small fw-bold text-dark">Detailed Feedback &amp; Testimonial</label>
                     {{ form.comment }}
-                    <div class="form-text small">Explain communication, delivery speed, technical quality, and overall collaboration.</div>
+                    <div class="form-text small">Explain communication, delivery speed, technical craftsmanship, and collaboration.</div>
                     {% if form.comment.errors %}
                         <div class="text-danger small mt-1">{{ form.comment.errors.0 }}</div>
                     {% endif %}
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-                    <a href="{% url 'client_reviews' %}" class="btn btn-outline-secondary btn-sm">Cancel</a>
-                    <button type="submit" class="btn btn-primary btn-sm px-4">
-                        <i class="bi bi-star-fill me-1 text-warning"></i> Submit Verified Review
+                    <a href="{% url 'client_reviews' %}" class="btn btn-outline-secondary btn-sm rounded-3 px-3">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-sm rounded-3 px-4 fw-bold" style="background: #0284C7; border-color: #0284C7;">
+                        Submit Verified Review &rarr;
                     </button>
                 </div>
             </form>

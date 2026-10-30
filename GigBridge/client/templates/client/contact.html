@@ -191,6 +191,25 @@
                             </div>
                         </div>
 
+                        <!-- Hidden Country for intl-tel-input -->
+                        <input type="hidden" name="country" id="id_contact_country" value="{{ form.country.value|default:'IN' }}">
+
+                        <!-- Phone Number (Optional with intl-tel-input) -->
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold text-navy mb-1" for="id_contact_phone">
+                                <i class="bi bi-telephone me-1 text-muted"></i> Phone Number <span class="text-muted fw-normal">(Optional)</span>
+                            </label>
+                            <input type="tel"
+                                   name="phone"
+                                   id="id_contact_phone"
+                                   class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
+                                   placeholder="98765 43210"
+                                   value="{{ form.phone.value|default:'' }}">
+                            {% if form.phone.errors %}
+                                <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
+                            {% endif %}
+                        </div>
+
                         <!-- Subject (Floating Label) -->
                         <div class="form-floating mb-3">
                             <input type="text"
@@ -586,4 +605,29 @@
         }
     }
 </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInput = document.getElementById('id_contact_phone');
+            const countryInput = document.getElementById('id_contact_country');
+            if (phoneInput && window.intlTelInput) {
+                const initCountry = (countryInput && countryInput.value) ? countryInput.value.toLowerCase() : 'in';
+                const iti = window.intlTelInput(phoneInput, {
+                    initialCountry: initCountry,
+                    preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                    separateDialCode: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+                function syncCountry() {
+                    const data = iti.getSelectedCountryData();
+                    if (data && data.iso2 && countryInput) {
+                        countryInput.value = data.iso2.toUpperCase();
+                    }
+                }
+                phoneInput.addEventListener('countrychange', syncCountry);
+                phoneInput.addEventListener('blur', syncCountry);
+                syncCountry();
+            }
+        });
+    </script>
 {% endblock %}

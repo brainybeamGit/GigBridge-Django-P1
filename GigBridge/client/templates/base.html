@@ -67,6 +67,32 @@
 
                 <!-- Right Action Buttons -->
                 <div class="d-flex align-items-center gap-2">
+                    <!-- Global Currency Switcher Dropdown -->
+                    <div class="dropdown me-1">
+                        <button class="btn btn-sm gb-btn-ghost-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2.5 py-1" type="button" id="currencyNavDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.78rem; font-weight: 700; border: 1px solid #E2E8F0;">
+                            {% if user_currency == 'INR' %}
+                                <span>🇮🇳 ₹ INR</span>
+                            {% else %}
+                                <span>🇺🇸 $ USD</span>
+                            {% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 140px; font-size: 0.82rem;" aria-labelledby="currencyNavDropdown">
+                            <li>
+                                <a class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between {% if user_currency == 'INR' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=INR&next={{ request.get_full_path|urlencode }}">
+                                    <span>🇮🇳 ₹ INR (Rupees)</span>
+                                    {% if user_currency == 'INR' %}<i class="bi bi-check2 text-primary"></i>{% endif %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between {% if user_currency == 'USD' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=USD&next={{ request.get_full_path|urlencode }}">
+                                    <span>🇺🇸 $ USD (Dollars)</span>
+                                    {% if user_currency == 'USD' %}<i class="bi bi-check2 text-primary"></i>{% endif %}
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+
+
                     {% if user.is_authenticated %}
                         <!-- Quick Messages Icon Button -->
                         <a href="{% url 'messages_inbox' %}" class="gb-nav-icon-badge text-decoration-none position-relative" title="Messages">
@@ -237,9 +263,27 @@
                 </div>
             </div>
 
-            <!-- Footer Bottom Line -->
-            <div class="gb-footer-bottom">
+            <!-- Footer Bottom Line with Currency Info -->
+            <div class="gb-footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
                 <p class="mb-0">&copy; 2026 GigBridge. All rights reserved.</p>
+                <div class="d-flex align-items-center gap-3">
+                    <span class="text-white-50 small" style="font-size: 0.78rem;">
+                        {% if user_currency == 'USD' %}
+                            <i class="bi bi-info-circle me-1"></i> Prices shown in USD (approx.) &bull; 1 USD &asymp; ₹{{ usd_inr_rate }} INR
+                        {% else %}
+                            <i class="bi bi-currency-rupee me-1"></i> Prices shown in Indian Rupees (₹ INR)
+                        {% endif %}
+                    </span>
+                    <div class="dropup">
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem; border-color: rgba(255,255,255,0.25);" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if user_currency == 'INR' %}🇮🇳 INR (₹){% else %}🇺🇸 USD ($){% endif %}
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-1" style="min-width: 140px; font-size: 0.8rem;">
+                            <li><a class="dropdown-item {% if user_currency == 'INR' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=INR&next={{ request.get_full_path|urlencode }}">🇮🇳 ₹ INR</a></li>
+                            <li><a class="dropdown-item {% if user_currency == 'USD' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=USD&next={{ request.get_full_path|urlencode }}">🇺🇸 $ USD</a></li>
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>

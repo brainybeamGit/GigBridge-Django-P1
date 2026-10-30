@@ -70,4 +70,5 @@ urlpatterns = [
     path('adminpanel/messages/<int:msg_id>/delete/', views.contact_message_delete_view, name='message_delete'),
     path('adminpanel/messages/<int:msg_id>/delete/', views.contact_message_delete_view, name='adminpanel_message_delete'),
     path('adminpanel/messages/bulk/', views.contact_messages_bulk_view, name='messages_bulk_action'),
+    path('adminpanel/settings/', views.admin_settings_view, name='adminpanel_settings'),
 ]

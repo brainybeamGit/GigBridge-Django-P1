@@ -79,13 +79,18 @@
                                 </div>
                             </td>
                             <td>#{{ payment.contract.id }}</td>
-                            <td class="text-end fw-bold text-navy fs-6">&#8377;{{ payment.amount|floatformat:2 }}</td>
+                            <td class="text-end fw-bold text-navy fs-6">
+        {% if payment.currency == 'USD' %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }} {{ payment.currency|default:'INR' }}
+        {% if payment.currency == 'USD' and payment.base_amount_inr %}
+            <div class="small text-muted fw-normal" style="font-size: 0.72rem;">(Base: &#8377;{{ payment.base_amount_inr|floatformat:2 }} INR @ &#8377;{{ payment.exchange_rate|default:83.0 }}/USD)</div>
+        {% endif %}
+    </td>
                         </tr>
                     </tbody>
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="2" class="text-end fw-bold">Subtotal:</td>
-                            <td class="text-end fw-bold">&#8377;{{ payment.amount|floatformat:2 }}</td>
+                            <td class="text-end fw-bold">{% if payment.currency == "USD" %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }}</td>
                         </tr>
                         <tr>
                             <td colspan="2" class="text-end text-muted small">Marketplace Escrow Processing Fee:</td>
@@ -93,7 +98,7 @@
                         </tr>
                         <tr>
                             <td colspan="2" class="text-end fw-bold text-navy fs-5">Total Paid:</td>
-                            <td class="text-end fw-bold text-success fs-5">&#8377;{{ payment.amount|floatformat:2 }} INR</td>
+                            <td class="text-end fw-bold text-success fs-5">{% if payment.currency == "USD" %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }} {{ payment.currency|default:"INR" }}</td>
                         </tr>
                     </tfoot>
                 </table>

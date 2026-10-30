@@ -1,5 +1,6 @@
 {% extends 'freelancer/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Overview{% endblock %}
 {% block dashboard_title %}Freelancer Workspace{% endblock %}
@@ -578,12 +579,12 @@
                     <span class="fd-metric-tag">FINANCE // 01</span>
                     <span class="fd-metric-pill" style="background:#DCFCE7; color:#15803D;">COMPLETED</span>
                 </div>
-                <div class="fd-metric-val" style="color: #16A34A;">&#8377;{{ total_earnings|floatformat:0 }}</div>
+                <div class="fd-metric-val" style="color: #16A34A;">{{ total_earnings|money:request.user }}</div>
                 <div class="fd-metric-title">Total Verified Earnings</div>
             </div>
             <div class="fd-metric-footer">
                 <span>Pipeline Value:</span>
-                <strong class="text-dark">&#8377;{{ active_contracts_value|floatformat:0 }} active</strong>
+                <strong class="text-dark">{{ active_contracts_value|money:request.user }} active</strong>
             </div>
         </div>
     </div>
@@ -659,7 +660,7 @@
                 </div>
                 <div class="fd-kpi-pill">
                     <span class="text-muted" style="font-size: 0.66rem; font-weight: 700; text-transform: uppercase;">Total Payouts</span>
-                    <span class="fd-kpi-pill-val">&#8377;{{ total_earnings|floatformat:0 }}</span>
+                    <span class="fd-kpi-pill-val">{{ total_earnings|money:request.user }}</span>
                 </div>
             </div>
             <div style="height: 240px; position: relative;">
@@ -750,7 +751,7 @@
                                 <div class="d-flex align-items-center gap-3 flex-wrap">
                                     <div class="text-end">
                                         <div class="small text-muted text-uppercase fw-bold" style="font-size:0.66rem;letter-spacing:0.06em;">Contract Value</div>
-                                        <div class="fw-bold text-success fs-5">&#8377;{{ contract.total_amount }}</div>
+                                        <div class="fw-bold text-success fs-5">{% contract_money contract contract.total_amount %}</div>
                                     </div>
                                     <div style="min-width: 120px;">
                                         <div class="d-flex justify-content-between small text-muted mb-1" style="font-size:0.72rem;">
@@ -814,7 +815,7 @@
                                     </small>
                                 </div>
                                 <div class="d-flex align-items-center gap-3">
-                                    <span class="fw-bold text-dark fs-6">&#8377;{{ proposal.bid_amount }}</span>
+                                    <span class="fw-bold text-dark fs-6">{{ proposal.bid_amount|money:request.user }}</span>
                                     {% if proposal.status == 'pending' %}
                                         <span class="badge" style="background:#FEF3C7;color:#B45309;padding:6px 12px;border-radius:8px;font-size:0.75rem;">Pending</span>
                                     {% elif proposal.status == 'accepted' %}
@@ -928,7 +929,7 @@
                                 <div class="fw-bold text-dark small text-truncate" style="max-width: 170px;">
                                     {{ ms.title }}
                                 </div>
-                                <span class="fw-bold text-success small">&#8377;{{ ms.amount }}</span>
+                                <span class="fw-bold text-success small">{{ ms.amount|money:request.user }}</span>
                             </div>
                             <div class="text-muted small mb-2 text-truncate" style="font-size: 0.75rem;">
                                 {{ ms.contract.project.title }}

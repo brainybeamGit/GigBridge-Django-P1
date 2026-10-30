@@ -1,5 +1,6 @@
 {% extends 'freelancer/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Earnings{% endblock %}
 {% block dashboard_title %}Earnings &amp; Payouts Ledger{% endblock %}
@@ -289,7 +290,7 @@
                     <span class="fe-metric-tag">FINANCE // 01</span>
                     <span class="fe-metric-pill" style="background:#DCFCE7; color:#15803D;">COMPLETED</span>
                 </div>
-                <div class="fe-metric-val" style="color: #16A34A;">&#8377;{{ total_earned|floatformat:2 }}</div>
+                <div class="fe-metric-val" style="color: #16A34A;">{{ total_earned|money:request.user }}</div>
                 <div class="fe-metric-title">Total Money Earned</div>
             </div>
             <div class="fe-metric-footer">
@@ -307,12 +308,12 @@
                     <span class="fe-metric-tag">ESCROW // 02</span>
                     <span class="fe-metric-pill" style="background:#E0F2FE; color:#0284C7;">IN ESCROW</span>
                 </div>
-                <div class="fe-metric-val" style="color: #0284C7;">&#8377;{{ pending_escrow|floatformat:2 }}</div>
+                <div class="fe-metric-val" style="color: #0284C7;">{{ pending_escrow|money:request.user }}</div>
                 <div class="fe-metric-title">Pending Escrow Pipeline</div>
             </div>
             <div class="fe-metric-footer">
                 <span>Contract Pipeline:</span>
-                <strong class="text-dark">&#8377;{{ active_pipeline_value|floatformat:2 }} active</strong>
+                <strong class="text-dark">{{ active_pipeline_value|money:request.user }} active</strong>
             </div>
         </div>
     </div>
@@ -364,7 +365,7 @@
             <small class="text-muted">Last 6 months verified payouts credited from milestone approvals</small>
         </div>
         <span class="badge" style="background:#F0F9FF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.75rem;padding:6px 12px;">
-            Verified Payouts: &#8377;{{ total_earned|floatformat:2 }}
+            Verified Payouts: {{ total_earned|money:request.user }}
         </span>
     </div>
     <div style="height: 240px; position: relative;">
@@ -416,7 +417,7 @@
 
                         <div class="d-flex align-items-center gap-3">
                             <div class="text-end">
-                                <div class="fw-bold text-success fs-5">&#8377;{{ payment.amount }}</div>
+                                <div class="fw-bold text-success fs-5">{{ payment.amount|money:request.user }}</div>
                                 <span class="badge" style="background:#DCFCE7;color:#15803D;font-size:0.68rem;padding:3px 8px;">{{ payment.get_status_display }}</span>
                             </div>
 

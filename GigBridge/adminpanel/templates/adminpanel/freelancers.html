@@ -80,8 +80,16 @@
 <!-- Search & Filters -->
 <div class="admin-card p-3 mb-4">
     <form method="GET" action="{% url 'adminpanel_freelancers' %}" class="row g-2 align-items-center">
-        <div class="col-md-7">
+        <div class="col-md-5">
             <input type="text" name="q" value="{{ search_query }}" class="form-control" placeholder="Search by name, username, email, title, skills, or location...">
+        </div>
+        <div class="col-md-2">
+            <select name="country" class="form-select">
+                <option value="">All Countries</option>
+                {% for cntry in available_countries %}
+                    <option value="{{ cntry }}" {% if country_filter == cntry %}selected{% endif %}>{{ cntry }}</option>
+                {% endfor %}
+            </select>
         </div>
         <div class="col-md-3">
             <select name="status" class="form-select">
@@ -126,7 +134,12 @@
                 <tr>
                     <td class="ps-4">
                         <div class="fw-bold text-dark">{{ f.get_full_name|default:f.username }}</div>
-                        <span class="text-muted small">@{{ f.username }}</span>
+                        <div class="d-flex align-items-center gap-1">
+                            <span class="text-muted small">@{{ f.username }}</span>
+                            <span class="badge bg-light text-dark border small" style="font-size: 0.65rem;">{{ f.profile.country|default:'IN' }}</span>
+                            <span class="badge {% if f.profile.display_currency == 'USD' %}bg-primary-subtle text-primary{% else %}bg-success-subtle text-success{% endif %}" style="font-size: 0.62rem;">{{ f.profile.display_currency|default:'INR' }}</span>
+                        </div>
+                        <div class="text-muted" style="font-size: 0.72rem; font-family: monospace;">{{ f.profile.full_phone|default:f.profile.phone|default:'' }}</div>
                     </td>
                     <td>
                         <span class="badge bg-light text-dark border px-2 py-1">

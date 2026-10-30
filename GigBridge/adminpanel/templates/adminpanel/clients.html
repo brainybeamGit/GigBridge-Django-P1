@@ -353,14 +353,22 @@
                         {% endif %}
                     </td>
 
-                    <!-- Contact -->
+                    <!-- Contact & Phone -->
                     <td>
                         <a href="mailto:{{ c.email }}" class="text-decoration-none text-dark small fw-medium d-block">
                             {{ c.email|default:"No email registered" }}
                         </a>
-                        {% if c.profile.phone %}
-                            <span class="text-muted" style="font-size:0.75rem;font-family:monospace;">{{ c.profile.phone }}</span>
-                        {% endif %}
+                        <div class="d-flex align-items-center gap-1 mt-1">
+                            <span class="badge bg-light text-dark border small" style="font-size: 0.7rem; font-family: monospace;">
+                                {% if c.profile.country %}{{ c.profile.country }}{% else %}IN{% endif %}
+                            </span>
+                            <span class="badge {% if c.profile.display_currency == 'USD' %}bg-primary-subtle text-primary{% else %}bg-success-subtle text-success{% endif %} small" style="font-size: 0.68rem;">
+                                {{ c.profile.display_currency|default:'INR' }}
+                            </span>
+                            <span class="text-muted" style="font-size:0.74rem; font-family:monospace;">
+                                {{ c.profile.full_phone|default:c.profile.phone|default:"No phone" }}
+                            </span>
+                        </div>
                     </td>
 
                     <!-- Location -->
