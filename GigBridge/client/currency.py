@@ -1,7 +1,21 @@
 import re
+import threading
 from decimal import Decimal, ROUND_HALF_UP
 from django.conf import settings
 from django.core.cache import cache
+
+# Thread-local storage to capture the current request seamlessly
+_thread_locals = threading.local()
+
+
+def set_current_request(request):
+    """Stores the active request for the current thread."""
+    _thread_locals.request = request
+
+
+def get_current_request():
+    """Retrieves the active request for the current thread, or None."""
+    return getattr(_thread_locals, 'request', None)
 
 
 def get_currency_for_country(country_code):
@@ -82,6 +96,7 @@ def format_inr(amount, include_symbol=True, decimals=None):
     """
     Formats an INR amount using the official Indian digit grouping system:
     Last 3 digits grouped, then pairs of 2 digits (e.g. ₹1,25,000, ₹10,00,000).
+    Whole numbers are formatted with zero decimal places by default.
     """
     if amount is None or amount == '':
         return ''
@@ -159,45 +174,48 @@ def format_usd(amount_in_usd, include_symbol=True, decimals=2):
 
 def resolve_currency_for_user_or_request(user=None, request=None, currency_override=None):
     """
-    Resolves the display currency ('INR' or 'USD') in priority order:
-    1. Explicit currency override
-    2. Authenticated user's profile display_currency
-    3. Request cookies 'gb_currency'
-    4. HTTP Accept-Language or country headers (IN -> INR, other -> USD)
-    5. Fallback: 'INR'
+    Resolves the display currency ('INR' or 'USD') in strict priority order:
+    1. Explicit currency_override ('INR' or 'USD')
+    2. Manual switch cookie 'gb_currency' (overrides registration for display)
+    3. Logged-in user's profile display_currency
+    4. Guests:
+       - Accept-Language header or saved country cookie ('IN' -> 'INR', otherwise 'USD')
+    5. Fallback: 'USD'
     """
     if currency_override:
         curr = str(currency_override).strip().upper()
         if curr in ['INR', 'USD']:
             return curr
 
-    # If user provided as User model
-    if user and hasattr(user, 'is_authenticated') and user.is_authenticated:
-        profile = getattr(user, 'profile', None)
-        if profile and profile.display_currency:
-            return profile.display_currency
+    # Fall back to thread-local request if request not explicitly passed
+    req = request or get_current_request()
 
-    # Check request
-    if request:
-        # User in request
-        req_user = getattr(request, 'user', None)
-        if req_user and hasattr(req_user, 'is_authenticated') and req_user.is_authenticated:
-            profile = getattr(req_user, 'profile', None)
-            if profile and profile.display_currency:
-                return profile.display_currency
-
-        # Cookie
-        cookie_curr = request.COOKIES.get('gb_currency', '').strip().upper()
+    # 1. Manual choice cookie 'gb_currency' takes precedence for display
+    if req and hasattr(req, 'COOKIES'):
+        cookie_curr = req.COOKIES.get('gb_currency', '').strip().upper()
         if cookie_curr in ['INR', 'USD']:
             return cookie_curr
 
-        # Accept-Language header
-        accept_lang = request.META.get('HTTP_ACCEPT_LANGUAGE', '').upper()
-        # Look for country code IN in accept-language e.g. en-IN, hi-IN
+    # 2. Logged-in user profile display_currency
+    target_user = user
+    if not target_user and req and hasattr(req, 'user'):
+        target_user = req.user
+
+    if target_user and hasattr(target_user, 'is_authenticated') and target_user.is_authenticated:
+        profile = getattr(target_user, 'profile', None)
+        if profile and profile.display_currency:
+            return profile.display_currency
+
+    # 3. Guests: check country cookie or Accept-Language header
+    if req:
+        country_cookie = req.COOKIES.get('gb_country', '').strip().upper()
+        if country_cookie == 'IN':
+            return 'INR'
+
+        accept_lang = req.META.get('HTTP_ACCEPT_LANGUAGE', '').upper()
         if re.search(r'[-_]IN\b', accept_lang):
             return 'INR'
         elif accept_lang:
-            # Non-Indian visitor with accept-language
             return 'USD'
 
     return 'USD'

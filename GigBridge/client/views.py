@@ -1,3 +1,5 @@
+from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.cache import patch_vary_headers
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout, authenticate, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
@@ -774,6 +776,12 @@ def contact_view(request):
                 'name': request.user.get_full_name() or request.user.username,
                 'email': request.user.email,
             }
+            profile = getattr(request.user, 'profile', None)
+            if profile:
+                if getattr(profile, 'country', None):
+                    initial['country'] = profile.country
+                if getattr(profile, 'phone_number', None):
+                    initial['phone'] = profile.phone_number
         form = ContactForm(initial=initial)
     return render(request, 'client/contact.html', {
         'form': form,
@@ -1519,7 +1527,7 @@ def client_payment_create_order_view(request):
         amount_in_smallest_unit = int(round(charge_amount * 100))  # paise
         if client_currency == 'USD':
             usd_equiv = convert_inr_to_usd(milestone.amount, rate=rate)
-            charge_note = f"Your card will be charged ₹{charge_amount:,.2f} INR (approx. ${usd_equiv:.2f} USD at locked rate 1 USD = ₹{rate:.2f})."
+            charge_note = f"Charged in INR: ₹{charge_amount:,.2f} INR (approx. ${usd_equiv:.2f} USD at locked rate 1 USD = ₹{rate:.2f})."
         else:
             charge_note = f"Amount to pay: ₹{charge_amount:,.2f} INR"
 
@@ -2455,20 +2463,96 @@ def client_confirm_delete_view(request, pk):
     return render(request, 'client/confirm_delete.html', {'project': project})
 
 
-def set_currency_view(request):
-    currency = request.GET.get('currency', '').strip().upper()
+def currency_switch_view(request, code=None):
+    """
+    Rebuilt currency switcher view:
+    - Validates currency code ('INR' or 'USD').
+    - Sets cookie 'gb_currency' (1 year, samesite Lax, path '/').
+    - If user is logged in, also updates user.profile.display_currency.
+    - Validates 'next' parameter with url_has_allowed_host_and_scheme to avoid open redirects.
+    - Attaches Vary: Cookie header to prevent full-page cache collisions.
+    """
+    currency = (code or request.GET.get('currency') or request.POST.get('currency') or '').strip().upper()
     if currency not in ['INR', 'USD']:
         currency = 'INR'
 
-    next_url = request.META.get('HTTP_REFERER') or '/'
-    if not next_url.startswith('/') and '127.0.0.1' not in next_url and 'localhost' not in next_url:
+    next_url = request.GET.get('next') or request.POST.get('next') or request.META.get('HTTP_REFERER') or '/'
+    is_safe = url_has_allowed_host_and_scheme(
+        url=next_url,
+        allowed_hosts={request.get_host()},
+        require_https=request.is_secure()
+    )
+    if not is_safe:
         next_url = '/'
 
     response = redirect(next_url)
-    response.set_cookie('gb_currency', currency, max_age=365 * 24 * 3600)
+    response.set_cookie(
+        'gb_currency',
+        currency,
+        max_age=365 * 24 * 3600,
+        samesite='Lax',
+        path='/'
+    )
+    patch_vary_headers(response, ('Cookie',))
 
     if request.user.is_authenticated and hasattr(request.user, 'profile'):
         request.user.profile.display_currency = currency
         request.user.profile.save(update_fields=['display_currency'])
 
     return response
+
+
+# Alias for backward compatibility
+set_currency_view = currency_switch_view
+
+
+@login_required
+@require_POST
+def complete_profile_currency_view(request):
+    """
+    Modal/banner submission for existing users missing country/phone.
+    Validates phone with phonenumbers, sets country, phone, and display_currency.
+    """
+    country = request.POST.get('country', '').strip().upper() or 'IN'
+    phone_raw = request.POST.get('phone', '').strip()
+    next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or '/'
+
+    if not url_has_allowed_host_and_scheme(url=next_url, allowed_hosts={request.get_host()}):
+        next_url = '/'
+
+    profile = getattr(request.user, 'profile', None)
+    if not profile:
+        profile = UserProfile.objects.create(user=request.user)
+
+    if not phone_raw:
+        messages.error(request, "Please enter your phone number to complete your profile.")
+        return redirect(next_url)
+
+    try:
+        import phonenumbers
+        parsed = phonenumbers.parse(phone_raw, country)
+        if not phonenumbers.is_valid_number(parsed):
+            COUNTRY_NAMES = {
+                'IN': 'India', 'US': 'United States', 'GB': 'United Kingdom',
+                'AE': 'United Arab Emirates', 'CA': 'Canada', 'AU': 'Australia',
+                'DE': 'Germany', 'FR': 'France', 'SG': 'Singapore'
+            }
+            country_name = COUNTRY_NAMES.get(country, country)
+            messages.error(request, f"Enter a valid phone number for {country_name}.")
+            return redirect(next_url)
+
+        profile.country = phonenumbers.region_code_for_number(parsed) or country
+        profile.phone_country_code = f"+{parsed.country_code}"
+        profile.phone_number = str(parsed.national_number)
+        profile.phone = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+        profile.display_currency = 'INR' if profile.country == 'IN' else 'USD'
+        profile.save()
+
+        messages.success(request, f"Profile updated. Your default currency is set to {profile.display_currency}.")
+        response = redirect(next_url)
+        response.set_cookie('gb_currency', profile.display_currency, max_age=365*24*3600, samesite='Lax', path='/')
+        patch_vary_headers(response, ('Cookie',))
+        return response
+    except Exception:
+        messages.error(request, "Invalid phone number format. Please check your country code and digits.")
+        return redirect(next_url)

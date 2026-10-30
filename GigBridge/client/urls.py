@@ -68,5 +68,7 @@ urlpatterns = [
     path('client/reviews/create/<int:contract_pk>/', views.contract_review_create_view, name='client_review_create'),
     path('client/profile/', views.client_profile_view, name='client_profile'),
     path('client/profile/delete/', views.client_delete_account_view, name='client_delete_account'),
-    path('currency/set/', views.set_currency_view, name='set_currency'),
+    path('currency/switch/<str:code>/', views.currency_switch_view, name='currency_switch'),
+    path('currency/set/', views.currency_switch_view, name='set_currency'),
+    path('profile/complete-currency/', views.complete_profile_currency_view, name='complete_profile_currency'),
 ]

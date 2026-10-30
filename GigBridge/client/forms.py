@@ -60,6 +60,14 @@ class RegistrationForm(UserCreationForm):
         required=False,
         widget=forms.HiddenInput(attrs={'id': 'id_phone_number'})
     )
+    phone_e164 = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_phone_e164'})
+    )
+    country_fallback = forms.CharField(
+        required=False,
+        widget=forms.HiddenInput(attrs={'id': 'id_country_fallback'})
+    )
 
     company_name = forms.CharField(
         max_length=150,
@@ -121,24 +129,44 @@ class RegistrationForm(UserCreationForm):
             self.add_error('password2', 'The passwords you entered do not match.')
 
         # Server-side International Phone Number Validation via phonenumbers
-        phone_raw = cleaned_data.get('phone', '').strip()
-        country_code = (cleaned_data.get('country') or 'IN').strip().upper()
+        phone_raw = (cleaned_data.get('phone') or '').strip()
+        country_code = (self.data.get('country') or cleaned_data.get('country') or self.data.get('country_fallback') or 'IN').strip().upper()
+        phone_e164_raw = (self.data.get('phone_e164') or '').strip()
 
-        if phone_raw:
+        if not phone_raw and not phone_e164_raw:
+            self.add_error('phone', 'Please enter your phone number.')
+        else:
+            parsed = None
             try:
-                parsed = phonenumbers.parse(phone_raw, country_code)
-                if not phonenumbers.is_valid_number(parsed):
-                    region = phonenumbers.region_code_for_number(parsed) or country_code
-                    country_name = "India" if region == "IN" else ("United States" if region == "US" else region)
-                    self.add_error('phone', f"Enter a valid phone number for {country_name}.")
-                else:
-                    e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
-                    cleaned_data['phone'] = e164
-                    cleaned_data['phone_number'] = str(parsed.national_number)
-                    cleaned_data['phone_country_code'] = f"+{parsed.country_code}"
-                    cleaned_data['country'] = phonenumbers.region_code_for_number(parsed) or country_code
+                if phone_raw:
+                    parsed = phonenumbers.parse(phone_raw, country_code)
             except phonenumbers.NumberParseException:
-                self.add_error('phone', "Invalid phone number format. Please check your country code and digits.")
+                parsed = None
+
+            if (not parsed or not phonenumbers.is_valid_number(parsed)) and phone_e164_raw:
+                try:
+                    parsed_e164 = phonenumbers.parse(phone_e164_raw, country_code)
+                    if phonenumbers.is_valid_number(parsed_e164):
+                        parsed = parsed_e164
+                except phonenumbers.NumberParseException:
+                    pass
+
+            if not parsed or not phonenumbers.is_valid_number(parsed):
+                COUNTRY_NAMES = {
+                    'IN': 'India', 'US': 'United States', 'GB': 'United Kingdom',
+                    'AE': 'United Arab Emirates', 'CA': 'Canada', 'AU': 'Australia',
+                    'DE': 'Germany', 'FR': 'France', 'SG': 'Singapore'
+                }
+                region = (parsed and phonenumbers.region_code_for_number(parsed)) or country_code
+                country_name = COUNTRY_NAMES.get(region, region)
+                self.add_error('phone', f"Enter a valid phone number for {country_name}.")
+            else:
+                e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
+                cleaned_data['phone'] = e164
+                cleaned_data['phone_e164'] = e164
+                cleaned_data['phone_number'] = str(parsed.national_number)
+                cleaned_data['phone_country_code'] = f"+{parsed.country_code}"
+                cleaned_data['country'] = phonenumbers.region_code_for_number(parsed) or country_code
 
         return cleaned_data
 

@@ -877,7 +877,7 @@
                 labels: initialAnalytics.revenue_chart.labels,
                 datasets: [
                     {
-                        label: 'Settled Revenue (₹)',
+                        label: 'Settled Revenue ({{ currency_symbol }})',
                         data: initialAnalytics.revenue_chart.revenue,
                         borderColor: '#0284C7',
                         borderWidth: 2.8,
@@ -891,7 +891,7 @@
                         pointHoverRadius: 6.5,
                     },
                     {
-                        label: 'Active Escrow (₹)',
+                        label: 'Active Escrow ({{ currency_symbol }})',
                         data: initialAnalytics.revenue_chart.escrow,
                         borderColor: '#38BDF8',
                         borderWidth: 2.2,
@@ -929,7 +929,7 @@
                         usePointStyle: true,
                         callbacks: {
                             label: function (context) {
-                                return context.dataset.label + ': ₹' + Number(context.raw).toLocaleString();
+                                return context.dataset.label + ': {{ currency_symbol }}' + Number(context.raw).toLocaleString();
                             }
                         }
                     }
@@ -944,7 +944,7 @@
                         ticks: {
                             font: { size: 11 },
                             callback: function (val) {
-                                return '₹' + val.toLocaleString();
+                                return '{{ currency_symbol }}' + val.toLocaleString();
                             }
                         }
                     }

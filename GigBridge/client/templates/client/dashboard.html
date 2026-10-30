@@ -1067,7 +1067,7 @@
                 data: {
                     labels: spendLabels,
                     datasets: [{
-                        label: 'Monthly Payouts ($)',
+                        label: 'Monthly Payouts ({{ currency_symbol }})',
                         data: spendData,
                         borderColor: '#0284C7',
                         borderWidth: 3,
@@ -1100,7 +1100,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return ' Payout: $' + Number(context.parsed.y).toLocaleString();
+                                    return ' Payout: {{ currency_symbol }}' + Number(context.parsed.y).toLocaleString();
                                 }
                             }
                         }
@@ -1121,7 +1121,7 @@
                                 font: { size: 11, family: 'Plus Jakarta Sans' },
                                 color: '#64748B',
                                 callback: function(value) {
-                                    return '$' + value;
+                                    return '{{ currency_symbol }}' + value;
                                 }
                             }
                         }

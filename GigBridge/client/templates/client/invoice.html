@@ -1,3 +1,4 @@
+{% load currency_tags %}
 {% extends 'base.html' %}
 {% load static %}
 
@@ -80,9 +81,9 @@
                             </td>
                             <td>#{{ payment.contract.id }}</td>
                             <td class="text-end fw-bold text-navy fs-6">
-        {% if payment.currency == 'USD' %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }} {{ payment.currency|default:'INR' }}
+        {{ payment.amount|money:payment.currency }}
         {% if payment.currency == 'USD' and payment.base_amount_inr %}
-            <div class="small text-muted fw-normal" style="font-size: 0.72rem;">(Base: &#8377;{{ payment.base_amount_inr|floatformat:2 }} INR @ &#8377;{{ payment.exchange_rate|default:83.0 }}/USD)</div>
+            <div class="small text-muted fw-normal" style="font-size: 0.72rem;">(Base: {{ payment.base_amount_inr|money:'INR' }} @ ₹{{ payment.exchange_rate|default:83.0 }}/USD)</div>
         {% endif %}
     </td>
                         </tr>
@@ -90,15 +91,15 @@
                     <tfoot class="table-light">
                         <tr>
                             <td colspan="2" class="text-end fw-bold">Subtotal:</td>
-                            <td class="text-end fw-bold">{% if payment.currency == "USD" %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }}</td>
+                            <td class="text-end fw-bold">{{ payment.amount|money:payment.currency }}</td>
                         </tr>
                         <tr>
                             <td colspan="2" class="text-end text-muted small">Marketplace Escrow Processing Fee:</td>
-                            <td class="text-end text-muted small">&#8377;0.00</td>
+                            <td class="text-end text-muted small">{{ 0|money }}</td>
                         </tr>
                         <tr>
                             <td colspan="2" class="text-end fw-bold text-navy fs-5">Total Paid:</td>
-                            <td class="text-end fw-bold text-success fs-5">{% if payment.currency == "USD" %}${% else %}&#8377;{% endif %}{{ payment.amount|floatformat:2 }} {{ payment.currency|default:"INR" }}</td>
+                            <td class="text-end fw-bold text-success fs-5">{{ payment.amount|money:payment.currency }}</td>
                         </tr>
                     </tfoot>
                 </table>

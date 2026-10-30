@@ -8,18 +8,18 @@
 <section class="gb-pl-hero py-5">
     <div class="container position-relative" style="z-index: 2;">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2 small text-white-50">
+            <ol class="breadcrumb gb-pl-breadcrumb mb-2">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                    <a href="{% url 'home' %}" >
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
                 <li class="breadcrumb-item">
-                    <a href="{% url 'project_list' %}" class="text-white-50 text-decoration-none">
+                    <a href="{% url 'project_list' %}" >
                         Browse Projects
                     </a>
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Saved Projects</li>
+                <li class="breadcrumb-item active" aria-current="page">Saved Projects</li>
             </ol>
         </nav>
 
@@ -28,7 +28,7 @@
                 <div class="gb-pl-pill-badge">
                     <i class="bi bi-bookmark-star-fill text-warning"></i> Personal Bookmarks
                 </div>
-                <h1 class="gb-pl-hero-title mb-1">Your Saved Projects</h1>
+                <h1 class="gb-pl-hero-title mb-1">Your <span class="gb-pl-gradient-text">Saved Projects</span></h1>
                 <p class="gb-pl-hero-subtitle mb-0">Quickly review and submit proposals to gigs you've marked for follow-up.</p>
             </div>
             <div>

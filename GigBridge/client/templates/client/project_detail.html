@@ -298,11 +298,9 @@
                                             </div>
                                             <div class="form-text small">
                                                 Client's range: {% money_range project.budget_min project.budget_max request.user project.budget_type %}
-                                                {% if user_currency == 'USD' %}
-                                                    <div id="proposalBidInrPreview" class="text-primary mt-1" style="font-size: 0.76rem;">
-                                                        <i class="bi bi-arrow-repeat me-1"></i> <span id="proposalBidInrText">&asymp; ₹0.00 base INR for escrow</span>
-                                                    </div>
-                                                {% endif %}
+                                                <div id="proposalBidLivePreviewWrap" class="text-primary mt-1" style="font-size: 0.76rem;">
+                                                    <i class="bi bi-arrow-repeat me-1"></i> <span id="proposalBidLivePreview">&asymp; {% if active_currency == 'USD' %}₹0.00 base INR for escrow{% else %}$0.00 USD{% endif %}</span>
+                                                </div>
                                             </div>
                                             {% if proposal_form.bid_amount.errors %}
                                                 <div class="text-danger small mt-1">{{ proposal_form.bid_amount.errors }}</div>
@@ -574,5 +572,31 @@
             alert('Project URL: ' + window.location.href);
         });
     }
+
+    // Live proposal bid currency conversion preview
+    const bidInput = document.getElementById("id_bid_amount");
+    const bidPreview = document.getElementById("proposalBidLivePreview");
+    const rate_pd = parseFloat("{{ usd_inr_rate|default:83.0 }}") || 83.0;
+    const isUsd_pd = {% if active_currency == 'USD' %}true{% else %}false{% endif %};
+
+    if (bidInput && bidPreview) {
+        function updateBidPreview() {
+            const val = parseFloat(bidInput.value);
+            if (!isNaN(val) && val > 0) {
+                if (isUsd_pd) {
+                    const inr = Math.round(val * rate_pd);
+                    bidPreview.innerHTML = `&asymp; ₹${inr.toLocaleString()} base INR for escrow`;
+                } else {
+                    const usd = (val / rate_pd).toFixed(2);
+                    bidPreview.innerHTML = `&asymp; $${Number(usd).toLocaleString()} USD`;
+                }
+            } else {
+                bidPreview.innerHTML = isUsd_pd ? '&asymp; ₹0.00 base INR for escrow' : '&asymp; $0.00 USD';
+            }
+        }
+        bidInput.addEventListener("input", updateBidPreview);
+        updateBidPreview();
+    }
+
 </script>
 {% endblock %}

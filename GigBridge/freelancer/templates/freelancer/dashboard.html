@@ -1014,7 +1014,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return ' Earnings: ₹' + Number(context.parsed.y).toLocaleString();
+                                    return ' Earnings: {{ currency_symbol }}' + Number(context.parsed.y).toLocaleString();
                                 }
                             }
                         }
@@ -1037,7 +1037,7 @@
                                 maxTicksLimit: 5,
                                 precision: 0,
                                 callback: function(value) {
-                                    return '₹' + value;
+                                    return '{{ currency_symbol }}' + value;
                                 }
                             }
                         }

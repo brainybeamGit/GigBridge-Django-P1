@@ -70,7 +70,10 @@ class UserProfile(models.Model):
     def save(self, *args, **kwargs):
         if self.country:
             self.country = self.country.strip().upper()
-            self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+            if getattr(self, '_state', None) and self._state.adding:
+                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+            elif not self.display_currency:
+                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
         elif not self.display_currency:
             self.display_currency = 'INR'
 

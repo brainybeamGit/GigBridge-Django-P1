@@ -1049,10 +1049,11 @@
                             <label class="auth-luxe-label" for="id_phone">
                                 Phone Number <span class="req-star">*</span>
                             </label>
-                            <!-- Hidden inputs for country code and national number -->
+                            <!-- Hidden inputs for country code, national number, and E.164 -->
                             <input type="hidden" id="id_country" name="country" value="{{ form.country.value|default:'IN' }}">
                             <input type="hidden" id="id_phone_country_code" name="phone_country_code" value="{{ form.phone_country_code.value|default:'+91' }}">
                             <input type="hidden" id="id_phone_number" name="phone_number" value="{{ form.phone_number.value|default:'' }}">
+                            <input type="hidden" id="id_phone_e164" name="phone_e164" value="{{ form.phone_e164.value|default:'' }}">
 
                             <input
                                 type="tel"
@@ -1061,13 +1062,36 @@
                                 class="auth-luxe-input {% if form.phone.errors or form.phone_number.errors or form.country.errors %}auth-luxe-input-error{% endif %}"
                                 placeholder="98765 43210"
                                 value="{{ form.phone.value|default:form.phone_number.value|default:'' }}"
+                                required
                             >
+                            <!-- Plain country selector fallback when JavaScript is disabled -->
+                            <noscript>
+                                <div class="mt-2 p-2 bg-light rounded-3 border">
+                                    <label class="small text-muted d-block mb-1">Select Country (No JavaScript):</label>
+                                    <select name="country_fallback" class="form-select form-select-sm">
+                                        <option value="IN" selected>🇮🇳 India (+91) — INR (₹)</option>
+                                        <option value="US">🇺🇸 United States (+1) — USD ($)</option>
+                                        <option value="GB">🇬🇧 United Kingdom (+44) — USD ($)</option>
+                                        <option value="AE">🇦🇪 United Arab Emirates (+971) — USD ($)</option>
+                                        <option value="CA">🇨🇦 Canada (+1) — USD ($)</option>
+                                        <option value="AU">🇦🇺 Australia (+61) — USD ($)</option>
+                                    </select>
+                                </div>
+                            </noscript>
                             <div id="phoneCurrencyNotice" class="text-muted mt-1" style="font-size: 0.74rem;">
                                 <i class="bi bi-globe2 me-1 text-primary"></i> <span id="phoneCurrencyNoticeText">India: Prices displayed in INR (₹)</span>
                             </div>
-                            {% if form.phone.errors or form.phone_number.errors or form.country.errors %}
+                            {% if form.phone.errors %}
                                 <div class="auth-luxe-field-error">
-                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.phone.errors.0|default:form.phone_number.errors.0|default:form.country.errors.0 }}
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.phone.errors.0 }}
+                                </div>
+                            {% elif form.phone_number.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.phone_number.errors.0 }}
+                                </div>
+                            {% elif form.country.errors %}
+                                <div class="auth-luxe-field-error">
+                                    <i class="bi bi-exclamation-circle-fill"></i> {{ form.country.errors.0 }}
                                 </div>
                             {% endif %}
                         </div>
@@ -1338,6 +1362,62 @@
                 }
             });
         }
+    </script>
+    <!-- intl-tel-input JS and utils -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const phoneInputEl = document.querySelector("#id_phone");
+            if (phoneInputEl && window.intlTelInput) {
+                const iti = window.intlTelInput(phoneInputEl, {
+                    initialCountry: "{{ form.country.value|default:'in' }}".toLowerCase(),
+                    preferredCountries: ["in", "us", "gb", "ae", "ca", "au"],
+                    separateDialCode: true,
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+
+                function syncPhoneInputs() {
+                    const countryData = iti.getSelectedCountryData();
+                    const countryIso = (countryData && countryData.iso2) ? countryData.iso2.toUpperCase() : "IN";
+                    const dialCode = (countryData && countryData.dialCode) ? ("+" + countryData.dialCode) : "+91";
+                    const nationalNumber = phoneInputEl.value.replace(/\D/g, "");
+                    const e164 = iti.isValidNumber() ? iti.getNumber() : (dialCode + nationalNumber);
+
+                    const cIn = document.getElementById("id_country");
+                    const ccIn = document.getElementById("id_phone_country_code");
+                    const pnIn = document.getElementById("id_phone_number");
+                    const e164In = document.getElementById("id_phone_e164");
+                    const notice = document.getElementById("phoneCurrencyNoticeText");
+
+                    if (cIn) cIn.value = countryIso;
+                    if (ccIn) ccIn.value = dialCode;
+                    if (pnIn) pnIn.value = nationalNumber;
+                    if (e164In) e164In.value = e164;
+
+                    if (notice) {
+                        if (countryIso === "IN") {
+                            notice.innerHTML = "<strong>India (+91)</strong> &bull; Prices displayed in <strong>INR (₹)</strong>";
+                        } else {
+                            const countryName = countryData ? countryData.name : "International";
+                            notice.innerHTML = `<strong>${countryName} (${dialCode})</strong> &bull; Prices displayed in <strong>USD ($)</strong>`;
+                        }
+                    }
+                }
+
+                phoneInputEl.addEventListener("countrychange", syncPhoneInputs);
+                phoneInputEl.addEventListener("input", syncPhoneInputs);
+                phoneInputEl.addEventListener("change", syncPhoneInputs);
+                syncPhoneInputs();
+
+                const regForm = document.getElementById("registerForm");
+                if (regForm) {
+                    regForm.addEventListener("submit", function() {
+                        syncPhoneInputs();
+                    });
+                }
+            }
+        });
     </script>
 </body>
 </html>

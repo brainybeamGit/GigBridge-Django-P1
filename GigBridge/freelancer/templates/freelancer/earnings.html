@@ -512,7 +512,7 @@
                             displayColors: false,
                             callbacks: {
                                 label: function(context) {
-                                    return ' Payout: ₹' + Number(context.parsed.y).toLocaleString();
+                                    return ' Payout: {{ currency_symbol }}' + Number(context.parsed.y).toLocaleString();
                                 }
                             }
                         }
@@ -535,7 +535,7 @@
                                 maxTicksLimit: 5,
                                 precision: 0,
                                 callback: function(value) {
-                                    return '₹' + value;
+                                    return '{{ currency_symbol }}' + value;
                                 }
                             }
                         }

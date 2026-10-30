@@ -63,30 +63,58 @@
                     <li class="nav-item">
                         <a class="nav-link gb-nav-link-clean {% if request.resolver_match.url_name == 'contact' %}active{% endif %}" href="{% url 'contact' %}">Contact</a>
                     </li>
+                    <!-- Mobile Currency Switcher (accessible on <= 360px) -->
+                    <li class="nav-item d-lg-none mt-2 pt-2 border-top">
+                        <div class="d-flex align-items-center justify-content-between px-2 py-1">
+                            <span class="small text-muted fw-semibold"><i class="bi bi-cash-stack me-1"></i>Currency:</span>
+                            <div class="btn-group btn-group-sm" role="group" aria-label="Currency Switcher">
+                                <a href="{% url 'currency_switch' 'INR' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm {% if active_currency == 'INR' %}btn-primary fw-bold{% else %}btn-outline-secondary{% endif %} px-2 d-inline-flex align-items-center gap-1">
+                                    <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                    ₹ INR
+                                </a>
+                                <a href="{% url 'currency_switch' 'USD' %}?next={{ request.get_full_path|urlencode }}" class="btn btn-sm {% if active_currency == 'USD' %}btn-primary fw-bold{% else %}btn-outline-secondary{% endif %} px-2 d-inline-flex align-items-center gap-1">
+                                    <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                    $ USD
+                                </a>
+                            </div>
+                        </div>
+                    </li>
                 </ul>
 
                 <!-- Right Action Buttons -->
                 <div class="d-flex align-items-center gap-2">
-                    <!-- Global Currency Switcher Dropdown -->
+                    <!-- Global Currency Switcher Dropdown (Navbar Desktop) -->
                     <div class="dropdown me-1">
-                        <button class="btn btn-sm gb-btn-ghost-sm dropdown-toggle d-flex align-items-center gap-1 rounded-pill px-2.5 py-1" type="button" id="currencyNavDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.78rem; font-weight: 700; border: 1px solid #E2E8F0;">
-                            {% if user_currency == 'INR' %}
-                                <span>🇮🇳 ₹ INR</span>
+                        <button class="btn btn-sm gb-btn-ghost-sm dropdown-toggle d-flex align-items-center gap-1.5 rounded-pill px-2.5 py-1" type="button" id="currencyNavDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.78rem; font-weight: 700; border: 1px solid #E2E8F0; background: #FFFFFF; color: #0F172A;" aria-label="Select currency">
+                            {% if active_currency == 'INR' %}
+                                <span class="d-inline-flex align-items-center">
+                                    <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="12" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.4);margin-right:5px;flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                    <span>₹ INR</span>
+                                </span>
                             {% else %}
-                                <span>🇺🇸 $ USD</span>
+                                <span class="d-inline-flex align-items-center">
+                                    <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="12" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.4);margin-right:5px;flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                    <span>$ USD</span>
+                                </span>
                             {% endif %}
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 rounded-3 mt-1 py-1" style="min-width: 140px; font-size: 0.82rem;" aria-labelledby="currencyNavDropdown">
+                        <ul class="dropdown-menu dropdown-menu-end gb-currency-dropdown shadow border rounded-3 mt-1 p-1" style="min-width: 145px; font-size: 0.82rem;" aria-labelledby="currencyNavDropdown">
                             <li>
-                                <a class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between {% if user_currency == 'INR' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=INR&next={{ request.get_full_path|urlencode }}">
-                                    <span>🇮🇳 ₹ INR (Rupees)</span>
-                                    {% if user_currency == 'INR' %}<i class="bi bi-check2 text-primary"></i>{% endif %}
+                                <a class="dropdown-item gb-currency-dropdown-item py-2 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'INR' %}is-active{% endif %}" href="{% url 'currency_switch' 'INR' %}?next={{ request.get_full_path|urlencode }}">
+                                    <span class="d-inline-flex align-items-center">
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="18" height="13" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:8px;flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                        <span class="gb-curr-label">₹ INR</span>
+                                    </span>
+                                    {% if active_currency == 'INR' %}<i class="bi bi-check2 text-primary fw-bold fs-6"></i>{% endif %}
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item py-1.5 px-3 d-flex align-items-center justify-content-between {% if user_currency == 'USD' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=USD&next={{ request.get_full_path|urlencode }}">
-                                    <span>🇺🇸 $ USD (Dollars)</span>
-                                    {% if user_currency == 'USD' %}<i class="bi bi-check2 text-primary"></i>{% endif %}
+                                <a class="dropdown-item gb-currency-dropdown-item py-2 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'USD' %}is-active{% endif %}" href="{% url 'currency_switch' 'USD' %}?next={{ request.get_full_path|urlencode }}">
+                                    <span class="d-inline-flex align-items-center">
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="18" height="13" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:8px;flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                        <span class="gb-curr-label">$ USD</span>
+                                    </span>
+                                    {% if active_currency == 'USD' %}<i class="bi bi-check2 text-primary fw-bold fs-6"></i>{% endif %}
                                 </a>
                             </li>
                         </ul>
@@ -164,6 +192,61 @@
             </div>
         </div>
     </nav>
+
+    {% if show_complete_profile_prompt %}
+    <!-- One-Time Complete Profile Notification for Existing Users Without Country -->
+    <div class="alert alert-warning mb-0 border-0 rounded-0 py-2 px-3 text-center d-flex align-items-center justify-content-center flex-wrap gap-2 small shadow-sm" id="completeProfileAlertBanner" role="alert">
+        <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+        <span><strong>Action Required:</strong> Please complete your profile with your country and phone number to set your local currency.</span>
+        <button type="button" class="btn btn-sm btn-dark rounded-pill px-3 py-0.5" data-bs-toggle="modal" data-bs-target="#completeProfileCurrencyModal">
+            Complete Profile Now
+        </button>
+    </div>
+
+    <!-- Complete Profile Modal -->
+    <div class="modal fade" id="completeProfileCurrencyModal" tabindex="-1" aria-labelledby="completeProfileModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 border-0 shadow-lg">
+                <div class="modal-header border-0 pb-0">
+                    <h5 class="modal-title fw-bold" id="completeProfileModalLabel">
+                        <i class="bi bi-globe2 text-primary me-2"></i>Set Your Country &amp; Currency
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{% url 'complete_profile_currency' %}" method="POST" id="completeProfileCurrencyForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                    <div class="modal-body py-3">
+                        <p class="text-muted small mb-3">
+                            GigBridge displays all project budgets and milestones in <strong>Indian Rupees (₹ INR)</strong> for India (+91), and <strong>US Dollars ($ USD)</strong> for all other countries.
+                        </p>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">Your Country</label>
+                            <select name="country" id="modal_country_select" class="form-select rounded-3">
+                                <option value="IN" selected>🇮🇳 India (+91) — INR (₹)</option>
+                                <option value="US">🇺🇸 United States (+1) — USD ($)</option>
+                                <option value="GB">🇬🇧 United Kingdom (+44) — USD ($)</option>
+                                <option value="AE">🇦🇪 United Arab Emirates (+971) — USD ($)</option>
+                                <option value="CA">🇨🇦 Canada (+1) — USD ($)</option>
+                                <option value="AU">🇦🇺 Australia (+61) — USD ($)</option>
+                                <option value="DE">🇩🇪 Germany (+49) — USD ($)</option>
+                                <option value="SG">🇸🇬 Singapore (+65) — USD ($)</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold text-dark">Phone Number</label>
+                            <input type="tel" name="phone" id="modal_phone_input" class="form-control rounded-3" placeholder="e.g. 9876543210" required>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0 pt-0">
+                        <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Later</button>
+                        <button type="submit" class="btn btn-primary rounded-pill px-4 fw-bold">Save &amp; Continue</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
 {% endblock %}
 
     <!-- Global Flash Messages Notification Container (Toast with Time & Close) -->
@@ -275,12 +358,34 @@
                         {% endif %}
                     </span>
                     <div class="dropup">
-                        <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill px-2.5 py-0.5" style="font-size: 0.72rem; border-color: rgba(255,255,255,0.25);" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                            {% if user_currency == 'INR' %}🇮🇳 INR (₹){% else %}🇺🇸 USD ($){% endif %}
+                        <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill px-2.5 py-0.5 d-inline-flex align-items-center gap-1" style="font-size: 0.72rem; border-color: rgba(255,255,255,0.25);" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            {% if active_currency == 'INR' %}
+                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                INR (₹)
+                            {% else %}
+                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                USD ($)
+                            {% endif %}
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end shadow border-0 rounded-3 py-1" style="min-width: 140px; font-size: 0.8rem;">
-                            <li><a class="dropdown-item {% if user_currency == 'INR' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=INR&next={{ request.get_full_path|urlencode }}">🇮🇳 ₹ INR</a></li>
-                            <li><a class="dropdown-item {% if user_currency == 'USD' %}active fw-bold{% endif %}" href="{% url 'set_currency' %}?currency=USD&next={{ request.get_full_path|urlencode }}">🇺🇸 $ USD</a></li>
+                        <ul class="dropdown-menu dropdown-menu-end gb-currency-dropdown shadow border rounded-3 p-1" style="min-width: 145px; font-size: 0.8rem;">
+                            <li>
+                                <a class="dropdown-item gb-currency-dropdown-item py-1.5 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'INR' %}is-active{% endif %}" href="{% url 'currency_switch' 'INR' %}?next={{ request.get_full_path|urlencode }}">
+                                    <span class="d-inline-flex align-items-center">
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:7px;flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                        <span class="gb-curr-label">₹ INR</span>
+                                    </span>
+                                    {% if active_currency == 'INR' %}<i class="bi bi-check2 text-primary fw-bold"></i>{% endif %}
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item gb-currency-dropdown-item py-1.5 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'USD' %}is-active{% endif %}" href="{% url 'currency_switch' 'USD' %}?next={{ request.get_full_path|urlencode }}">
+                                    <span class="d-inline-flex align-items-center">
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:7px;flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                        <span class="gb-curr-label">$ USD</span>
+                                    </span>
+                                    {% if active_currency == 'USD' %}<i class="bi bi-check2 text-primary fw-bold"></i>{% endif %}
+                                </a>
+                            </li>
                         </ul>
                     </div>
                 </div>

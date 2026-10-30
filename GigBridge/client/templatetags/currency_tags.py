@@ -6,7 +6,8 @@ from client.currency import (
     convert_inr_to_usd,
     format_inr,
     format_usd,
-    get_usd_inr_rate
+    get_usd_inr_rate,
+    get_current_request
 )
 
 register = template.Library()
@@ -22,17 +23,25 @@ def user_currency_filter(user_or_request):
 
 @register.filter(name='currency_symbol')
 def currency_symbol_filter(user_or_request_or_code):
-    """Returns '₹' or '$'."""
+    """Filter returning '₹' or '$': e.g. {{ request.user|currency_symbol }}"""
     curr = user_currency_filter(user_or_request_or_code)
+    return '₹' if curr == 'INR' else '$'
+
+
+@register.simple_tag(takes_context=True, name='currency_symbol')
+def currency_symbol_tag(context):
+    """Tag returning the active currency symbol: {% currency_symbol %}"""
+    req = context.get('request') or get_current_request()
+    curr = resolve_currency_for_user_or_request(request=req)
     return '₹' if curr == 'INR' else '$'
 
 
 @register.filter(name='money')
 def money_filter(amount, user_or_request=None, decimals=None):
     """
-    Template filter converting an INR base amount into the user's display currency.
+    Template filter converting a base INR amount into the active display currency.
     Usage:
-      {{ project.budget_min|money:request.user }}
+      {{ project.budget_min|money }}
       {{ contract.total_amount|money:request.user }}
       {{ milestone.amount|money:'USD' }}
       {{ payment.amount|money }}
@@ -40,7 +49,13 @@ def money_filter(amount, user_or_request=None, decimals=None):
     if amount is None or amount == '':
         return ''
 
-    curr = resolve_currency_for_user_or_request(user=user_or_request)
+    # If target is None, resolve_currency_for_user_or_request picks up thread-local request
+    req = user_or_request if hasattr(user_or_request, 'COOKIES') else None
+    user = user_or_request if hasattr(user_or_request, 'is_authenticated') else None
+    override = user_or_request if isinstance(user_or_request, str) else None
+
+    curr = resolve_currency_for_user_or_request(user=user, request=req, currency_override=override)
+
     try:
         amt = Decimal(str(amount))
     except Exception:
@@ -49,35 +64,39 @@ def money_filter(amount, user_or_request=None, decimals=None):
     if curr == 'USD':
         rate = get_usd_inr_rate()
         usd_val = convert_inr_to_usd(amt, rate=rate)
-        # decimals for USD defaults to 2 (e.g. $1,500.00)
         dec = 2 if decimals is None else int(decimals)
         return format_usd(usd_val, include_symbol=True, decimals=dec)
     else:
-        # decimals for INR: if whole number, format without .00 unless specified
         return format_inr(amt, include_symbol=True, decimals=decimals)
 
 
-@register.simple_tag(takes_context=True)
-def money(context, amount, user_or_curr=None, decimals=None):
+@register.simple_tag(takes_context=True, name='money')
+def money_tag(context, amount, user_or_curr=None, decimals=None):
     """
     Simple tag version of money filter:
+    {% money amount %}
     {% money amount request.user %}
     """
     target = user_or_curr or context.get('request')
     return money_filter(amount, target, decimals=decimals)
 
 
-@register.simple_tag(takes_context=True)
-def money_range(context, min_val, max_val, user_or_curr=None, budget_type='fixed'):
+@register.simple_tag(takes_context=True, name='money_range')
+def money_range_tag(context, min_val, max_val, user_or_curr=None, budget_type='fixed'):
     """
     Formats a project budget range:
-    {% money_range project.budget_min project.budget_max request.user project.budget_type %}
+    {% money_range min max %}
+    {% money_range min max request.user project.budget_type %}
     Produces:
       INR: ₹5,000 - ₹15,000 (or ₹500/hr)
       USD: $60.24 - $180.72 (or $6.02/hr)
     """
     target = user_or_curr or context.get('request')
-    curr = resolve_currency_for_user_or_request(user=target)
+    req = target if hasattr(target, 'COOKIES') else None
+    user = target if hasattr(target, 'is_authenticated') else None
+    override = target if isinstance(target, str) else None
+
+    curr = resolve_currency_for_user_or_request(user=user, request=req, currency_override=override)
     rate = get_usd_inr_rate()
 
     try:
@@ -111,16 +130,21 @@ def money_range(context, min_val, max_val, user_or_curr=None, budget_type='fixed
         return f"{s_min}{suffix}"
 
 
-@register.simple_tag(takes_context=True)
+@register.simple_tag(takes_context=True, name='contract_money')
 def contract_money(context, contract, amount, user_or_curr=None, decimals=None):
     """
     Contract-locked currency conversion:
     Uses contract.exchange_rate_used so contract milestones never change when global rate fluctuates.
     Usage:
+      {% contract_money contract milestone.amount %}
       {% contract_money contract milestone.amount request.user %}
     """
     target = user_or_curr or context.get('request')
-    curr = resolve_currency_for_user_or_request(user=target)
+    req = target if hasattr(target, 'COOKIES') else None
+    user = target if hasattr(target, 'is_authenticated') else None
+    override = target if isinstance(target, str) else None
+
+    curr = resolve_currency_for_user_or_request(user=user, request=req, currency_override=override)
 
     if amount is None or amount == '':
         return ''
@@ -148,7 +172,7 @@ def contract_amount_filter(contract, amount_and_user):
     return contract_money({}, contract, amount_and_user)
 
 
-@register.simple_tag(takes_context=True)
+@register.simple_tag(takes_context=True, name='currency_note')
 def currency_note(context, user_or_curr=None, text_only=False):
     """
     Displays a notice if the active currency is USD (since base accounting/charges are in INR):
@@ -164,8 +188,7 @@ def currency_note(context, user_or_curr=None, text_only=False):
     return ""
 
 
-
-@register.simple_tag(takes_context=True)
+@register.simple_tag(takes_context=True, name='query_transform')
 def query_transform(context, **kwargs):
     """
     Returns the current request's query string with updated, added, or removed parameters.

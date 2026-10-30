@@ -298,11 +298,9 @@
                         <div class="col-md-4">
                             <label class="form-label">Minimum Budget ({{ currency_symbol }} {{ user_currency }})</label>
                             {{ form.budget_min }}
-                            {% if user_currency == 'USD' %}
-                                <div class="text-muted mt-1" style="font-size: 0.74rem;">
-                                    <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="minBudgetInrPreview">&asymp; ₹0 INR for Indian freelancers</span>
-                                </div>
-                            {% endif %}
+                            <div class="text-muted mt-1" style="font-size: 0.74rem;">
+                                <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="minBudgetLivePreview">&asymp; {% if active_currency == 'USD' %}₹0 INR{% else %}$0 USD{% endif %}</span>
+                            </div>
                             {% if form.budget_min.errors %}
                                 <div class="text-danger small mt-1">{{ form.budget_min.errors.0 }}</div>
                             {% endif %}
@@ -310,11 +308,9 @@
                         <div class="col-md-4">
                             <label class="form-label">Maximum Budget ({{ currency_symbol }} {{ user_currency }})</label>
                             {{ form.budget_max }}
-                            {% if user_currency == 'USD' %}
-                                <div class="text-muted mt-1" style="font-size: 0.74rem;">
-                                    <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="maxBudgetInrPreview">&asymp; ₹0 INR for Indian freelancers</span>
-                                </div>
-                            {% endif %}
+                            <div class="text-muted mt-1" style="font-size: 0.74rem;">
+                                <i class="bi bi-arrow-repeat me-1 text-primary"></i> <span id="maxBudgetLivePreview">&asymp; {% if active_currency == 'USD' %}₹0 INR{% else %}$0 USD{% endif %}</span>
+                            </div>
                             {% if form.budget_max.errors %}
                                 <div class="text-danger small mt-1">{{ form.budget_max.errors.0 }}</div>
                             {% endif %}
@@ -358,4 +354,43 @@
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rate = parseFloat("{{ usd_inr_rate|default:83.0 }}") || 83.0;
+    const isUsd = {% if active_currency == 'USD' %}true{% else %}false{% endif %};
+
+    function updatePreview(input, previewEl) {
+        if (!input || !previewEl) return;
+        const val = parseFloat(input.value);
+        if (!isNaN(val) && val > 0) {
+            if (isUsd) {
+                const inr = Math.round(val * rate);
+                previewEl.innerHTML = `&asymp; ₹${inr.toLocaleString()} INR`;
+            } else {
+                const usd = (val / rate).toFixed(2);
+                previewEl.innerHTML = `&asymp; $${Number(usd).toLocaleString()} USD`;
+            }
+        } else {
+            previewEl.innerHTML = isUsd ? '&asymp; ₹0 INR' : '&asymp; $0 USD';
+        }
+    }
+
+    const minIn = document.getElementById('id_budget_min');
+    const maxIn = document.getElementById('id_budget_max');
+    const minPrev = document.getElementById('minBudgetLivePreview');
+    const maxPrev = document.getElementById('maxBudgetLivePreview');
+
+    if (minIn && minPrev) {
+        minIn.addEventListener('input', () => updatePreview(minIn, minPrev));
+        updatePreview(minIn, minPrev);
+    }
+    if (maxIn && maxPrev) {
+        maxIn.addEventListener('input', () => updatePreview(maxIn, maxPrev));
+        updatePreview(maxIn, maxPrev);
+    }
+});
+</script>
 {% endblock %}
