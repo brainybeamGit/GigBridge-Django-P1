@@ -1,7 +1,70 @@
 """
 Security and permission helper functions for GigBridge messaging and access controls.
 """
-from client.models import Proposal, Contract
+from client.models import Proposal, Contract, Category, Project
+from django.utils.text import slugify
+
+
+def get_user_specialized_category(user):
+    """
+    Resolves the specialized Category for a user (client or freelancer) based on their profile.
+    Priority:
+    1. Direct match on UserProfile.title against Category.name (exact or case-insensitive)
+    2. Slug match on UserProfile.title against Category.slug
+    3. Keyword mapping for common industry specializations (e.g. AI & Machine Learning -> Data Science & AI)
+    4. Substring / contains match between Category.name and title
+    5. Category of the client's most recently posted project
+    6. First available category in the database (fallback)
+    """
+    if not user or not user.is_authenticated:
+        return None
+
+    profile = getattr(user, 'profile', None)
+    title = (getattr(profile, 'title', '') or '').strip()
+
+    if title and title.lower() not in ['client / employer', 'client', 'employer']:
+        # 1. Exact case-insensitive match
+        cat = Category.objects.filter(name__iexact=title).first()
+        if cat:
+            return cat
+
+        # 2. Slug match
+        cat_slug = slugify(title)
+        if cat_slug:
+            cat = Category.objects.filter(slug=cat_slug).first()
+            if cat:
+                return cat
+
+        # 3. Known industry specialization keyword mappings
+        KEYWORD_MAPPINGS = [
+            (('data science', 'machine learning', 'artificial intelligence', 'ai', 'deep learning'), 'Data Science & AI'),
+            (('mobile', 'android', 'ios', 'flutter', 'react native', 'app dev', 'mobile app'), 'Mobile App Development'),
+            (('ui/ux', 'ui / ux', 'ui design', 'ux design', 'product design', 'user experience'), 'UI/UX Design'),
+            (('graphic design', 'illustration', 'branding', 'logo', 'photoshop', 'illustrator'), 'Graphic Design'),
+            (('digital marketing', 'marketing', 'seo', 'social media', 'sem', 'growth marketing'), 'Digital Marketing'),
+            (('content writing', 'writing', 'copywriting', 'media', 'blog', 'content creator'), 'Content Writing'),
+            (('web development', 'web dev', 'full-stack', 'frontend', 'backend', 'django', 'python', 'react', 'web'), 'Web Development'),
+        ]
+        title_lower = title.lower()
+        for keywords, target_cat_name in KEYWORD_MAPPINGS:
+            for kw in keywords:
+                if kw in title_lower:
+                    matched = Category.objects.filter(name__iexact=target_cat_name).first()
+                    if matched:
+                        return matched
+
+        # 4. Substring / contains match
+        for cat in Category.objects.all():
+            if cat.name.lower() in title_lower or title_lower in cat.name.lower():
+                return cat
+
+    # 5. Client's most recently posted project with a category
+    last_project = Project.objects.filter(client=user, category__isnull=False).order_by('-created_at').first()
+    if last_project and last_project.category:
+        return last_project.category
+
+    # 6. Fallback: first category in the database
+    return Category.objects.order_by('name').first()
 
 
 def can_message(user, project, other_user=None):
