@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from .models import UserProfile, Project, Proposal, Review, ContactMessage, Message, Category
 from .currency import get_usd_inr_rate, convert_inr_to_usd, convert_usd_to_inr, resolve_currency_for_user_or_request
+from .helpers import get_user_specialized_category
 
 
 class RegistrationForm(UserCreationForm):
@@ -180,7 +181,7 @@ class ProjectForm(forms.ModelForm):
     class Meta:
         model = Project
         fields = [
-            'title', 'category', 'description', 'required_skills',
+            'title', 'category', 'image', 'description', 'required_skills',
             'budget_type', 'budget_min', 'budget_max',
             'deadline', 'deliverables', 'attachment', 'status'
         ]
@@ -193,6 +194,7 @@ class ProjectForm(forms.ModelForm):
             'budget_max': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '2000', 'min': 0, 'step': 'any'}),
             'deliverables': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'List key deliverables and expectations...'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
             'category': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
@@ -201,6 +203,17 @@ class ProjectForm(forms.ModelForm):
         self.user = user
         self.user_currency = resolve_currency_for_user_or_request(user=user)
         super().__init__(*args, **kwargs)
+
+        self.fields['category'].empty_label = "- Select Specialized Category -"
+        self.fields['category'].required = False
+        self.fields['image'].required = False
+
+        # Pre-select client's specialized category if creating a new project
+        if not self.is_bound and not (self.instance and self.instance.pk):
+            if not self.initial.get('category'):
+                cat = get_user_specialized_category(user)
+                if cat:
+                    self.initial['category'] = cat.pk
 
         rate = get_usd_inr_rate()
         symbol = '$' if self.user_currency == 'USD' else '₹'
@@ -216,6 +229,16 @@ class ProjectForm(forms.ModelForm):
                     self.initial['budget_min'] = float(convert_inr_to_usd(self.instance.budget_min, rate=rate))
                 if self.instance.budget_max:
                     self.initial['budget_max'] = float(convert_inr_to_usd(self.instance.budget_max, rate=rate))
+
+    def clean_category(self):
+        category = self.cleaned_data.get('category')
+        if not category and self.user:
+            cat = get_user_specialized_category(self.user)
+            if cat:
+                return cat
+        if not category:
+            raise forms.ValidationError("Please select a Specialized Category.")
+        return category
 
     def clean(self):
         cleaned_data = super().clean()
@@ -254,6 +277,7 @@ class ProposalForm(forms.ModelForm):
             'delivery_days': forms.NumberInput(attrs={'class': 'form-control', 'placeholder': '14', 'min': 1}),
             'cover_letter': forms.Textarea(attrs={'class': 'form-control', 'rows': 7, 'placeholder': 'Explain why you are the best choice for this project...'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }
 
     def __init__(self, *args, user=None, **kwargs):
@@ -495,4 +519,5 @@ class MessageForm(forms.ModelForm):
         widgets = {
             'content': forms.Textarea(attrs={'class': 'form-control', 'rows': 3, 'placeholder': 'Type your message...'}),
             'attachment': forms.FileInput(attrs={'class': 'form-control'}),
+            'image': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*'}),
         }

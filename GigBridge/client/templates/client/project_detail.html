@@ -132,6 +132,11 @@
             <div class="col-lg-8">
                 <!-- 1. Project Description Card -->
                 <div class="gb-detail-main-card">
+                    {% if project.image %}
+                        <div class="mb-4 overflow-hidden rounded-4 border shadow-sm" style="max-height: 380px;">
+                            <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-100 h-100" style="object-fit: cover;">
+                        </div>
+                    {% endif %}
                     <h2 class="gb-section-heading">
                         <i class="bi bi-file-earmark-text text-primary"></i> Project Overview
                     </h2>

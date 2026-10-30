@@ -229,6 +229,7 @@ class Project(models.Model):
     required_skills = models.CharField(max_length=300, help_text='Comma-separated skills, e.g. Python, Django, React')
     deliverables = models.TextField(blank=True, help_text='Key deliverables and project expectations')
     attachment = models.FileField(upload_to='project_files/', blank=True, null=True)
+    image = models.ImageField(upload_to='project_images/', blank=True, null=True, help_text='Project featured/cover image')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
     views_count = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -248,6 +249,25 @@ class Project(models.Model):
     @property
     def skills_list(self):
         return [s.strip() for s in self.required_skills.split(',') if s.strip()]
+
+    @property
+    def get_image_url(self):
+        """Returns the project image URL if uploaded, or a fallback category/default image."""
+        if self.image:
+            try:
+                return self.image.url
+            except Exception:
+                pass
+        slug = self.category.slug if self.category else ''
+        if 'ecommerce' in slug or 'web' in slug:
+            return '/static/images/project_ecommerce.jpg'
+        elif 'marketing' in slug or 'seo' in slug:
+            return '/static/images/project_marketing.jpg'
+        elif 'content' in slug or 'writing' in slug:
+            return '/static/images/project_seo_blog.jpg'
+        elif 'design' in slug or 'logo' in slug or 'ui' in slug or 'graphic' in slug:
+            return '/static/images/project_logo.jpg'
+        return '/static/images/project_ecommerce.jpg'
 
     @property
     def proposals_count(self):

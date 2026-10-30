@@ -228,6 +228,21 @@
                     <h5 class="pf-section-title">Core Project Information</h5>
 
                     <div class="mb-3">
+                        <label class="form-label">Project Cover Image (Optional)</label>
+                        {{ form.image }}
+                        <div class="form-text small">Upload an attractive cover image to be showcased on the homepage and project listings (JPG, PNG, WebP). If omitted, a category-themed cover will be displayed.</div>
+                        {% if form.image.errors %}
+                            <div class="text-danger small mt-1">{{ form.image.errors.0 }}</div>
+                        {% endif %}
+                        {% if form.instance.image %}
+                            <div class="mt-2 d-flex align-items-center gap-2">
+                                <img src="{{ form.instance.image.url }}" alt="Current Cover" class="rounded border shadow-sm" style="height: 60px; width: 90px; object-fit: cover;">
+                                <span class="text-muted small">Current Cover Image</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-3">
                         <label class="form-label">Project Title <span class="text-danger">*</span></label>
                         {{ form.title }}
                         {% if form.title.errors %}
@@ -239,6 +254,11 @@
                         <div class="col-md-6">
                             <label class="form-label">Specialized Category <span class="text-danger">*</span></label>
                             {{ form.category }}
+                            {% if not is_edit and selected_category_name %}
+                                <div class="form-text small text-muted mt-1" style="font-size: 0.76rem;">
+                                    <i class="bi bi-check-circle-fill text-success me-1"></i> Auto-selected based on client specialized domain (<strong>{{ selected_category_name }}</strong>). You may choose another category if needed.
+                                </div>
+                            {% endif %}
                             {% if form.category.errors %}
                                 <div class="text-danger small mt-1">{{ form.category.errors.0 }}</div>
                             {% endif %}

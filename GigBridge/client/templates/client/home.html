@@ -287,43 +287,100 @@
         <div class="row g-4">
             {% for project in featured_projects %}
             <div class="col-lg-4 col-md-6">
-                <article class="gb-hm-proj-card">
-                    <!-- Refined Dark Banner Header -->
-                    <div class="gb-hm-proj-header">
-                        <span class="gb-hm-proj-cat-badge">
-                            <i class="bi {{ project.category.icon|default:'bi-briefcase' }}" aria-hidden="true"></i>
-                            <span>{{ project.category.name|default:"General" }}</span>
+                <article class="gb-hm-proj-card shadow-sm border rounded-4 overflow-hidden h-100 d-flex flex-column bg-white" style="transition: transform 0.25s ease, box-shadow 0.25s ease;">
+                    <!-- Project Cover Image with Overlays -->
+                    <div class="position-relative overflow-hidden" style="height: 195px; background: #0f172a;">
+                        <a href="{% url 'project_detail' project.id %}" class="d-block w-100 h-100 text-decoration-none">
+                            <img src="{{ project.get_image_url }}" alt="{{ project.title }}" class="w-100 h-100" style="object-fit: cover; transition: transform 0.35s ease;" onmouseover="this.style.transform='scale(1.04)'" onmouseout="this.style.transform='scale(1)'">
+                        </a>
+
+                        <!-- Top-Left Category Badge -->
+                        <span class="position-absolute top-0 start-0 m-3 px-3 py-1 bg-white text-primary rounded-pill fw-semibold shadow-sm" style="font-size: 0.74rem; z-index: 2; letter-spacing: 0.02em;">
+                            {{ project.category.name|default:"Web Development" }}
                         </span>
-                        <span class="gb-hm-status-pill">
-                            <span class="gb-hm-pulse-dot" aria-hidden="true"></span>
-                            <span>Open</span>
-                        </span>
+
+                        <!-- Top-Right Bookmark / Heart Button -->
+                        {% if request.user.is_authenticated %}
+                            <button type="button"
+                                    class="position-absolute top-0 end-0 m-3 d-flex align-items-center justify-content-center rounded-circle border-0 shadow-sm"
+                                    style="width: 34px; height: 34px; background: rgba(0, 0, 0, 0.35); color: #ffffff; backdrop-filter: blur(4px); z-index: 2;"
+                                    onclick="toggleProjectBookmark(this, {{ project.id }})"
+                                    title="Save Project"
+                                    aria-label="Save Project">
+                                <i class="bi {% if project.is_bookmarked %}bi-heart-fill text-danger{% else %}bi-heart{% endif %}" style="font-size: 0.95rem;"></i>
+                            </button>
+                        {% else %}
+                            <a href="{% url 'login' %}"
+                               class="position-absolute top-0 end-0 m-3 d-flex align-items-center justify-content-center rounded-circle border-0 shadow-sm text-decoration-none"
+                               style="width: 34px; height: 34px; background: rgba(0, 0, 0, 0.35); color: #ffffff; backdrop-filter: blur(4px); z-index: 2;"
+                               title="Sign in to save"
+                               aria-label="Save Project">
+                                <i class="bi bi-heart" style="font-size: 0.95rem;"></i>
+                            </a>
+                        {% endif %}
+
+                        <!-- Bottom-Left Client Avatar -->
+                        <div class="position-absolute bottom-0 start-0 ms-3 mb-2 d-flex align-items-center" style="z-index: 2;">
+                            {% if project.client.profile.avatar %}
+                                <img src="{{ project.client.profile.avatar.url }}" alt="{{ project.client.username }}" class="rounded-circle border border-2 border-white shadow-sm" style="width: 28px; height: 28px; object-fit: cover;">
+                            {% else %}
+                                <div class="rounded-circle border border-2 border-white bg-primary text-white d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width: 28px; height: 28px; font-size: 0.72rem;">
+                                    {{ project.client.username|make_list|first|upper }}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
 
                     <!-- Card Body -->
-                    <div class="gb-hm-proj-body">
-                        <h3 class="gb-hm-proj-title">
-                            <a href="{% url 'project_detail' project.id %}">{{ project.title }}</a>
+                    <div class="p-3.5 p-md-4 d-flex flex-column flex-grow-1">
+                        <!-- Project Title -->
+                        <h3 class="fw-bold mb-2 fs-6" style="line-height: 1.35;">
+                            <a href="{% url 'project_detail' project.id %}" class="text-decoration-none" style="color: #0f2744;">
+                                {{ project.title }}
+                            </a>
                         </h3>
-                        <p class="gb-hm-proj-desc">
+
+                        <!-- Project Description preview -->
+                        <p class="text-secondary small mb-3" style="line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-height: 38px;">
                             {{ project.description }}
                         </p>
-                        <div class="gb-hm-proj-meta">
-                            <i class="bi bi-person-circle" aria-hidden="true"></i>
-                            <span>{{ project.client.get_full_name|default:project.client.username }}</span>
-                            <span aria-hidden="true">&bull;</span>
-                            <i class="bi bi-clock" aria-hidden="true"></i>
-                            <span>{{ project.created_at|timesince }} ago</span>
+
+                        <!-- Tech Stack / Skills Pills -->
+                        <div class="d-flex flex-wrap gap-1.5 mb-4 flex-grow-1 align-content-start">
+                            {% for skill in project.skills_list|slice:":4" %}
+                                <span class="badge rounded-pill fw-medium" style="background: #e0f2fe; color: #0284c7; font-size: 0.74rem; padding: 5px 12px;">
+                                    {{ skill }}
+                                </span>
+                            {% endfor %}
+                            {% if project.skills_list|length > 4 %}
+                                <span class="badge rounded-pill fw-medium" style="background: #f1f5f9; color: #64748b; font-size: 0.74rem; padding: 5px 9px;">
+                                    +{{ project.skills_list|length|add:"-4" }}
+                                </span>
+                            {% endif %}
                         </div>
 
                         <!-- Card Footer -->
-                        <div class="gb-hm-proj-footer">
-                            <span class="gb-hm-proj-price">
-                                {% money_range project.budget_min project.budget_max request.user project.budget_type %}
-                            </span>
-                            <a href="{% url 'project_detail' project.id %}" class="gb-hm-proj-btn">
+                        <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto">
+                            <div class="d-flex align-items-center gap-3">
+                                <span class="fw-bold text-dark d-inline-flex align-items-center gap-1.5" style="font-size: 0.88rem;">
+                                    <i class="bi bi-briefcase text-primary"></i>
+                                    {% money_range project.budget_min project.budget_max request.user project.budget_type %}
+                                </span>
+                                {% if project.deadline %}
+                                    <span class="text-muted small d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" title="Target Deadline">
+                                        <i class="bi bi-calendar3"></i>
+                                        {{ project.deadline|date:"M d" }}
+                                    </span>
+                                {% else %}
+                                    <span class="text-muted small d-inline-flex align-items-center gap-1" style="font-size: 0.78rem;" title="Posted Date">
+                                        <i class="bi bi-calendar3"></i>
+                                        {{ project.created_at|timesince }}
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            <a href="{% url 'project_detail' project.id %}" class="btn btn-primary fw-semibold rounded-3 px-3 py-1.5 text-white shadow-sm" style="font-size: 0.82rem; background: #0284c7; border-color: #0284c7;">
                                 <span>View Details</span>
-                                <i class="bi bi-chevron-right" aria-hidden="true"></i>
                             </a>
                         </div>
                     </div>

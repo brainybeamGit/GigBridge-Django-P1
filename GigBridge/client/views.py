@@ -33,7 +33,7 @@ from .forms import (
     RegistrationForm, ProjectForm, ProposalForm,
     ReviewForm, ContactForm, UserProfileForm, MessageForm
 )
-from .helpers import can_message, can_message_conversation
+from .helpers import can_message, can_message_conversation, get_user_specialized_category
 from .currency import (
     get_currency_for_country, get_usd_inr_rate,
     convert_inr_to_usd, convert_usd_to_inr,
@@ -981,13 +981,30 @@ def client_project_create_view(request):
             project = form.save(commit=False)
             project.client = request.user
             project.save()
+            if not project.category:
+                cat = get_user_specialized_category(request.user)
+                if cat:
+                    project.category = cat
+                    project.save(update_fields=['category'])
             messages.success(request, f"Project '{project.title}' has been posted successfully!")
             return redirect('client_projects')
         else:
             messages.error(request, "Please fix the errors in the form.")
     else:
-        form = ProjectForm(initial={'status': 'open'}, user=request.user)
-    return render(request, 'client/project_form.html', {'form': form, 'action': 'Create'})
+        client_category = get_user_specialized_category(request.user)
+        initial_data = {'status': 'open'}
+        if client_category:
+            initial_data['category'] = client_category.pk
+        form = ProjectForm(initial=initial_data, user=request.user)
+    client_category = get_user_specialized_category(request.user)
+    client_specialization = getattr(getattr(request.user, 'profile', None), 'title', '')
+    return render(request, 'client/project_form.html', {
+        'form': form,
+        'action': 'Create',
+        'is_edit': False,
+        'client_specialization': client_specialization,
+        'selected_category_name': client_category.name if client_category else '',
+    })
 
 
 @login_required
@@ -1006,7 +1023,7 @@ def client_project_edit_view(request, pk):
             messages.error(request, "Please fix the errors in the form.")
     else:
         form = ProjectForm(instance=project, user=request.user)
-    return render(request, 'client/project_form.html', {'form': form, 'action': 'Edit', 'project': project})
+    return render(request, 'client/project_form.html', {'form': form, 'action': 'Edit', 'project': project, 'is_edit': True})
 
 
 @login_required
