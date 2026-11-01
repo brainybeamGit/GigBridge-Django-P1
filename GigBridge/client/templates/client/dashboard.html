@@ -1,5 +1,5 @@
 {% extends 'client/dashboard_base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block breadcrumb_current %}Overview{% endblock %}
 {% block dashboard_title %}Client Workspace{% endblock %}
@@ -629,7 +629,7 @@
                 </span>
             </div>
             <div>
-                <div class="cd-metric-num" style="color: #0F172A;">${{ total_spent|floatformat:0 }}</div>
+                <div class="cd-metric-num" style="color: #0F172A;">{{ total_spent|money }}</div>
                 <div class="cd-metric-label">Total Volume Spent</div>
                 <div class="cd-metric-sub">Verified milestone payouts successfully released to talent</div>
             </div>
@@ -646,7 +646,7 @@
                 </span>
             </div>
             <div>
-                <div class="cd-metric-num" style="color: #4F46E5;">${{ active_contracts_value|floatformat:0 }}</div>
+                <div class="cd-metric-num" style="color: #4F46E5;">{{ active_contracts_value|money }}</div>
                 <div class="cd-metric-label">Active Contract Value</div>
                 <div class="cd-metric-sub">Total committed value across {{ active_contracts }} running contracts</div>
             </div>
@@ -685,7 +685,7 @@
                 </div>
                 <div class="d-flex gap-2 align-items-center">
                     <div class="cd-kpi-pill">
-                        <span class="cd-kpi-pill-val">${{ total_spent|floatformat:0 }}</span>
+                        <span class="cd-kpi-pill-val">{{ total_spent|money }}</span>
                         <span class="cd-kpi-pill-lbl">Lifetime Spend</span>
                     </div>
                 </div>
@@ -839,7 +839,7 @@
                                     </div>
                                 </td>
                                 <td>
-                                    <span class="fw-bold d-block" style="color: #0F172A;">${{ prop.bid_amount|floatformat:0 }}</span>
+                                    <span class="fw-bold d-block" style="color: #0F172A;">{{ prop.bid_amount|money }}</span>
                                     <span class="text-muted" style="font-size: 0.72rem;">
                                         {{ prop.delivery_days }} days delivery
                                     </span>
@@ -911,7 +911,7 @@
                                 Talent &bull; {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
                             </small>
                         </div>
-                        <span class="fw-bold" style="color: #0284C7; font-size: 0.95rem;">${{ contract.total_amount|floatformat:0 }}</span>
+                        <span class="fw-bold" style="color: #0284C7; font-size: 0.95rem;">{{ contract.total_amount|money }}</span>
                     </div>
 
                     <!-- Milestone Progress Bar -->
@@ -991,7 +991,7 @@
                         </td>
                         <td>
                             <span class="fw-semibold" style="color: #0F172A;">
-                                ${{ proj.budget_min|floatformat:0 }} &ndash; ${{ proj.budget_max|floatformat:0 }}
+                                {% money_range proj.budget_min proj.budget_max %}
                             </span>
                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ proj.get_budget_type_display }}</small>
                         </td>

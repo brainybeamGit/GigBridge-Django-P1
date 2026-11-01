@@ -671,46 +671,68 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const phoneEl = document.getElementById('id_profile_phone');
-        const countryEl = document.getElementById('id_profile_country');
-        const dialCodeEl = document.getElementById('id_profile_phone_country_code');
-        const numberEl = document.getElementById('id_profile_phone_number');
-        const noticeText = document.getElementById('clientPhoneNoticeText');
+    (function() {
+        function initClientProfile() {
+            const phoneEl = document.getElementById('id_profile_phone') || document.getElementById('id_phone');
+            const countryEl = document.getElementById('id_profile_country') || document.getElementById('id_country');
+            const dialCodeEl = document.getElementById('id_profile_phone_country_code') || document.getElementById('id_phone_country_code');
+            const numberEl = document.getElementById('id_profile_phone_number') || document.getElementById('id_phone_number');
+            const noticeText = document.getElementById('clientPhoneNoticeText');
 
-        if (phoneEl && window.intlTelInput) {
-            const initCountry = (countryEl && countryEl.value) ? countryEl.value.toLowerCase() : 'in';
-            const iti = window.intlTelInput(phoneEl, {
-                initialCountry: initCountry,
-                preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
-                separateDialCode: true,
-                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
-            });
+            if (phoneEl && window.intlTelInput) {
+                let initCountry = 'in';
+                if (countryEl && countryEl.value) {
+                    initCountry = countryEl.value.trim().toLowerCase();
+                } else if (phoneEl.value) {
+                    const raw = phoneEl.value.trim();
+                    if (raw.startsWith('+1')) initCountry = 'us';
+                    else if (raw.startsWith('+44')) initCountry = 'gb';
+                    else if (raw.startsWith('+971')) initCountry = 'ae';
+                    else if (raw.startsWith('+91')) initCountry = 'in';
+                }
 
-            function syncProfilePhone() {
-                const data = iti.getSelectedCountryData();
-                if (data && data.iso2) {
-                    const iso = data.iso2.toUpperCase();
-                    if (countryEl) countryEl.value = iso;
-                    if (dialCodeEl) dialCodeEl.value = '+' + (data.dialCode || '91');
-                    if (noticeText) {
-                        if (iso === 'IN') {
-                            noticeText.innerHTML = '<strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>';
-                        } else {
-                            noticeText.innerHTML = '<strong>' + data.name + ' (+' + data.dialCode + ')</strong> &bull; Currency: <strong>USD ($)</strong>';
+                const iti = window.intlTelInput(phoneEl, {
+                    initialCountry: initCountry,
+                    preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                    separateDialCode: true,
+                    nationalMode: false,
+                    autoPlaceholder: 'aggressive',
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+
+                function syncProfilePhone() {
+                    const data = iti.getSelectedCountryData();
+                    if (data && data.iso2) {
+                        const iso = data.iso2.toUpperCase();
+                        if (countryEl) countryEl.value = iso;
+                        if (dialCodeEl) dialCodeEl.value = '+' + (data.dialCode || '91');
+                        if (noticeText) {
+                            if (iso === 'IN') {
+                                noticeText.innerHTML = '<span class="badge bg-success-subtle text-success me-1">IN</span> <strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>';
+                            } else {
+                                const cName = data.name || iso;
+                                noticeText.innerHTML = '<span class="badge bg-primary-subtle text-primary me-1">' + iso + '</span> <strong>' + cName + ' (+' + (data.dialCode || '') + ')</strong> &bull; Currency: <strong>USD ($)</strong>';
+                            }
                         }
                     }
+                    if (numberEl) {
+                        numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
+                    }
                 }
-                if (numberEl) {
-                    numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
-                }
-            }
 
-            phoneEl.addEventListener('countrychange', syncProfilePhone);
-            phoneEl.addEventListener('input', syncProfilePhone);
-            phoneEl.addEventListener('blur', syncProfilePhone);
-            syncProfilePhone();
+                phoneEl.addEventListener('countrychange', syncProfilePhone);
+                phoneEl.addEventListener('input', syncProfilePhone);
+                phoneEl.addEventListener('blur', syncProfilePhone);
+                phoneEl.addEventListener('keyup', syncProfilePhone);
+                syncProfilePhone();
+            }
         }
-    });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initClientProfile);
+        } else {
+            initClientProfile();
+        }
+    })();
 </script>
 {% endblock %}

@@ -1,5 +1,5 @@
 {% extends 'adminpanel/base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block title %}Dashboard &amp; Real-Time Analytics{% endblock %}
 {% block page_title %}Platform Overview &amp; Live Telemetry{% endblock %}
@@ -355,10 +355,10 @@
     <div class="col-xl-2 col-md-4 col-6">
         <a href="{% url 'adminpanel_payments' %}" class="adm-kpi-card">
             <div class="d-flex justify-content-between align-items-baseline">
-                <span class="adm-kpi-label">Volume (INR)</span>
+                <span class="adm-kpi-label">Volume ({{ currency_symbol }})</span>
                 <span class="adm-kpi-index">06</span>
             </div>
-            <div class="adm-kpi-value" id="kpiVolumeTop">&#8377;{{ total_revenue|floatformat:0 }}</div>
+            <div class="adm-kpi-value" id="kpiVolumeTop">{{ total_revenue|money }}</div>
             <p class="adm-kpi-caption">Cleared escrow volume</p>
         </a>
     </div>
@@ -423,7 +423,7 @@
             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
                 <div>
                     <div class="adm-kpi-label mb-1">Financial Intelligence</div>
-                    <h5 class="fw-bold text-dark mb-0">Escrow Flow &amp; Settled Revenue (INR)</h5>
+                    <h5 class="fw-bold text-dark mb-0">Escrow Flow &amp; Settled Revenue ({{ currency_symbol }})</h5>
                 </div>
 
                 <!-- Dual View Stream Toggles -->
@@ -439,10 +439,10 @@
             <!-- KPI Metric Chips Strip -->
             <div class="d-flex flex-wrap gap-2 mb-3">
                 <span class="kpi-chip-pill chip-sky">
-                    Settled Revenue: <strong id="chipSettledRev">&#8377;{{ initial_analytics.kpi.total_revenue|floatformat:0 }}</strong>
+                    Settled Revenue: <strong id="chipSettledRev">{{ initial_analytics.kpi.total_revenue|money }}</strong>
                 </span>
                 <span class="kpi-chip-pill">
-                    Active Escrow: <strong id="chipActiveEscrow">&#8377;{{ initial_analytics.kpi.total_escrow|floatformat:0 }}</strong>
+                    Active Escrow: <strong id="chipActiveEscrow">{{ initial_analytics.kpi.total_escrow|money }}</strong>
                 </span>
                 <span class="kpi-chip-pill chip-success">
                     Period Velocity: <strong id="chipGrowthRate">{{ initial_analytics.kpi.growth_rate }} &uarr;</strong>
@@ -564,7 +564,7 @@
         <div class="health-micro-card">
             <span class="adm-kpi-label d-block mb-1">Average Contract Value</span>
             <div class="d-flex align-items-baseline gap-2">
-                <h4 class="fw-bold text-dark mb-0" id="gaugeAvgContract">&#8377;{{ initial_analytics.kpi.avg_contract|floatformat:0 }}</h4>
+                <h4 class="fw-bold text-dark mb-0" id="gaugeAvgContract">{{ initial_analytics.kpi.avg_contract|money }}</h4>
                 <small class="text-muted">Per active agreement</small>
             </div>
         </div>
@@ -682,7 +682,7 @@
                                 <span class="text-secondary">{{ project.client.get_full_name|default:project.client.username }}</span>
                             </td>
                             <td>
-                                <span class="fw-bold text-dark">&#8377;{{ project.budget_min }} - &#8377;{{ project.budget_max }}</span>
+                                <span class="fw-bold text-dark">{% money_range project.budget_min project.budget_max %}</span>
                             </td>
                             <td>
                                 {% if project.status == 'open' %}
@@ -1118,19 +1118,20 @@
                 categoryBarChart.data.datasets[0].data = data.category_chart.counts;
                 categoryBarChart.update();
 
-                // 5. Update KPI Badges & Micro-Gauges
+                // 5. Update KPI Badges & Micro-Gauges with Dynamic Currency Symbol
                 if (data.kpi) {
+                    const currSym = data.kpi.currency_symbol || '{{ currency_symbol }}';
                     const elSettled = document.getElementById('chipSettledRev');
-                    if (elSettled) elSettled.innerHTML = '&#8377;' + Math.round(data.kpi.total_revenue).toLocaleString();
+                    if (elSettled) elSettled.innerHTML = currSym + Math.round(data.kpi.total_revenue).toLocaleString();
 
                     const elEscrow = document.getElementById('chipActiveEscrow');
-                    if (elEscrow) elEscrow.innerHTML = '&#8377;' + Math.round(data.kpi.total_escrow).toLocaleString();
+                    if (elEscrow) elEscrow.innerHTML = currSym + Math.round(data.kpi.total_escrow).toLocaleString();
 
                     const elGrowth = document.getElementById('chipGrowthRate');
                     if (elGrowth) elGrowth.innerHTML = data.kpi.growth_rate + ' &uarr;';
 
                     const elAvg = document.getElementById('gaugeAvgContract');
-                    if (elAvg) elAvg.innerHTML = '&#8377;' + Math.round(data.kpi.avg_contract).toLocaleString();
+                    if (elAvg) elAvg.innerHTML = currSym + Math.round(data.kpi.avg_contract).toLocaleString();
 
                     const elClear = document.getElementById('gaugeClearance');
                     if (elClear) elClear.textContent = data.kpi.clearance_rate;

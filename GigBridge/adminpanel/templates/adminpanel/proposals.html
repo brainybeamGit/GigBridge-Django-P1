@@ -1,5 +1,5 @@
 {% extends 'adminpanel/base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block title %}Proposals & Bids{% endblock %}
 {% block page_title %}Proposals &amp; Bids Management{% endblock %}
@@ -137,7 +137,7 @@
                         <div class="text-muted small">@{{ p.freelancer.username }}</div>
                     </td>
                     <td>
-                        <span class="fw-bold text-dark fs-6">&#8377;{{ p.bid_amount|floatformat:2 }}</span>
+                        <span class="fw-bold text-dark fs-6">{{ p.bid_amount|money }}</span>
                     </td>
                     <td>
                         <span class="badge bg-light text-dark border px-2 py-1">{{ p.delivery_days }} calendar days</span>
@@ -224,7 +224,7 @@
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
                             <span class="text-muted small d-block">Proposed Bid Amount</span>
-                            <strong class="text-primary fs-5">&#8377;{{ p.bid_amount|floatformat:2 }}</strong>
+                            <strong class="text-primary fs-5">{{ p.bid_amount|money }}</strong>
                         </div>
                     </div>
                     <div class="col-md-6">

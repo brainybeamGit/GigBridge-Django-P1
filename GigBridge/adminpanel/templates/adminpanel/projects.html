@@ -1,5 +1,5 @@
 {% extends 'adminpanel/base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block title %}Projects Management{% endblock %}
 {% block page_title %}All Projects Directory{% endblock %}
@@ -153,7 +153,7 @@
                     </td>
                     <td>
                         <div class="fw-bold text-dark">
-                            &#8377;{{ proj.budget_min|floatformat:0 }} - &#8377;{{ proj.budget_max|floatformat:0 }}
+                            {% money_range proj.budget_min proj.budget_max %}
                         </div>
                     </td>
                     <td>
@@ -246,7 +246,7 @@
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
                             <span class="text-muted small d-block">Budget Range &amp; Type</span>
-                            <strong class="text-dark">&#8377;{{ proj.budget_min|floatformat:0 }} – &#8377;{{ proj.budget_max|floatformat:0 }} ({{ proj.get_budget_type_display }})</strong>
+                            <strong class="text-dark">{% money_range proj.budget_min proj.budget_max %} ({{ proj.get_budget_type_display }})</strong>
                         </div>
                     </div>
                     <div class="col-md-6">

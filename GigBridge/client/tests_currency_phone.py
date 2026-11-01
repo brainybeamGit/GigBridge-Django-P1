@@ -325,3 +325,86 @@ class ComprehensiveCurrencyAndPhoneTestCase(TestCase):
             # 8,300 INR / 83.0 = $100.00 -> 10,000 cents
             self.assertEqual(data_usd['amount'], 10000)
             self.assertIn('Charged in USD', data_usd['charge_note'])
+
+    # 8. Profile phone and country updates (Client and Freelancer)
+    def test_client_profile_phone_update_scenarios(self):
+        """Test updating phone on client profile: unchanged, US number (switches currency), invalid number."""
+        self.client.login(username='client_india', password='Password123!')
+        url = reverse('client_profile')
+
+        # Scenario A: Unchanged phone / saving current details
+        res_unchanged = self.client.post(url, {
+            'first_name': 'Client',
+            'last_name': 'India',
+            'email': 'client_in@example.com',
+            'phone': self.profile_in.phone,
+            'country': 'IN',
+            'company_name': 'Tech India Pvt Ltd'
+        })
+        self.assertEqual(res_unchanged.status_code, 302)
+        self.profile_in.refresh_from_db()
+        self.assertEqual(self.profile_in.phone, '+919876543210')
+        self.assertEqual(self.profile_in.display_currency, 'INR')
+
+        # Scenario B: Update to US number (should update display_currency to USD)
+        res_us = self.client.post(url, {
+            'first_name': 'Client',
+            'last_name': 'USA',
+            'email': 'client_in@example.com',
+            'phone': '2025550143',
+            'country': 'US',
+            'company_name': 'US Corp'
+        })
+        self.assertEqual(res_us.status_code, 302)
+        self.profile_in.refresh_from_db()
+        self.assertEqual(self.profile_in.country, 'US')
+        self.assertEqual(self.profile_in.phone, '+12025550143')
+        self.assertEqual(self.profile_in.display_currency, 'USD')
+
+        # Scenario C: Invalid number (should not crash, return error on form)
+        res_invalid = self.client.post(url, {
+            'first_name': 'Client',
+            'last_name': 'USA',
+            'email': 'client_in@example.com',
+            'phone': '12345',
+            'country': 'US',
+            'company_name': 'US Corp'
+        })
+        self.assertEqual(res_invalid.status_code, 200)
+        self.assertContains(res_invalid, 'Enter a valid phone number for United States.')
+
+    def test_freelancer_profile_phone_update_scenarios(self):
+        """Test updating phone on freelancer profile: unchanged, Indian number, invalid number."""
+        # Create a US freelancer
+        fl_user = User.objects.create_user(
+            username='freelancer_usa',
+            email='fl_usa@example.com',
+            password='Password123!'
+        )
+        fl_profile = UserProfile.objects.create(
+            user=fl_user,
+            role='freelancer',
+            country='US',
+            phone_country_code='+1',
+            phone_number='2025550199',
+            phone='+12025550199',
+            display_currency='USD'
+        )
+
+        self.client.login(username='freelancer_usa', password='Password123!')
+        url = reverse('freelancer_profile')
+
+        # Scenario A: Switch to Indian number (should update currency to INR)
+        res_in = self.client.post(url, {
+            'first_name': 'Freelancer',
+            'last_name': 'Global',
+            'email': 'fl_usa@example.com',
+            'title': 'Senior Python Specialist',
+            'phone': '9876543210',
+            'country': 'IN'
+        })
+        self.assertEqual(res_in.status_code, 302)
+        fl_profile.refresh_from_db()
+        self.assertEqual(fl_profile.country, 'IN')
+        self.assertEqual(fl_profile.phone, '+919876543210')
+        self.assertEqual(fl_profile.display_currency, 'INR')

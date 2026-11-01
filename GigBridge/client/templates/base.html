@@ -286,11 +286,11 @@
             <div class="row g-4 pb-5">
                 <!-- Col 1: Brand & Info -->
                 <div class="col-lg-3 col-md-6">
-                    <a class="gb-brand-clean d-inline-flex align-items-center gap-2 mb-3 text-white text-decoration-none" href="{% url 'home' %}">
+                    <a class="gb-brand-clean d-inline-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'home' %}">
                         <span class="gb-brand-icon-clean">
                             <i class="bi bi-briefcase-fill"></i>
                         </span>
-                        <span class="gb-brand-text text-white">GigBridge</span>
+                        <span class="gb-brand-text" style="color: #0b132b; font-weight: 800;">GigBridge</span>
                     </a>
                     <p class="gb-footer-desc">
                         Connecting great ideas with skilled freelancers worldwide.
@@ -348,42 +348,42 @@
 
             <!-- Footer Bottom Line with Currency Info -->
             <div class="gb-footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-2">
-                <p class="mb-0">&copy; 2026 GigBridge. All rights reserved.</p>
+                <p class="mb-0 text-muted">&copy; 2026 GigBridge. All rights reserved.</p>
                 <div class="d-flex align-items-center gap-3">
-                    <span class="text-white-50 small" style="font-size: 0.78rem;">
+                    <span class="text-muted small" style="font-size: 0.78rem;">
                         {% if user_currency == 'USD' %}
-                            <i class="bi bi-info-circle me-1"></i> Prices shown in USD (approx.) &bull; 1 USD &asymp; ₹{{ usd_inr_rate }} INR
+                            <i class="bi bi-info-circle me-1 text-primary"></i> Prices shown in USD (approx.) &bull; 1 USD &asymp; ₹{{ usd_inr_rate }} INR
                         {% else %}
-                            <i class="bi bi-currency-rupee me-1"></i> Prices shown in Indian Rupees (₹ INR)
+                            <i class="bi bi-currency-rupee me-1 text-primary"></i> Prices shown in Indian Rupees (₹ INR)
                         {% endif %}
                     </span>
                     <div class="dropup">
-                        <button class="btn btn-sm btn-outline-light dropdown-toggle rounded-pill px-2.5 py-0.5 d-inline-flex align-items-center gap-1" style="font-size: 0.72rem; border-color: rgba(255,255,255,0.25);" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn btn-sm dropdown-toggle rounded-pill px-2.5 py-1 d-inline-flex align-items-center gap-1.5" type="button" id="footerCurrencyDropup" data-bs-toggle="dropdown" aria-expanded="false" style="font-size: 0.76rem; font-weight: 700; background: #ffffff; border: 1px solid #bfdbfe; color: #0b132b; box-shadow: 0 1px 3px rgba(37,99,235,0.08);" aria-label="Select display currency">
                             {% if active_currency == 'INR' %}
-                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
-                                INR (₹)
+                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="15" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                <span>₹ INR</span>
                             {% else %}
-                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="14" height="10" style="border-radius:1px;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
-                                USD ($)
+                                <svg class="gb-flag-svg" viewBox="0 0 640 480" width="15" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                <span>$ USD</span>
                             {% endif %}
                         </button>
-                        <ul class="dropdown-menu dropdown-menu-end gb-currency-dropdown shadow border rounded-3 p-1" style="min-width: 145px; font-size: 0.8rem;">
+                        <ul class="dropdown-menu dropdown-menu-end gb-currency-dropdown shadow border rounded-3 p-1" style="min-width: 155px; font-size: 0.82rem;" aria-labelledby="footerCurrencyDropup">
                             <li>
-                                <a class="dropdown-item gb-currency-dropdown-item py-1.5 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'INR' %}is-active{% endif %}" href="{% url 'currency_switch' 'INR' %}?next={{ request.get_full_path|urlencode }}">
+                                <a class="dropdown-item gb-currency-dropdown-item py-2 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'INR' %}is-active{% endif %}" href="{% url 'currency_switch' 'INR' %}?next={{ request.get_full_path|urlencode }}">
                                     <span class="d-inline-flex align-items-center">
-                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:7px;flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="18" height="13" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:8px;flex-shrink:0;"><path fill="#f93" d="M0 0h640v160H0z"/><path fill="#fff" d="M0 160h640v160H0z"/><path fill="#128807" d="M0 320h640v160H0z"/><circle cx="320" cy="240" r="56" fill="none" stroke="#008" stroke-width="8"/><circle cx="320" cy="240" r="12" fill="#008"/></svg>
                                         <span class="gb-curr-label">₹ INR</span>
                                     </span>
-                                    {% if active_currency == 'INR' %}<i class="bi bi-check2 text-primary fw-bold"></i>{% endif %}
+                                    {% if active_currency == 'INR' %}<i class="bi bi-check2 text-primary fw-bold fs-6"></i>{% endif %}
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item gb-currency-dropdown-item py-1.5 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'USD' %}is-active{% endif %}" href="{% url 'currency_switch' 'USD' %}?next={{ request.get_full_path|urlencode }}">
+                                <a class="dropdown-item gb-currency-dropdown-item py-2 px-2.5 d-flex align-items-center justify-content-between rounded-2 {% if active_currency == 'USD' %}is-active{% endif %}" href="{% url 'currency_switch' 'USD' %}?next={{ request.get_full_path|urlencode }}">
                                     <span class="d-inline-flex align-items-center">
-                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="16" height="11" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:7px;flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
+                                        <svg class="gb-flag-svg" viewBox="0 0 640 480" width="18" height="13" style="border-radius:2px;box-shadow:0 0 1px rgba(0,0,0,0.3);margin-right:8px;flex-shrink:0;"><path fill="#bd3d44" d="M0 0h640v480H0z"/><path stroke="#fff" stroke-width="37" d="M0 55.5h640M0 129.5h640M0 203.5h640M0 277.5h640M0 351.5h640M0 425.5h640"/><path fill="#192f5d" d="M0 0h280v259H0z"/><g fill="#fff"><circle cx="45" cy="40" r="7"/><circle cx="95" cy="40" r="7"/><circle cx="145" cy="40" r="7"/><circle cx="195" cy="40" r="7"/><circle cx="235" cy="40" r="7"/><circle cx="70" cy="85" r="7"/><circle cx="120" cy="85" r="7"/><circle cx="170" cy="85" r="7"/><circle cx="215" cy="85" r="7"/><circle cx="45" cy="130" r="7"/><circle cx="95" cy="130" r="7"/><circle cx="145" cy="130" r="7"/><circle cx="195" cy="130" r="7"/><circle cx="235" cy="130" r="7"/><circle cx="70" cy="175" r="7"/><circle cx="120" cy="175" r="7"/><circle cx="170" cy="175" r="7"/><circle cx="215" cy="175" r="7"/><circle cx="45" cy="220" r="7"/><circle cx="95" cy="220" r="7"/><circle cx="145" cy="220" r="7"/><circle cx="195" cy="220" r="7"/><circle cx="235" cy="220" r="7"/></g></svg>
                                         <span class="gb-curr-label">$ USD</span>
                                     </span>
-                                    {% if active_currency == 'USD' %}<i class="bi bi-check2 text-primary fw-bold"></i>{% endif %}
+                                    {% if active_currency == 'USD' %}<i class="bi bi-check2 text-primary fw-bold fs-6"></i>{% endif %}
                                 </a>
                             </li>
                         </ul>

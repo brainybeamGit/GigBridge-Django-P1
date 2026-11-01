@@ -6,86 +6,96 @@
 
 {% block content %}
 <!-- ═══════════════════════════════════════════════════════════
-     PROJECT DETAIL HERO BANNER
+     PROJECT DETAIL HERO BANNER (LUMINOUS BLUE & BREADCRUMBS)
      ═══════════════════════════════════════════════════════════ -->
 <section class="gb-detail-hero">
     <div class="container position-relative" style="z-index: 2;">
         <!-- Breadcrumb Navigation -->
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb mb-2 small text-white-50">
-                <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+            <ol class="gb-detail-breadcrumb mb-2 small">
+                <li>
+                    <a href="{% url 'home' %}">
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
-                <li class="breadcrumb-item">
-                    <a href="{% url 'project_list' %}" class="text-white-50 text-decoration-none">Browse Projects</a>
+                <li><i class="bi bi-chevron-right text-muted mx-1" style="font-size: 0.7rem;"></i></li>
+                <li>
+                    <a href="{% url 'project_list' %}">Browse Projects</a>
                 </li>
                 {% if project.category %}
-                    <li class="breadcrumb-item">
-                        <a href="{% url 'project_list' %}?category={{ project.category.slug }}" class="text-white-50 text-decoration-none">
+                    <li><i class="bi bi-chevron-right text-muted mx-1" style="font-size: 0.7rem;"></i></li>
+                    <li>
+                        <a href="{% url 'project_list' %}?category={{ project.category.slug }}">
                             {{ project.category.name }}
                         </a>
                     </li>
                 {% endif %}
-                <li class="breadcrumb-item active text-white" aria-current="page">{{ project.title|truncatechars:35 }}</li>
+                <li><i class="bi bi-chevron-right text-muted mx-1" style="font-size: 0.7rem;"></i></li>
+                <li class="fw-semibold text-navy text-truncate" style="max-width: 280px;" aria-current="page">
+                    {{ project.title }}
+                </li>
             </ol>
         </nav>
 
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
                 <!-- Status & Category Badges -->
-                <div class="d-flex align-items-center flex-wrap gap-2 mb-2">
+                <div class="d-flex align-items-center flex-wrap gap-2 mb-2.5">
                     {% if project.category %}
-                        <span class="gb-hero-pill-badge mb-0">
+                        <a href="{% url 'project_list' %}?category={{ project.category.slug }}" class="gb-hero-pill mb-0 text-decoration-none">
                             <i class="bi {{ project.category.icon|default:'bi-briefcase' }}"></i> {{ project.category.name }}
-                        </span>
+                        </a>
                     {% endif %}
                     {% if project.status == 'open' %}
-                        <span class="gb-status-tag gb-status-open bg-white text-success border-0 fw-bold">
-                            <span class="status-pulse-dot"></span> Open for Bidding
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
+                            <span class="status-pulse-dot" style="width: 8px; height: 8px; background-color: #16a34a; border-radius: 50%; display: inline-block;"></span>
+                            Open for Bidding
                         </span>
                     {% elif project.status == 'in_progress' %}
-                        <span class="gb-status-tag gb-status-in_progress bg-white text-primary border-0 fw-bold">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
                             <i class="bi bi-arrow-repeat"></i> In Progress
                         </span>
                     {% elif project.status == 'completed' %}
-                        <span class="gb-status-tag gb-status-completed bg-white text-secondary border-0 fw-bold">
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1.5 fw-bold d-inline-flex align-items-center gap-1.5">
                             <i class="bi bi-check2-all"></i> Completed
                         </span>
                     {% else %}
-                        <span class="gb-status-tag gb-status-completed bg-white text-dark border-0 fw-bold">
+                        <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 fw-bold">
                             {{ project.get_status_display }}
                         </span>
                     {% endif %}
                 </div>
 
                 <!-- Project Title -->
-                <h1 class="gb-detail-hero-title">{{ project.title }}</h1>
+                <h1 class="gb-detail-hero-title mb-3">{{ project.title }}</h1>
 
                 <!-- Meta Strip -->
                 <div class="gb-detail-meta-strip">
                     <span class="gb-detail-meta-item">
-                        <i class="bi bi-person-circle"></i>
-                        Posted by <strong class="text-white">{{ project.client.get_full_name|default:project.client.username }}</strong>
-                        <i class="bi bi-patch-check-fill text-info" title="Verified Client"></i>
+                        <i class="bi bi-person-circle text-primary"></i>
+                        <span>Posted by <strong>{{ project.client.get_full_name|default:project.client.username }}</strong></span>
+                        <i class="bi bi-patch-check-fill text-primary" title="Verified Employer"></i>
                     </span>
-                    <span>&bull;</span>
+                    <span class="text-muted">&bull;</span>
                     <span class="gb-detail-meta-item">
-                        <i class="bi bi-clock"></i> {{ project.created_at|timesince }} ago
+                        <i class="bi bi-clock-history text-muted"></i>
+                        <span>{{ project.created_at|timesince }} ago</span>
                     </span>
-                    <span>&bull;</span>
+                    <span class="text-muted">&bull;</span>
                     <span class="gb-detail-meta-item">
-                        <i class="bi bi-eye"></i> {{ project.views_count }} views
+                        <i class="bi bi-eye text-muted"></i>
+                        <span>{{ project.views_count }} views</span>
                     </span>
-                    <span>&bull;</span>
+                    <span class="text-muted">&bull;</span>
                     <span class="gb-detail-meta-item">
-                        <i class="bi bi-file-earmark-text"></i> {{ project.proposals_count }} proposal{{ project.proposals_count|pluralize }}
+                        <i class="bi bi-send text-primary"></i>
+                        <span><strong>{{ project.proposals_count }}</strong> proposal{{ project.proposals_count|pluralize }}</span>
                     </span>
                     {% if project.deadline %}
-                        <span>&bull;</span>
-                        <span class="gb-detail-meta-item">
-                            <i class="bi bi-calendar-event"></i> Due {{ project.deadline|date:"M d, Y" }}
+                        <span class="text-muted">&bull;</span>
+                        <span class="gb-detail-meta-item text-danger fw-semibold">
+                            <i class="bi bi-calendar-event"></i>
+                            <span>Due {{ project.deadline|date:"M d, Y" }}</span>
                         </span>
                     {% endif %}
                 </div>
@@ -95,35 +105,118 @@
             <div class="col-lg-4 text-lg-end">
                 <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
                     {% if is_owner %}
-                        <a href="{% url 'client_project_edit' project.id %}" class="gb-detail-action-btn gb-detail-btn-ghost">
-                            <i class="bi bi-pencil-square"></i> Edit
+                        <a href="{% url 'client_project_edit' project.id %}" class="btn btn-outline-secondary rounded-pill px-3 py-2 fw-semibold bg-white shadow-2xs">
+                            <i class="bi bi-pencil-square me-1"></i> Edit
                         </a>
-                        <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="gb-detail-action-btn gb-detail-btn-primary">
-                            <i class="bi bi-envelope-paper"></i> Proposals ({{ project.proposals_count }})
+                        <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
+                            <i class="bi bi-envelope-paper me-1"></i> Proposals ({{ project.proposals_count }})
                         </a>
-                        <a href="{% url 'client_project_confirm_delete' project.id %}" class="gb-detail-action-btn btn btn-outline-danger text-white border-danger-subtle btn-sm py-2">
+                        <a href="{% url 'client_project_confirm_delete' project.id %}" class="btn btn-outline-danger rounded-pill px-3 py-2" title="Delete Project">
                             <i class="bi bi-trash"></i>
                         </a>
                     {% else %}
+                        <!-- Bookmark Toggle Button -->
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2 fw-semibold bg-white shadow-2xs" id="projectBookmarkBtn" data-project-id="{{ project.id }}">
+                            <i class="bi {% if is_bookmarked %}bi-heart-fill text-danger{% else %}bi-heart text-muted{% endif %}" id="bookmarkIcon"></i>
+                            <span id="bookmarkText">{% if is_bookmarked %}Saved{% else %}Save{% endif %}</span>
+                        </button>
+
+                        <!-- Share Button -->
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-3 py-2 d-inline-flex align-items-center gap-2 fw-semibold bg-white shadow-2xs" onclick="copyProjectLink(this)">
+                            <i class="bi bi-share text-muted"></i>
+                            <span>Share</span>
+                        </button>
+
                         {% if can_propose and not user_proposal %}
-                            <a href="#proposalSection" class="gb-detail-action-btn gb-detail-btn-primary">
+                            <a href="#proposalSection" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm d-inline-flex align-items-center gap-2">
                                 <i class="bi bi-send-fill"></i> Submit Proposal
                             </a>
                         {% endif %}
-                        <button type="button" class="gb-detail-action-btn gb-detail-btn-ghost" onclick="copyProjectLink(this)">
-                            <i class="bi bi-share"></i> Share
-                        </button>
                     {% endif %}
                 </div>
             </div>
         </div>
+
+        <!-- 4 Quick Stat Tiles Row -->
+        <div class="row g-3 mt-3 pt-2">
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-pd-quick-stat">
+                    <div class="gb-pd-stat-icon">
+                        <i class="bi bi-wallet2"></i>
+                    </div>
+                    <div>
+                        <div class="gb-pd-stat-val">
+                            {% money_range project.budget_min project.budget_max request.user project.budget_type %}
+                        </div>
+                        <div class="gb-pd-stat-lbl">
+                            {{ project.get_budget_type_display }} &bull; Escrow
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-pd-quick-stat">
+                    <div class="gb-pd-stat-icon">
+                        <i class="bi bi-calendar3"></i>
+                    </div>
+                    <div>
+                        <div class="gb-pd-stat-val">
+                            {{ project.deadline|date:"M d, Y"|default:"Flexible" }}
+                        </div>
+                        <div class="gb-pd-stat-lbl">
+                            Project Deadline
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-pd-quick-stat">
+                    <div class="gb-pd-stat-icon">
+                        <i class="bi bi-people"></i>
+                    </div>
+                    <div>
+                        <div class="gb-pd-stat-val">
+                            {{ project.proposals_count }} Bid{{ project.proposals_count|pluralize }}
+                        </div>
+                        <div class="gb-pd-stat-lbl">
+                            {% if project.proposals_count < 5 %}Low Competition{% elif project.proposals_count < 15 %}Moderate Activity{% else %}High Demand{% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 col-sm-6">
+                <div class="gb-pd-quick-stat">
+                    <div class="gb-pd-stat-icon" style="background: #f0fdf4; color: #16a34a; border-color: #bbf7d0;">
+                        <i class="bi bi-shield-check"></i>
+                    </div>
+                    <div>
+                        <div class="gb-pd-stat-val text-success">
+                            Verified Client
+                        </div>
+                        <div class="gb-pd-stat-lbl">
+                            <i class="bi bi-geo-alt me-1"></i>{{ client_profile.location|default:"India" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Curved Bottom SVG Wave (Smooth Transition into Main Content) -->
+    <div class="gb-detail-hero-wave" aria-hidden="true">
+        <svg viewBox="0 0 1440 48" fill="none" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M0,24 C320,48 480,0 800,24 C1120,48 1280,12 1440,24 L1440,48 L0,48 Z" fill="#f8fafc"></path>
+        </svg>
     </div>
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════
      PROJECT CONTENT & SIDEBAR DETAILS
      ═══════════════════════════════════════════════════════════ -->
-<section class="py-5 bg-light">
+<section class="py-5" style="background-color: #f8fafc;">
     <div class="container">
         <div class="row g-4">
             <!-- ──────────────────────────────────────────
@@ -133,22 +226,23 @@
                 <!-- 1. Project Description Card -->
                 <div class="gb-detail-main-card">
                     {% if project.image %}
-                        <div class="mb-4 overflow-hidden rounded-4 border shadow-sm" style="max-height: 380px;">
+                        <div class="mb-4 overflow-hidden rounded-4 border shadow-sm" style="max-height: 420px;">
                             <img src="{{ project.image.url }}" alt="{{ project.title }}" class="w-100 h-100" style="object-fit: cover;">
                         </div>
                     {% endif %}
+
                     <h2 class="gb-section-heading">
-                        <i class="bi bi-file-earmark-text text-primary"></i> Project Overview
+                        <i class="bi bi-file-text-fill text-primary"></i> Project Overview
                     </h2>
-                    <div class="text-secondary" style="white-space: pre-line; line-height: 1.8; font-size: 0.95rem;">
+                    <div class="text-secondary" style="white-space: pre-line; line-height: 1.85; font-size: 0.96rem;">
                         {{ project.description }}
                     </div>
 
                     <!-- Deliverables / Requirements Callout -->
                     {% if project.deliverables %}
                         <div class="gb-deliverables-callout mt-4">
-                            <h5 class="fw-bold text-navy mb-2 d-flex align-items-center gap-2">
-                                <i class="bi bi-check2-square text-primary fs-5"></i> Key Deliverables &amp; Expectations
+                            <h5 class="fw-bold text-navy mb-2.5 d-flex align-items-center gap-2 fs-6">
+                                <i class="bi bi-check2-circle text-primary fs-5"></i> Key Deliverables &amp; Milestones
                             </h5>
                             <div style="white-space: pre-line;">
                                 {{ project.deliverables }}
@@ -158,16 +252,16 @@
 
                     <!-- Required Skills & Technologies -->
                     <div class="mt-4 pt-3 border-top">
-                        <h5 class="fw-bold text-navy mb-3 fs-6">
-                            <i class="bi bi-tags text-primary me-2"></i> Required Skills &amp; Tech Stack
+                        <h5 class="fw-bold text-navy mb-3 fs-6 d-flex align-items-center gap-2">
+                            <i class="bi bi-code-slash text-primary"></i> Required Skills &amp; Tech Stack
                         </h5>
                         <div class="gb-skills-pill-wrap mb-0">
                             {% for skill in project.skills_list %}
-                                <span class="gb-skill-tag" style="font-size:0.85rem; padding: 6px 14px;">
-                                    <i class="bi bi-code-slash text-primary me-1"></i> {{ skill }}
+                                <span class="gb-skill-tag">
+                                    <i class="bi bi-check text-primary me-1"></i> {{ skill }}
                                 </span>
                             {% empty %}
-                                <span class="gb-skill-tag">Freelance Opportunity</span>
+                                <span class="gb-skill-tag">Freelance Specialist</span>
                             {% endfor %}
                         </div>
                     </div>
@@ -175,20 +269,20 @@
                     <!-- Attachment Download Box -->
                     {% if project.attachment %}
                         <div class="mt-4 pt-3 border-top">
-                            <h5 class="fw-bold text-navy mb-3 fs-6">
-                                <i class="bi bi-paperclip text-primary me-1"></i> Attached Specifications &amp; Files
+                            <h5 class="fw-bold text-navy mb-3 fs-6 d-flex align-items-center gap-2">
+                                <i class="bi bi-paperclip text-primary"></i> Attached Specifications &amp; Project Files
                             </h5>
                             <div class="gb-attachment-box">
                                 <div class="d-flex align-items-center gap-3">
-                                    <div class="gb-stat-icon-circle bg-primary-subtle text-primary" style="width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.25rem;">
+                                    <div class="gb-stat-icon-circle bg-primary-subtle text-primary" style="width:46px;height:46px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
                                         <i class="bi bi-file-earmark-arrow-down-fill"></i>
                                     </div>
                                     <div>
                                         <div class="fw-bold text-navy mb-0">Project Specification Document</div>
-                                        <div class="text-muted small">File attached by client</div>
+                                        <div class="text-muted small">Uploaded by client for requirements clarity</div>
                                     </div>
                                 </div>
-                                <a href="{{ project.attachment.url }}" target="_blank" download class="btn btn-outline-primary btn-sm rounded-3 fw-bold px-3">
+                                <a href="{{ project.attachment.url }}" target="_blank" download class="btn btn-outline-primary btn-sm rounded-pill fw-bold px-3 py-1.5">
                                     <i class="bi bi-download me-1"></i> Download File
                                 </a>
                             </div>
@@ -201,19 +295,19 @@
                     <div class="card border-0 shadow-sm rounded-4 p-4 mb-4 bg-white border-start border-4 border-primary">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
                             <div>
-                                <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">Owner Controls</span>
-                                <h4 class="fw-bold text-navy mb-1">
+                                <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">Owner Workspace</span>
+                                <h4 class="fw-bold text-navy mb-1 fs-5">
                                     <i class="bi bi-shield-check text-primary me-1"></i> You Posted This Project
                                 </h4>
                                 <p class="text-muted small mb-0">
-                                    You have received <strong>{{ project.proposals_count }} proposal{{ project.proposals_count|pluralize }}</strong> for this gig. Review submissions, message candidates, and assign milestones.
+                                    You have received <strong>{{ project.proposals_count }} proposal{{ project.proposals_count|pluralize }}</strong>. Review submissions, message candidates, and fund escrow milestones.
                                 </p>
                             </div>
                             <div class="d-flex gap-2">
-                                <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="btn btn-primary rounded-3 fw-bold btn-sm py-2 px-3 shadow-sm">
+                                <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="btn btn-primary rounded-pill fw-bold btn-sm py-2 px-3 shadow-sm">
                                     <i class="bi bi-envelope-paper me-1"></i> Manage Proposals ({{ project.proposals_count }})
                                 </a>
-                                <a href="{% url 'client_project_edit' project.id %}" class="btn btn-outline-secondary rounded-3 btn-sm py-2 px-3">
+                                <a href="{% url 'client_project_edit' project.id %}" class="btn btn-outline-secondary rounded-pill btn-sm py-2 px-3">
                                     <i class="bi bi-pencil me-1"></i> Edit
                                 </a>
                             </div>
@@ -263,7 +357,7 @@
 
                             {% if user_proposal.attachment %}
                                 <div class="mt-3">
-                                    <a href="{{ user_proposal.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-3">
+                                    <a href="{{ user_proposal.attachment.url }}" target="_blank" class="btn btn-sm btn-outline-secondary rounded-pill">
                                         <i class="bi bi-paperclip me-1"></i> View Submitted Proposal Attachment
                                     </a>
                                 </div>
@@ -275,20 +369,20 @@
                         <div class="gb-proposal-card" id="proposalSection">
                             <div class="gb-proposal-header">
                                 <div>
-                                    <h4 class="fw-bold mb-1 text-white">
+                                    <h4 class="fw-bold mb-1 text-white fs-5">
                                         <i class="bi bi-send-fill me-2"></i> Submit Your Proposal
                                     </h4>
                                     <p class="mb-0 text-white-50 small">
                                         Pitch your solution directly to the client. Competitive bids and detailed proposals have a 78% higher acceptance rate.
                                     </p>
                                 </div>
-                                <span class="badge bg-white text-primary rounded-pill px-3 py-2 fw-bold">
+                                <span class="badge bg-white text-primary rounded-pill px-3 py-1.5 fw-bold shadow-2xs">
                                     Budget: {% money_range project.budget_min project.budget_max request.user project.budget_type %}
                                 </span>
                             </div>
 
                             <div class="gb-proposal-body">
-                                <form method="POST" action="{% url 'project_detail' project.id %}" enctype="multipart/form-data">
+                                <form method="POST" action="{% url 'project_detail' project.id %}" enctype="multipart/form-data" id="proposalSubmitForm">
                                     {% csrf_token %}
 
                                     <div class="row g-3 mb-4">
@@ -298,7 +392,7 @@
                                                 Your Bid Amount ({{ currency_symbol }} {{ user_currency }}) <span class="text-danger">*</span>
                                             </label>
                                             <div class="input-group">
-                                                <span class="input-group-text bg-light text-navy fw-bold">{{ currency_symbol }}</span>
+                                                <span class="input-group-text bg-light text-navy fw-bold border-end-0">{{ currency_symbol }}</span>
                                                 {{ proposal_form.bid_amount }}
                                             </div>
                                             <div class="form-text small">
@@ -318,10 +412,10 @@
                                                 Estimated Delivery Time (Days) <span class="text-danger">*</span>
                                             </label>
                                             <div class="input-group">
-                                                <span class="input-group-text bg-light text-muted"><i class="bi bi-calendar-event"></i></span>
+                                                <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-calendar-event"></i></span>
                                                 {{ proposal_form.delivery_days }}
                                             </div>
-                                            <div class="form-text small">Number of calendar days until project completion</div>
+                                            <div class="form-text small">Number of calendar days until final completion</div>
                                             {% if proposal_form.delivery_days.errors %}
                                                 <div class="text-danger small mt-1">{{ proposal_form.delivery_days.errors }}</div>
                                             {% endif %}
@@ -334,7 +428,7 @@
                                             Cover Letter &amp; Technical Pitch <span class="text-danger">*</span>
                                         </label>
                                         {{ proposal_form.cover_letter }}
-                                        <div class="form-text small">Describe your background, approach to this project, and any relevant past achievements.</div>
+                                        <div class="form-text small">Describe your background, approach to this project, and relevant past achievements.</div>
                                         {% if proposal_form.cover_letter.errors %}
                                             <div class="text-danger small mt-1">{{ proposal_form.cover_letter.errors }}</div>
                                         {% endif %}
@@ -358,7 +452,7 @@
                                             <i class="bi bi-shield-check text-success fs-5"></i>
                                             <span>Protected by GigBridge Escrow &amp; Terms of Service</span>
                                         </div>
-                                        <button type="submit" class="btn btn-primary rounded-3 fw-bold px-4 py-2 shadow-sm">
+                                        <button type="submit" class="btn btn-primary rounded-pill fw-bold px-4 py-2.5 shadow-sm" id="submitProposalBtn">
                                             <i class="bi bi-send-check me-1"></i> Send Proposal to Client
                                         </button>
                                     </div>
@@ -397,52 +491,57 @@
                 <div class="gb-sidebar-card sticky-top" style="top: 90px; z-index: 10;">
                     <!-- Budget Highlight Tile -->
                     <div class="gb-budget-highlight-tile">
-                        <span class="text-muted small fw-semibold text-uppercase letter-spacing-1 d-block mb-1">Project Budget</span>
-                        <div class="gb-budget-hero-number">
+                        <span class="text-muted small fw-semibold text-uppercase letter-spacing-1 d-block mb-1" style="font-size: 0.76rem; letter-spacing: 0.06em;">Estimated Budget</span>
+                        <div class="gb-budget-hero-number my-1">
                             {% money_range project.budget_min project.budget_max request.user project.budget_type %}
                         </div>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold px-3 py-1 mt-1">
-                            {{ project.get_budget_type_display }}
+                        <span class="badge bg-white text-primary border border-primary-subtle rounded-pill fw-bold px-3 py-1 shadow-2xs">
+                            <i class="bi bi-shield-lock-fill me-1"></i> {{ project.get_budget_type_display }} &bull; Escrow
                         </span>
                     </div>
 
                     <!-- Direct Call to Action Button -->
                     {% if can_propose and not user_proposal %}
-                        <a href="#proposalSection" class="btn btn-primary w-100 rounded-3 fw-bold py-3 mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <a href="#proposalSection" class="btn btn-primary w-100 rounded-pill fw-bold py-3 mb-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-send-fill"></i> Submit a Proposal
                         </a>
                     {% elif is_owner %}
-                        <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="btn btn-primary w-100 rounded-3 fw-bold py-3 mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <a href="{% url 'client_proposals' %}?project_id={{ project.id }}" class="btn btn-primary w-100 rounded-pill fw-bold py-3 mb-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-envelope-paper"></i> Review Received Proposals
                         </a>
                     {% elif not user.is_authenticated %}
-                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100 rounded-3 fw-bold py-3 mb-2 shadow-sm d-flex align-items-center justify-content-center gap-2">
+                        <a href="{% url 'login' %}?next={{ request.path }}" class="btn btn-primary w-100 rounded-pill fw-bold py-3 mb-3 shadow-sm d-flex align-items-center justify-content-center gap-2">
                             <i class="bi bi-box-arrow-in-right"></i> Sign In to Submit Bid
                         </a>
                     {% endif %}
 
-                    {% if user.is_authenticated and not is_owner %}
-                        {% if user_proposal %}
-                            {% if user_proposal.status == 'accepted' %}
-                                <a href="{% url 'start_conversation' %}?user_id={{ project.client.id }}&project_id={{ project.id }}" class="btn btn-primary w-100 rounded-3 fw-bold py-2 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-sm">
-                                    <i class="bi bi-chat-dots-fill me-1"></i> Message Client
-                                </a>
-                            {% elif user_proposal.status == 'pending' %}
-                                <div class="p-2 mb-3 bg-secondary-subtle text-secondary rounded-3 border text-center small fw-semibold">
-                                    <i class="bi bi-clock-history me-1"></i> Awaiting client decision
-                                </div>
-                            {% elif user_proposal.status == 'rejected' %}
-                                <div class="p-2 mb-3 bg-danger-subtle text-danger rounded-3 border border-danger-subtle text-center small fw-semibold">
-                                    <i class="bi bi-x-circle me-1"></i> Not selected
-                                </div>
-                            {% endif %}
+                    {% if user.is_authenticated and not is_owner and user_proposal %}
+                        {% if user_proposal.status == 'accepted' %}
+                            <a href="{% url 'start_conversation' %}?user_id={{ project.client.id }}&project_id={{ project.id }}" class="btn btn-primary w-100 rounded-pill fw-bold py-2.5 mb-3 d-flex align-items-center justify-content-center gap-2 shadow-sm">
+                                <i class="bi bi-chat-dots-fill me-1"></i> Message Client
+                            </a>
+                        {% elif user_proposal.status == 'pending' %}
+                            <div class="p-2.5 mb-3 bg-secondary-subtle text-secondary rounded-3 border text-center small fw-semibold">
+                                <i class="bi bi-clock-history me-1"></i> Proposal pending client review
+                            </div>
+                        {% elif user_proposal.status == 'rejected' %}
+                            <div class="p-2.5 mb-3 bg-danger-subtle text-danger rounded-3 border border-danger-subtle text-center small fw-semibold">
+                                <i class="bi bi-x-circle me-1"></i> Proposal not selected
+                            </div>
                         {% endif %}
                     {% endif %}
 
                     <!-- Specification Attributes -->
                     <div class="gb-spec-row">
                         <span class="text-muted">Category</span>
-                        <span class="fw-semibold text-navy">{{ project.category.name|default:"General" }}</span>
+                        <a href="{% url 'project_list' %}{% if project.category %}?category={{ project.category.slug }}{% endif %}" class="fw-semibold text-primary text-decoration-none">
+                            {{ project.category.name|default:"General" }}
+                        </a>
+                    </div>
+
+                    <div class="gb-spec-row">
+                        <span class="text-muted">Project ID</span>
+                        <span class="fw-bold font-monospace text-navy">#GB-{{ project.id }}</span>
                     </div>
 
                     <div class="gb-spec-row">
@@ -452,33 +551,80 @@
 
                     <div class="gb-spec-row">
                         <span class="text-muted">Proposals Received</span>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold">{{ project.proposals_count }}</span>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill fw-bold px-2.5 py-1">{{ project.proposals_count }}</span>
                     </div>
 
                     <div class="gb-spec-row">
-                        <span class="text-muted">Project Deadline</span>
+                        <span class="text-muted">Target Deadline</span>
                         <span class="fw-semibold text-dark">{{ project.deadline|date:"M d, Y"|default:"Flexible Timeline" }}</span>
                     </div>
 
                     <div class="gb-spec-row">
-                        <span class="text-muted">Client Location</span>
-                        <span class="fw-semibold text-dark"><i class="bi bi-geo-alt text-primary me-1"></i>{{ client_profile.location|default:"Global / Remote" }}</span>
+                        <span class="text-muted">Escrow Protection</span>
+                        <span class="fw-bold text-success"><i class="bi bi-patch-check-fill me-1"></i>Active</span>
                     </div>
 
                     <!-- Trust Checklist -->
                     <div class="mt-4 pt-3 border-top">
                         <div class="gb-trust-badge-row">
                             <i class="bi bi-shield-check text-success fs-5"></i>
-                            <span>Milestone Escrow Protection</span>
+                            <span>100% Milestone Escrow Protection</span>
                         </div>
                         <div class="gb-trust-badge-row">
                             <i class="bi bi-patch-check-fill text-primary fs-5"></i>
-                            <span>Verified Client Identity</span>
+                            <span>Verified Employer Identity</span>
                         </div>
                         <div class="gb-trust-badge-row">
                             <i class="bi bi-headset text-info fs-5"></i>
-                            <span>24/7 Dispute &amp; Support Help</span>
+                            <span>24/7 Dedicated Resolution Help</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 2. About the Client / Employer Card -->
+                <div class="gb-client-sidebar-card">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <h4 class="fw-bold text-navy mb-0 fs-6">About the Employer</h4>
+                        <span class="badge bg-success-subtle text-success border border-success-subtle rounded-pill small">Verified</span>
+                    </div>
+
+                    <div class="d-flex align-items-center gap-3 mb-3">
+                        <div class="gb-client-avatar-badge">
+                            {{ project.client.first_name|default:project.client.username|make_list|first|upper }}
+                        </div>
+                        <div>
+                            <h5 class="fw-bold text-navy mb-0 fs-6">
+                                {{ project.client.get_full_name|default:project.client.username }}
+                            </h5>
+                            {% if client_profile.company_name %}
+                                <div class="text-primary small fw-semibold">{{ client_profile.company_name }}</div>
+                            {% endif %}
+                            <div class="text-muted small">
+                                <i class="bi bi-geo-alt me-1 text-primary"></i> {{ client_profile.location|default:"India" }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-3 bg-light rounded-3 mb-3">
+                        <div class="row g-2 text-center">
+                            <div class="col-6 border-end">
+                                <div class="fw-bold text-navy fs-5">{{ client_total_projects }}</div>
+                                <div class="text-muted small" style="font-size: 0.74rem;">Projects Posted</div>
+                            </div>
+                            <div class="col-6">
+                                <div class="fw-bold text-navy fs-5">{{ client_completed_projects }}</div>
+                                <div class="text-muted small" style="font-size: 0.74rem;">Completed</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="gb-spec-row py-1">
+                        <span class="text-muted small">Member since</span>
+                        <span class="fw-semibold text-navy small">{{ project.client.date_joined|date:"M Y" }}</span>
+                    </div>
+                    <div class="gb-spec-row py-1">
+                        <span class="text-muted small">Payment Verification</span>
+                        <span class="fw-bold text-success small"><i class="bi bi-check-circle-fill me-1"></i>Verified</span>
                     </div>
                 </div>
             </div>
@@ -489,56 +635,48 @@
              ────────────────────────────────────────── -->
         {% if similar_projects %}
             <div class="mt-5 pt-4 border-top">
-                <div class="d-flex justify-content-between align-items-center mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
                     <div>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">Recommended Gigs</span>
-                        <h3 class="fw-bold text-navy mb-0">Similar Projects You May Like</h3>
+                        <span class="badge bg-primary-subtle text-primary rounded-pill mb-1">Recommended Opportunities</span>
+                        <h3 class="fw-bold text-navy mb-0 fs-4">Similar Projects You May Like</h3>
                     </div>
-                    <a href="{% url 'project_list' %}{% if project.category %}?category={{ project.category.slug }}{% endif %}" class="text-primary fw-bold text-decoration-none small">
-                        View All in Category <i class="bi bi-arrow-right"></i>
+                    <a href="{% url 'project_list' %}{% if project.category %}?category={{ project.category.slug }}{% endif %}" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3">
+                        View All in Category <i class="bi bi-arrow-right ms-1"></i>
                     </a>
                 </div>
 
                 <div class="row g-4">
                     {% for sim_project in similar_projects %}
-                        <div class="col-md-4">
-                            <div class="gb-project-card-v2 h-100">
-                                <div class="gb-card-body-section">
-                                    <div class="gb-card-top-meta">
-                                        <span class="gb-cat-tag">
-                                            <i class="bi {{ sim_project.category.icon|default:'bi-briefcase' }}"></i>
+                        <div class="col-lg-4 col-md-6">
+                            <div class="card h-100 border-0 shadow-sm rounded-4 p-4 d-flex flex-column justify-content-between bg-white" style="border: 1.5px solid #e2e8f0 !important; transition: transform 0.2s ease, box-shadow 0.2s ease;">
+                                <div>
+                                    <div class="d-flex align-items-center justify-content-between mb-2.5">
+                                        <span class="badge bg-primary-subtle text-primary rounded-pill small">
+                                            <i class="bi {{ sim_project.category.icon|default:'bi-briefcase' }} me-1"></i>
                                             {{ sim_project.category.name|default:"General" }}
                                         </span>
-                                        <span class="gb-status-tag gb-status-open">
-                                            <span class="status-pulse-dot"></span> Open
-                                        </span>
+                                        <span class="badge bg-success-subtle text-success rounded-pill small">Open</span>
                                     </div>
 
-                                    <h4 class="gb-project-card-title fs-6">
-                                        <a href="{% url 'project_detail' sim_project.id %}">
+                                    <h5 class="fw-bold text-navy mb-2 fs-6">
+                                        <a href="{% url 'project_detail' sim_project.id %}" class="text-navy text-decoration-none hover-primary">
                                             {{ sim_project.title }}
                                         </a>
-                                    </h4>
+                                    </h5>
 
-                                    <p class="gb-project-card-desc mb-3">
+                                    <p class="text-muted small mb-3 line-clamp-2" style="display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.6;">
                                         {{ sim_project.description }}
                                     </p>
                                 </div>
 
-                                <div class="gb-card-bottom-row">
-                                    <div class="gb-budget-display">
-                                        <div class="gb-budget-figure fs-5">
-                                            {% if sim_project.budget_max > 0 %}
-                                                {% money_range sim_project.budget_min sim_project.budget_max request.user sim_project.budget_type %}
-                                            {% else %}
-                                                ${{ sim_project.budget_min|floatformat:0 }}
-                                            {% endif %}
+                                <div class="pt-3 border-top d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <div class="fw-bold text-navy fs-6">
+                                            {% money_range sim_project.budget_min sim_project.budget_max request.user sim_project.budget_type %}
                                         </div>
-                                        <div class="gb-budget-type-label small">
-                                            {{ sim_project.get_budget_type_display }}
-                                        </div>
+                                        <span class="text-muted small" style="font-size: 0.72rem;">{{ sim_project.get_budget_type_display }}</span>
                                     </div>
-                                    <a href="{% url 'project_detail' sim_project.id %}" class="gb-btn-bid-action btn-sm">
+                                    <a href="{% url 'project_detail' sim_project.id %}" class="btn btn-outline-primary btn-sm rounded-pill fw-semibold px-3">
                                         View Gig
                                     </a>
                                 </div>
@@ -566,19 +704,38 @@
 
 {% block extra_js %}
 <script>
+    // 1. Copy Project Link Helper
     function copyProjectLink(btn) {
-        navigator.clipboard.writeText(window.location.href).then(function() {
-            const toastEl = document.getElementById('copyToast');
-            if (toastEl) {
-                const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-                toast.show();
-            }
-        }).catch(function() {
-            alert('Project URL: ' + window.location.href);
-        });
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(window.location.href).then(showToast).catch(fallbackCopy);
+        } else {
+            fallbackCopy();
+        }
     }
 
-    // Live proposal bid currency conversion preview
+    function fallbackCopy() {
+        const tempInput = document.createElement('input');
+        tempInput.value = window.location.href;
+        document.body.appendChild(tempInput);
+        tempInput.select();
+        try {
+            document.execCommand('copy');
+            showToast();
+        } catch (e) {
+            prompt('Copy Project Link:', window.location.href);
+        }
+        document.body.removeChild(tempInput);
+    }
+
+    function showToast() {
+        const toastEl = document.getElementById('copyToast');
+        if (toastEl && typeof bootstrap !== 'undefined') {
+            const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+            toast.show();
+        }
+    }
+
+    // 2. Live Proposal Bid Currency Conversion Preview
     const bidInput = document.getElementById("id_bid_amount");
     const bidPreview = document.getElementById("proposalBidLivePreview");
     const rate_pd = parseFloat("{{ usd_inr_rate|default:83.0 }}") || 83.0;
@@ -603,5 +760,55 @@
         updateBidPreview();
     }
 
+    // 3. Interactive Bookmark AJAX Button
+    const bookmarkBtn = document.getElementById("projectBookmarkBtn");
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener("click", function() {
+            const projectId = this.getAttribute("data-project-id");
+            const icon = document.getElementById("bookmarkIcon");
+            const label = document.getElementById("bookmarkText");
+
+            {% if not user.is_authenticated %}
+                window.location.href = "{% url 'login' %}?next={{ request.path }}";
+                return;
+            {% endif %}
+
+            fetch(`/projects/${projectId}/bookmark/`, {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}",
+                    "X-Requested-With": "XMLHttpRequest",
+                    "Content-Type": "application/json"
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'ok') {
+                    if (data.bookmarked) {
+                        icon.className = "bi bi-heart-fill text-danger";
+                        label.textContent = "Saved";
+                    } else {
+                        icon.className = "bi bi-heart text-muted";
+                        label.textContent = "Save";
+                    }
+                } else if (data.status === 'unauthenticated' && data.login_url) {
+                    window.location.href = data.login_url;
+                }
+            })
+            .catch(err => console.error("Bookmark toggle failed:", err));
+        });
+    }
+
+    // 4. Submit Proposal Button Loading State
+    const propForm = document.getElementById("proposalSubmitForm");
+    const propBtn = document.getElementById("submitProposalBtn");
+    if (propForm && propBtn) {
+        propForm.addEventListener("submit", function() {
+            if (propForm.checkValidity()) {
+                propBtn.disabled = true;
+                propBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Sending Proposal...';
+            }
+        });
+    }
 </script>
 {% endblock %}

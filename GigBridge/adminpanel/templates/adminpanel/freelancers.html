@@ -1,5 +1,5 @@
 {% extends 'adminpanel/base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block title %}Freelancers Management{% endblock %}
 {% block page_title %}Freelancers Directory{% endblock %}
@@ -155,7 +155,7 @@
                         {% endfor %}
                     </td>
                     <td>
-                        <span class="fw-bold text-dark">&#8377;{{ f.profile.hourly_rate|default:25|floatformat:0 }}/hr</span>
+                        <span class="fw-bold text-dark">{{ f.profile.hourly_rate|default:25|money }}/hr</span>
                     </td>
                     <td>
                         <span class="fw-semibold text-dark">{{ f.profile.average_rating|default:5.0 }} / 5.0</span>
@@ -245,7 +245,7 @@
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
                             <span class="text-muted small d-block">Hourly Rate</span>
-                            <strong class="text-dark">&#8377;{{ f.profile.hourly_rate|default:25|floatformat:2 }}/hr</strong>
+                            <strong class="text-dark">{{ f.profile.hourly_rate|default:25|money }}/hr</strong>
                         </div>
                     </div>
                     <div class="col-md-6">

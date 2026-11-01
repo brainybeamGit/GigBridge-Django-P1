@@ -1,5 +1,5 @@
 {% extends 'adminpanel/base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block title %}Contracts & Escrow{% endblock %}
 {% block page_title %}Contracts &amp; Escrow Management{% endblock %}
@@ -71,7 +71,7 @@
                 <span class="adm-kpi-label">Contract Book</span>
                 <span class="adm-kpi-index">04</span>
             </div>
-            <div class="adm-kpi-value text-dark">&#8377;{{ total_val|floatformat:0 }}</div>
+            <div class="adm-kpi-value text-dark">{{ total_val|money }}</div>
             <p class="adm-kpi-caption">{{ cancelled_count }} cancelled / closed</p>
         </div>
     </div>
@@ -139,7 +139,7 @@
                         <span class="fw-semibold text-dark">{{ c.freelancer.username }}</span>
                     </td>
                     <td>
-                        <span class="fw-bold text-dark fs-6">&#8377;{{ c.total_amount|floatformat:2 }}</span>
+                        <span class="fw-bold text-dark fs-6">{{ c.total_amount|money }}</span>
                     </td>
                     <td>
                         <div class="d-flex align-items-center gap-2" style="min-width:110px;">
@@ -232,7 +232,7 @@
                     <div class="col-md-6">
                         <div class="p-3 bg-light rounded-3 border">
                             <span class="text-muted small d-block">Total Contract Value</span>
-                            <strong class="text-primary fs-5">&#8377;{{ c.total_amount|floatformat:2 }}</strong>
+                            <strong class="text-primary fs-5">{{ c.total_amount|money }}</strong>
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -260,7 +260,7 @@
                                 {% for m in c.milestones.all %}
                                 <tr>
                                     <td class="fw-semibold text-dark">{{ m.title }}</td>
-                                    <td class="text-dark fw-bold">&#8377;{{ m.amount|floatformat:2 }}</td>
+                                    <td class="text-dark fw-bold">{{ m.amount|money }}</td>
                                     <td class="text-muted">{{ m.due_date|date:"M d, Y"|default:"—" }}</td>
                                     <td>
                                         <span class="badge {% if m.status == 'approved' or m.status == 'paid' %}bg-success-subtle text-success{% elif m.status == 'submitted' %}bg-info-subtle text-info{% else %}bg-secondary-subtle text-secondary{% endif %}">

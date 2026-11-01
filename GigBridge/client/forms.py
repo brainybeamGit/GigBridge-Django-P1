@@ -467,6 +467,7 @@ class UserProfileForm(forms.ModelForm):
         symbol = '$' if self.user_currency == 'USD' else '₹'
         code = self.user_currency
         self.fields['hourly_rate'].label = f"Hourly Rate ({symbol} {code}/hr)"
+        self.fields['hourly_rate'].required = False
 
         if self.instance and self.instance.pk:
             if not self.is_bound:
@@ -488,11 +489,16 @@ class UserProfileForm(forms.ModelForm):
         country_code = (cleaned_data.get('country') or 'IN').strip().upper()
 
         if phone_raw:
+            COUNTRY_NAMES = {
+                'IN': 'India', 'US': 'United States', 'GB': 'United Kingdom',
+                'AE': 'United Arab Emirates', 'CA': 'Canada', 'AU': 'Australia',
+                'DE': 'Germany', 'FR': 'France', 'SG': 'Singapore'
+            }
             try:
                 parsed = phonenumbers.parse(phone_raw, country_code)
                 if not phonenumbers.is_valid_number(parsed):
                     region = phonenumbers.region_code_for_number(parsed) or country_code
-                    country_name = "India" if region == "IN" else ("United States" if region == "US" else region)
+                    country_name = COUNTRY_NAMES.get(region, region)
                     self.add_error('phone', f"Enter a valid phone number for {country_name}.")
                 else:
                     e164 = phonenumbers.format_number(parsed, phonenumbers.PhoneNumberFormat.E164)
@@ -501,15 +507,30 @@ class UserProfileForm(forms.ModelForm):
                     cleaned_data['phone_country_code'] = f"+{parsed.country_code}"
                     cleaned_data['country'] = phonenumbers.region_code_for_number(parsed) or country_code
             except phonenumbers.NumberParseException:
-                self.add_error('phone', "Invalid phone number format.")
+                self.add_error('phone', "Invalid phone number format. Please check the country code and national digits.")
+            except Exception:
+                self.add_error('phone', "Invalid phone number format. Please check your phone number.")
 
         # Convert hourly_rate if entered in USD
         hourly = cleaned_data.get('hourly_rate')
-        if hourly is not None and self.user_currency == 'USD':
+        if hourly is None or hourly == '':
+            from decimal import Decimal
+            cleaned_data['hourly_rate'] = Decimal('0.00')
+        elif self.user_currency == 'USD':
             rate = get_usd_inr_rate()
             cleaned_data['hourly_rate'] = convert_usd_to_inr(hourly, rate=rate)
 
         return cleaned_data
+
+
+    def save(self, commit=True):
+        profile = super().save(commit=False)
+        if profile.country:
+            profile.display_currency = 'INR' if profile.country == 'IN' else 'USD'
+        if commit:
+            profile.save()
+            self.save_m2m()
+        return profile
 
 
 class MessageForm(forms.ModelForm):

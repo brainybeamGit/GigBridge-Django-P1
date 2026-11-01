@@ -18,6 +18,7 @@ from client.models import (
     Conversation, Message, Submission
 )
 from client.forms import UserProfileForm, FreelancerReplyForm
+from client.currency import resolve_currency_for_user_or_request, convert_inr_to_usd, get_usd_inr_rate
 
 
 def _require_freelancer(request):
@@ -107,6 +108,12 @@ def dashboard_view(request):
         ).aggregate(total=Sum('amount'))['total'] or 0
         earnings_chart_data.append(float(m_earned))
 
+    active_currency = resolve_currency_for_user_or_request(user=user, request=request)
+    currency_symbol = '₹' if active_currency == 'INR' else '$'
+    rate = get_usd_inr_rate()
+    if active_currency == 'USD':
+        earnings_chart_data = [float(round(convert_inr_to_usd(v, rate=rate), 2)) for v in earnings_chart_data]
+
     proposal_donut_labels = ['Accepted', 'Pending', 'Declined']
     proposal_donut_data = [accepted_proposals, pending_proposals, rejected_proposals]
 
@@ -160,9 +167,16 @@ def profile_view(request):
                 else:
                     user.email = new_email
             user.save()
-            form.save()
-            messages.success(request, "Your profile has been updated successfully!")
-            return redirect('freelancer_profile')
+            old_currency = profile.display_currency
+            updated_profile = form.save()
+
+            response = redirect('freelancer_profile')
+            response.set_cookie('gb_currency', updated_profile.display_currency, max_age=365*24*3600, samesite='Lax', path='/')
+            if updated_profile.display_currency != old_currency:
+                messages.success(request, f"Your profile has been updated! Your prices are now shown in {updated_profile.display_currency}.")
+            else:
+                messages.success(request, "Your profile has been updated successfully!")
+            return response
         else:
             messages.error(request, "Please correct the errors below.")
     else:
@@ -480,6 +494,12 @@ def earnings_view(request):
             created_at__month=m
         ).aggregate(total=Sum('amount'))['total'] or 0
         earnings_chart_data.append(float(m_earned))
+
+    active_currency = resolve_currency_for_user_or_request(user=user, request=request)
+    currency_symbol = '₹' if active_currency == 'INR' else '$'
+    rate = get_usd_inr_rate()
+    if active_currency == 'USD':
+        earnings_chart_data = [float(round(convert_inr_to_usd(v, rate=rate), 2)) for v in earnings_chart_data]
 
     context = {
         'payments': page_obj,

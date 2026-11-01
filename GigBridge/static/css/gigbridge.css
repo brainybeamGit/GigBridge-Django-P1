@@ -1568,15 +1568,29 @@ body.gb-body-light {
   transform: translateY(-2px);
 }
 
-/* ─── Footer (Dark Navy Exact) ─── */
+/* ─── Footer (Luxe Light Blue System) ─── */
 .gb-footer-exact {
-  background-color: #0b132b;
-  color: #94a3b8;
+  background:
+    radial-gradient(circle at 14% 20%, rgba(37, 99, 235, 0.10) 0%, transparent 48%),
+    radial-gradient(circle at 86% 75%, rgba(56, 189, 248, 0.14) 0%, transparent 45%),
+    linear-gradient(180deg, #f0f7ff 0%, #e0f2fe 50%, #eff6ff 100%);
+  color: #475569;
+  border-top: 1px solid #bfdbfe;
   padding: 70px 0 30px 0;
+  position: relative;
+}
+
+.gb-footer-exact::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(37, 99, 235, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  pointer-events: none;
 }
 
 .gb-footer-desc {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.875rem;
   line-height: 1.6;
   max-width: 260px;
@@ -1586,27 +1600,32 @@ body.gb-body-light {
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.08);
-  color: #cbd5e1;
+  background: #ffffff;
+  border: 1px solid #bfdbfe;
+  color: #0284c7;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-size: 0.95rem;
   text-decoration: none;
+  box-shadow: 0 1px 3px rgba(37, 99, 235, 0.06);
   transition: all 0.2s ease;
 }
 
 .gb-social-btn:hover {
   background: #0284c7;
+  border-color: #0284c7;
   color: #ffffff;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 }
 
 .gb-footer-heading {
-  color: #ffffff;
+  color: #0b132b;
   font-size: 0.95rem;
   font-weight: 700;
   margin-bottom: 1.25rem;
+  letter-spacing: -0.01em;
 }
 
 .gb-footer-nav {
@@ -1616,20 +1635,21 @@ body.gb-body-light {
 }
 
 .gb-footer-nav li a {
-  color: #94a3b8;
+  color: #64748b;
   font-size: 0.875rem;
   text-decoration: none;
   display: block;
   margin-bottom: 10px;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .gb-footer-nav li a:hover {
-  color: #ffffff;
+  color: #0284c7;
+  transform: translateX(2px);
 }
 
 .gb-footer-bottom {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid #bfdbfe;
   padding-top: 25px;
   margin-top: 10px;
   color: #64748b;
@@ -2312,86 +2332,182 @@ body.gb-body-light {
    PROJECT DETAIL PAGE STYLES (MATCHING GIGBRIDGE DESIGN SYSTEM)
    ═══════════════════════════════════════════════════════════ */
 
-/* ─── Detail Hero Banner ─── */
+/* ─── Detail Hero Banner (Matches Home & Browse Projects luminous blue) ─── */
 .gb-detail-hero {
-  background: linear-gradient(135deg, #0b132b 0%, #0f172a 45%, #1e293b 80%, #1e3a8a 100%);
-  padding: 44px 0 38px;
-  position: relative;
-  overflow: hidden;
-  color: #ffffff;
+    background:
+        radial-gradient(circle at 14% 20%, rgba(37, 99, 235, 0.16) 0%, transparent 48%), 
+        radial-gradient(circle at 86% 75%, rgba(56, 189, 248, 0.22) 0%, transparent 45%), 
+        radial-gradient(circle at 50% 50%, rgba(219, 234, 254, 0.5) 0%, transparent 70%), 
+        linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 50%, #eff6ff 100%);
+    position: relative;
+    padding: 3.5rem 0 4.25rem;
+    overflow: hidden;
+    color: #0b132b;
 }
 
 .gb-detail-hero::before {
-  content: '';
-  position: absolute;
-  top: -40%;
-  right: -5%;
-  width: 500px;
-  height: 500px;
-  background: radial-gradient(circle, rgba(37, 99, 235, 0.2) 0%, rgba(37, 99, 235, 0) 70%);
-  border-radius: 50%;
-  pointer-events: none;
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(37, 99, 235, 0.08) 1px, transparent 1px);
+    background-size: 24px 24px;
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+.gb-detail-hero-wave {
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    right: 0;
+    width: 100%;
+    line-height: 0;
+    z-index: 1;
+    pointer-events: none;
+}
+
+.gb-detail-hero-wave svg {
+    width: 100%;
+    height: 48px;
+    display: block;
+}
+
+.gb-detail-breadcrumb {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 0.85rem;
+    color: #64748b;
+    margin-bottom: 12px;
+}
+
+.gb-detail-breadcrumb a {
+    color: #64748b;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.gb-detail-breadcrumb a:hover {
+    color: #0284c7;
 }
 
 .gb-detail-hero-title {
-  font-size: 2.15rem;
-  font-weight: 800;
-  line-height: 1.25;
-  letter-spacing: -0.5px;
-  color: #ffffff;
-  margin-bottom: 12px;
+    font-size: 2.25rem;
+    font-weight: 800;
+    line-height: 1.22;
+    letter-spacing: -0.025em;
+    color: #0b132b;
+    margin-bottom: 14px;
 }
 
 .gb-detail-meta-strip {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 14px;
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    font-size: 0.875rem;
+    color: #475569;
 }
 
 .gb-detail-meta-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+}
+
+.gb-detail-meta-item strong {
+    color: #0b132b;
+}
+
+.gb-pd-quick-stat {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(191, 219, 254, 0.7);
+    border-radius: 16px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    box-shadow: 0 4px 16px rgba(37, 99, 235, 0.05);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.gb-pd-quick-stat:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(37, 99, 235, 0.1);
+    background: #ffffff;
+}
+
+.gb-pd-stat-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #f0f9ff;
+    color: #0284c7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+    border: 1px solid #bae6fd;
+}
+
+.gb-pd-stat-val {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #0b132b;
+    line-height: 1.2;
+    margin-bottom: 2px;
+}
+
+.gb-pd-stat-lbl {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
 }
 
 .gb-detail-action-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 0.85rem;
-  font-weight: 600;
-  text-decoration: none;
-  transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 18px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.2s ease;
 }
 
 .gb-detail-btn-ghost {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+    background: #ffffff;
+    color: #0b132b;
+    border: 1px solid #cbd5e1;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
 .gb-detail-btn-ghost:hover {
-  background: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  transform: translateY(-1px);
+    background: #f1f5f9;
+    color: #0284c7;
+    border-color: #93c5fd;
+    transform: translateY(-1px);
 }
 
 .gb-detail-btn-primary {
-  background: #2563eb;
-  color: #ffffff;
-  border: 1px solid #2563eb;
+    background: #0284c7;
+    color: #ffffff;
+    border: 1px solid #0284c7;
+    box-shadow: 0 4px 12px rgba(2, 132, 199, 0.25);
 }
 
 .gb-detail-btn-primary:hover {
-  background: #1d4ed8;
-  color: #ffffff;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    background: #0369a1;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(2, 132, 199, 0.35);
 }
 
 /* ─── Main Content Cards ─── */
@@ -7268,37 +7384,67 @@ input[type="radio"]:checked + .gb-role-radio-card .gb-role-icon {
    ========================================================================== */
 .gb-currency-dropdown {
     background: #ffffff !important;
-    border: 1px solid #e2e8f0 !important;
-    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12) !important;
+    border: 1px solid #bfdbfe !important;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.12), 0 2px 6px rgba(37, 99, 235, 0.04) !important;
     border-radius: 12px !important;
-    padding: 5px !important;
+    padding: 6px !important;
+    min-width: 155px !important;
+    z-index: 1050 !important;
 }
+
+.gb-currency-dropdown .dropdown-item,
 .gb-currency-dropdown-item {
     color: #334155 !important;
-    font-size: 0.82rem !important;
-    font-weight: 500 !important;
+    font-size: 0.825rem !important;
+    font-weight: 600 !important;
     border-radius: 8px !important;
-    padding: 7px 10px !important;
+    padding: 8px 12px !important;
     background-color: transparent !important;
-    transition: background-color 0.15s ease, color 0.15s ease;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    text-decoration: none !important;
+    transition: all 0.15s ease !important;
+    cursor: pointer;
 }
+
+.gb-currency-dropdown .dropdown-item:hover,
 .gb-currency-dropdown-item:hover {
     background-color: #f1f5f9 !important;
     color: #0284c7 !important;
 }
-.gb-currency-dropdown-item.is-active,
-.gb-currency-dropdown-item.active {
-    background-color: #f0f9ff !important;
+
+.gb-currency-dropdown .dropdown-item:active,
+.gb-currency-dropdown .dropdown-item.active,
+.gb-currency-dropdown .dropdown-item.is-active,
+.gb-currency-dropdown-item:active,
+.gb-currency-dropdown-item.active,
+.gb-currency-dropdown-item.is-active {
+    background-color: #eff6ff !important;
     color: #0284c7 !important;
     font-weight: 700 !important;
 }
+
+.gb-currency-dropdown .dropdown-item:focus,
+.gb-currency-dropdown-item:focus {
+    background-color: #eff6ff !important;
+    color: #0284c7 !important;
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.gb-currency-dropdown .dropdown-item.is-active .gb-curr-label,
+.gb-currency-dropdown .dropdown-item.active .gb-curr-label,
 .gb-currency-dropdown-item.is-active .gb-curr-label,
 .gb-currency-dropdown-item.active .gb-curr-label {
     color: #0284c7 !important;
     font-weight: 700 !important;
 }
+
 .gb-flag-svg {
-    display: inline-block;
-    vertical-align: middle;
-    flex-shrink: 0;
+    display: inline-block !important;
+    vertical-align: middle !important;
+    flex-shrink: 0 !important;
+    border-radius: 2px !important;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15) !important;
 }

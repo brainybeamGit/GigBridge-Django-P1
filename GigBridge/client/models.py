@@ -32,7 +32,7 @@ class UserProfile(models.Model):
     avatar = models.ImageField(upload_to='avatars/', blank=True, null=True)
     location = models.CharField(max_length=100, blank=True, default='Remote')
     skills = models.CharField(max_length=300, blank=True, help_text='Comma-separated skills')
-    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
+    hourly_rate = models.DecimalField(max_digits=10, decimal_places=2, default=0.00, blank=True)
     website = models.URLField(blank=True)
     is_approved = models.BooleanField(
         default=True,
@@ -70,10 +70,14 @@ class UserProfile(models.Model):
     def save(self, *args, **kwargs):
         if self.country:
             self.country = self.country.strip().upper()
-            if getattr(self, '_state', None) and self._state.adding:
-                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
-            elif not self.display_currency:
-                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+
+        update_fields = kwargs.get('update_fields')
+        if update_fields and 'display_currency' in update_fields:
+            # Explicit update via currency dropdown switcher
+            pass
+        elif self.country:
+            # Sync display currency with country: India -> INR, All other countries -> USD
+            self.display_currency = 'INR' if self.country == 'IN' else 'USD'
         elif not self.display_currency:
             self.display_currency = 'INR'
 

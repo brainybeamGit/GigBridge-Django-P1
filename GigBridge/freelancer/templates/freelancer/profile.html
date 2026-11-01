@@ -1,5 +1,5 @@
 {% extends 'freelancer/dashboard_base.html' %}
-{% load static %}
+{% load static currency_tags %}
 
 {% block breadcrumb_current %}Profile &amp; Settings{% endblock %}
 {% block dashboard_title %}Freelancer Profile &amp; Settings{% endblock %}
@@ -126,6 +126,33 @@
         border-color: var(--pro-sky-200);
     }
 
+
+    /* ── SCROLLBAR & STICKY PANEL ENHANCEMENT ── */
+    html {
+        scrollbar-width: thin;
+        scrollbar-color: #7dd3fc #f0f9ff;
+    }
+    ::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+    ::-webkit-scrollbar-track {
+        background: #f0f7ff;
+    }
+    ::-webkit-scrollbar-thumb {
+        background: #7dd3fc;
+        border-radius: 999px;
+        border: 2px solid #f0f7ff;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+        background: #0284c7;
+    }
+    .pro-panel-sticky {
+        position: sticky;
+        top: 86px;
+        z-index: 10;
+    }
+
     /* ── 3. CARDS & PANELS ── */
     .pro-panel {
         background: #FFFFFF;
@@ -232,7 +259,7 @@
         <div>
             <h1 class="pro-hero-title">{{ request.user.get_full_name|default:request.user.username }}</h1>
             <p class="pro-hero-sub">
-                {{ profile.title|default:"Freelance Specialist" }} &bull; Rate: <strong>&#8377;{{ profile.hourly_rate|default:"0.00" }}/hr</strong> &bull; Member since {{ request.user.date_joined|date:"F Y" }}
+                {{ profile.title|default:"Freelance Specialist" }} &bull; Rate: <strong>{{ profile.hourly_rate|default:0|money }}/hr</strong> &bull; Member since {{ request.user.date_joined|date:"F Y" }}
             </p>
         </div>
         <div class="d-flex gap-2">
@@ -265,7 +292,7 @@
 <div class="row g-4">
     <!-- Left Column: Dossier Card & Overview -->
     <div class="col-lg-4">
-        <div class="pro-panel text-center">
+        <div class="pro-panel pro-panel-sticky text-center">
             <div class="pro-avatar-big">
                 {% if profile.avatar %}
                     <img src="{{ profile.avatar.url }}" alt="{{ request.user.username }}">
@@ -292,7 +319,7 @@
                 </div>
                 <div class="d-flex justify-content-between py-1 border-bottom">
                     <span class="text-muted">Hourly Rate:</span>
-                    <strong class="text-dark">&#8377;{{ profile.hourly_rate|default:"0.00" }}/hr</strong>
+                    <strong class="text-dark">{{ profile.hourly_rate|default:0|money }}/hr</strong>
                 </div>
                 <div class="d-flex justify-content-between py-1 border-bottom">
                     <span class="text-muted">Location:</span>
@@ -332,6 +359,9 @@
 
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
+                {{ form.country }}
+                {{ form.phone_country_code }}
+                {{ form.phone_number }}
 
                 <!-- First & Last Name -->
                 <div class="row g-3 mb-3">
@@ -385,10 +415,10 @@
                     </div>
                     <div class="col-sm-5">
                         <label class="form-label small fw-bold text-dark mb-1" for="id_hourly_rate">
-                            Hourly Rate (&#8377; INR)
+                            Hourly Rate ({{ currency_symbol }} {{ active_currency }})
                         </label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light text-muted">&#8377;</span>
+                            <span class="input-group-text bg-light text-muted">{{ currency_symbol }}</span>
                             {{ form.hourly_rate }}
                             <span class="input-group-text bg-light text-muted">/hr</span>
                         </div>
@@ -574,61 +604,94 @@
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const phoneEl = document.getElementById('id_profile_phone');
-        const countryEl = document.getElementById('id_profile_country');
-        const dialCodeEl = document.getElementById('id_profile_phone_country_code');
-        const numberEl = document.getElementById('id_profile_phone_number');
-        const noticeText = document.getElementById('flPhoneNoticeText');
+    (function() {
+        function initFreelancerProfile() {
+            const phoneEl = document.getElementById('id_profile_phone') || document.getElementById('id_phone');
+            const countryEl = document.getElementById('id_profile_country') || document.getElementById('id_country');
+            const dialCodeEl = document.getElementById('id_profile_phone_country_code') || document.getElementById('id_phone_country_code');
+            const numberEl = document.getElementById('id_profile_phone_number') || document.getElementById('id_phone_number');
+            const noticeText = document.getElementById('flPhoneNoticeText');
 
-        if (phoneEl && window.intlTelInput) {
-            const initCountry = (countryEl && countryEl.value) ? countryEl.value.toLowerCase() : 'in';
-            const iti = window.intlTelInput(phoneEl, {
-                initialCountry: initCountry,
-                preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
-                separateDialCode: true,
-                utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
-            });
+            if (phoneEl && window.intlTelInput) {
+                // Determine initial country accurately
+                let initCountry = 'in';
+                if (countryEl && countryEl.value) {
+                    initCountry = countryEl.value.trim().toLowerCase();
+                } else if (phoneEl.value) {
+                    const raw = phoneEl.value.trim();
+                    if (raw.startsWith('+1')) initCountry = 'us';
+                    else if (raw.startsWith('+44')) initCountry = 'gb';
+                    else if (raw.startsWith('+971')) initCountry = 'ae';
+                    else if (raw.startsWith('+91')) initCountry = 'in';
+                }
 
-            function syncFlPhone() {
-                const data = iti.getSelectedCountryData();
-                if (data && data.iso2) {
-                    const iso = data.iso2.toUpperCase();
-                    if (countryEl) countryEl.value = iso;
-                    if (dialCodeEl) dialCodeEl.value = '+' + (data.dialCode || '91');
-                    if (noticeText) {
-                        if (iso === 'IN') {
-                            noticeText.innerHTML = '<strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>';
-                        } else {
-                            noticeText.innerHTML = '<strong>' + data.name + ' (+' + data.dialCode + ')</strong> &bull; Currency: <strong>USD ($)</strong>';
+                const iti = window.intlTelInput(phoneEl, {
+                    initialCountry: initCountry,
+                    preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                    separateDialCode: true,
+                    nationalMode: false,
+                    autoPlaceholder: 'aggressive',
+                    utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
+                });
+
+                function syncFlPhone() {
+                    const data = iti.getSelectedCountryData();
+                    if (data && data.iso2) {
+                        const iso = data.iso2.toUpperCase();
+                        if (countryEl) countryEl.value = iso;
+                        if (dialCodeEl) dialCodeEl.value = '+' + (data.dialCode || '91');
+                        if (noticeText) {
+                            if (iso === 'IN') {
+                                noticeText.innerHTML = '<span class="badge bg-success-subtle text-success me-1">IN</span> <strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>';
+                            } else {
+                                const cName = data.name || iso;
+                                noticeText.innerHTML = '<span class="badge bg-primary-subtle text-primary me-1">' + iso + '</span> <strong>' + cName + ' (+' + (data.dialCode || '') + ')</strong> &bull; Currency: <strong>USD ($)</strong>';
+                            }
                         }
                     }
+                    if (numberEl) {
+                        numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
+                    }
                 }
-                if (numberEl) {
-                    numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
-                }
+
+                phoneEl.addEventListener('countrychange', syncFlPhone);
+                phoneEl.addEventListener('input', syncFlPhone);
+                phoneEl.addEventListener('blur', syncFlPhone);
+                phoneEl.addEventListener('keyup', syncFlPhone);
+                syncFlPhone();
             }
 
-            phoneEl.addEventListener('countrychange', syncFlPhone);
-            phoneEl.addEventListener('input', syncFlPhone);
-            phoneEl.addEventListener('blur', syncFlPhone);
-            syncFlPhone();
-        }
+            // Real-time live hourly rate converter
+            const rateInput = document.getElementById('id_hourly_rate');
+            const rateCalc = document.getElementById('flRateInrCalc');
+            const usdRate = parseFloat('{{ usd_inr_rate|default:83.0 }}');
+            const isUsd = '{{ active_currency }}' === 'USD';
 
-        // Live hourly rate converter if USD
-        const rateInput = document.getElementById('id_hourly_rate');
-        const rateCalc = document.getElementById('flRateInrCalc');
-        const usdRate = parseFloat('{{ usd_inr_rate|default:83.0 }}');
-
-        if (rateInput && rateCalc) {
-            function updateRateCalc() {
-                const val = parseFloat(rateInput.value) || 0;
-                const inr = (val * usdRate).toFixed(2);
-                rateCalc.innerHTML = `&asymp; ₹${Number(inr).toLocaleString()} base INR for Indian clients`;
+            if (rateInput && rateCalc) {
+                function updateRateCalc() {
+                    const val = parseFloat(rateInput.value) || 0;
+                    if (val > 0) {
+                        if (isUsd) {
+                            const inr = Math.round(val * usdRate);
+                            rateCalc.innerHTML = '&asymp; ₹' + inr.toLocaleString() + ' base INR for Indian clients';
+                        } else {
+                            const usd = (val / usdRate).toFixed(2);
+                            rateCalc.innerHTML = '&asymp; $' + usd + ' USD equivalent for international clients';
+                        }
+                    } else {
+                        rateCalc.innerHTML = '';
+                    }
+                }
+                rateInput.addEventListener('input', updateRateCalc);
+                updateRateCalc();
             }
-            rateInput.addEventListener('input', updateRateCalc);
-            updateRateCalc();
         }
-    });
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initFreelancerProfile);
+        } else {
+            initFreelancerProfile();
+        }
+    })();
 </script>
 {% endblock %}
