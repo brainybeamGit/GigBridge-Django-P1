@@ -188,10 +188,8 @@
     <aside class="dashboard-sidebar">
         <!-- 1. Brand Logo Header in Sidebar -->
         <div class="dashboard-sidebar-brand">
-            <a href="{% url 'home' %}">
-                <span class="sidebar-brand-icon">
-                    <i class="bi bi-briefcase-fill"></i>
-                </span>
+            <a href="{% url 'home' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="38" height="38" style="border-radius: 10px; object-fit: contain;">
                 <div>
                     <span class="sidebar-brand-title">GigBridge</span>
                     <span class="badge d-block text-start px-2 py-0 mt-1" style="background:#FFFFFF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.64rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">
@@ -201,66 +199,50 @@
             </a>
         </div>
 
-        <!-- 2. Sidebar Navigation Links -->
+                <!-- 2. Sidebar Navigation Links -->
         <nav class="d-flex flex-column flex-grow-1 pt-2">
             <a href="{% url 'freelancer_dashboard' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
                 <span>Overview</span>
             </a>
 
             <a href="{% url 'project_list' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'project_list' or request.resolver_match.url_name == 'project_detail' %}active{% endif %}">
-                <i class="bi bi-search"></i>
                 <span>Find Work</span>
             </a>
 
             <a href="{% url 'freelancer_proposals' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_proposals' %}active{% endif %}">
-                <i class="bi bi-envelope-paper"></i>
                 <span>My Proposals</span>
             </a>
 
             <a href="{% url 'freelancer_contracts' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_contracts' or request.resolver_match.url_name == 'freelancer_contract_detail' or request.resolver_match.url_name == 'freelancer_submit_delivery' %}active{% endif %}">
-                <i class="bi bi-file-earmark-check"></i>
                 <span>Active Contracts</span>
             </a>
 
             <a href="{% url 'freelancer_earnings' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_earnings' %}active{% endif %}">
-                <i class="bi bi-wallet2"></i>
                 <span>Earnings &amp; Payouts</span>
             </a>
 
             <a href="{% url 'freelancer_my_reviews' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_my_reviews' %}active{% endif %}">
-                <i class="bi bi-star"></i>
                 <span>Client Reviews</span>
             </a>
 
             <a href="{% url 'messages_inbox' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'messages_inbox' or request.resolver_match.url_name == 'conversation_detail' or request.resolver_match.url_name == 'freelancer_messages' or request.resolver_match.url_name == 'freelancer_conversation_detail' %}active{% endif %}">
-                <i class="bi bi-chat-dots"></i>
-                <span class="d-flex align-items-center justify-content-between flex-grow-1">
-                    <span>Messages</span>
-                    {% if unread_messages_count > 0 %}
-                        <span class="badge rounded-pill bg-danger" style="font-size: 0.7rem; padding: 2px 7px;">{{ unread_messages_count }}</span>
-                    {% endif %}
-                </span>
+                <span>Messages</span>
             </a>
 
             <a href="{% url 'freelancer_profile' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'freelancer_profile' %}active{% endif %}">
-                <i class="bi bi-person-gear"></i>
                 <span>Profile &amp; Settings</span>
             </a>
 
             <div class="sidebar-footer-links">
                 <a href="{% url 'home' %}" class="dashboard-nav-item">
-                    <i class="bi bi-house"></i>
                     <span>Back to Website</span>
                 </a>
                 <a href="{% url 'project_list' %}" class="dashboard-nav-item">
-                    <i class="bi bi-search"></i>
                     <span>Browse Marketplace</span>
                 </a>
                 <form method="POST" action="{% url 'logout' %}" class="mt-1">
                     {% csrf_token %}
                     <button type="submit" class="sidebar-logout-btn">
-                        <i class="bi bi-box-arrow-right"></i>
                         <span>Log Out</span>
                     </button>
                 </form>

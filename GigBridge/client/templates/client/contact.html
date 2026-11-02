@@ -3,6 +3,120 @@
 
 {% block title %}Contact Us | GigBridge Support &amp; Inquiries{% endblock %}
 
+{% block extra_css %}
+<!-- intl-tel-input CSS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/css/intlTelInput.css">
+<style>
+    /* intl-tel-input styling */
+    .iti__hide {
+        display: none !important;
+    }
+    .iti {
+        width: 100% !important;
+        display: block !important;
+        position: relative;
+    }
+    .iti__country-list {
+        z-index: 1055 !important;
+        border-radius: 12px;
+        box-shadow: 0 12px 32px rgba(11, 19, 43, 0.16);
+        max-height: 230px;
+        font-size: 0.88rem;
+        border: 1.5px solid #e2e8f0;
+        background-color: #ffffff;
+        white-space: normal;
+        max-width: min(420px, 92vw);
+        overflow-x: hidden;
+    }
+    .iti__country {
+        padding: 8px 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .iti__country:hover, .iti__country.iti__highlight {
+        background-color: #f0f9ff;
+    }
+    .iti--separate-dial-code .iti__selected-flag {
+        background-color: #f8fafc;
+        border-right: 1.5px solid #e2e8f0;
+        border-radius: 12px 0 0 12px;
+        padding: 0 14px;
+        transition: background-color 0.15s ease;
+    }
+    .iti--separate-dial-code .iti__selected-flag:hover {
+        background-color: #f1f5f9;
+    }
+    #id_contact_phone {
+        height: 52px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 12px;
+        font-size: 0.95rem;
+        color: #0b132b;
+        background-color: #ffffff;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    #id_contact_phone:focus {
+        border-color: #0284c7;
+        box-shadow: 0 0 0 3.5px rgba(2, 132, 199, 0.14);
+        outline: none;
+    }
+    .gb-phone-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #0b132b;
+        margin-bottom: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    /* Stat Cards in Hero - Solid Blue with White Text */
+    .gb-hero-glass-card {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 14px !important;
+        padding: 12px 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3) !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
+        height: 100% !important;
+    }
+    .gb-hero-glass-card:hover {
+        transform: translateY(-3px) !important;
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
+    }
+    .gb-glass-card-icon {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        flex-shrink: 0 !important;
+    }
+    .gb-glass-card-val {
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        color: #ffffff !important;
+        line-height: 1.2 !important;
+    }
+    .gb-glass-card-lbl {
+        font-size: 0.775rem !important;
+        color: #ffffff !important;
+        opacity: 0.95 !important;
+        line-height: 1.2 !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- ═══════════════════════════════════════════════════════════
      HERO BANNER (COMPACT LUXE GRADIENT WITH GLASS STAT CARDS)
@@ -13,19 +127,17 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb gb-ct-breadcrumb justify-content-center mb-3 small">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                    <a href="{% url 'home' %}" class="text-dark-50 text-decoration-none">
                         <i class="bi bi-house-door me-1" aria-hidden="true"></i> Home
                     </a>
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Contact Us</li>
+                <li class="breadcrumb-item active text-dark" aria-current="page">Contact Us</li>
             </ol>
         </nav>
 
-        <div class="gb-hero-pill-badge mx-auto mb-2">
-            <i class="bi bi-chat-dots-fill me-1" aria-hidden="true"></i> Specialized Support &amp; Inquiries
-        </div>
 
-        <h1 class="gb-contact-hero-title">Get in Touch with the GigBridge Team</h1>
+
+        <h1 class="gb-contact-hero-title text-dark">Get in Touch with the GigBridge Team</h1>
         <p class="gb-contact-hero-subtitle mx-auto">
             Have questions about client hiring, milestone escrow, freelancer payments, or partnerships? Our support team in India is here to help.
         </p>
@@ -34,7 +146,7 @@
         <div class="row g-3 justify-content-center mt-2 mx-auto gb-ct-stats">
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-warning"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">4 hrs</div>
                         <div class="gb-glass-card-lbl">Avg Response Time</div>
@@ -43,7 +155,7 @@
             </div>
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-info"><i class="bi bi-clock-history" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-clock-history" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">Mon &ndash; Sat</div>
                         <div class="gb-glass-card-lbl">10 AM &ndash; 7 PM IST</div>
@@ -52,7 +164,7 @@
             </div>
             <div class="col-md-4 col-sm-12 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-info"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">Escrow Desk</div>
                         <div class="gb-glass-card-lbl">Payments &amp; Disputes</div>
@@ -196,15 +308,17 @@
 
                         <!-- Phone Number (Optional with intl-tel-input) -->
                         <div class="mb-3">
-                            <label class="form-label small fw-semibold text-navy mb-1" for="id_contact_phone">
-                                <i class="bi bi-telephone me-1 text-muted"></i> Phone Number <span class="text-muted fw-normal">(Optional)</span>
+                            <label class="gb-phone-label" for="id_contact_phone">
+                                <span><i class="bi bi-telephone me-1 text-muted"></i> Phone Number</span>
+                                <span class="text-muted fw-normal small">Optional</span>
                             </label>
                             <input type="tel"
                                    name="phone"
                                    id="id_contact_phone"
                                    class="form-control {% if form.phone.errors %}is-invalid{% endif %}"
                                    placeholder="98765 43210"
-                                   value="{{ form.phone.value|default:'' }}">
+                                   value="{{ form.phone.value|default:'' }}"
+                                   autocomplete="tel">
                             {% if form.phone.errors %}
                                 <div class="invalid-feedback d-block">{{ form.phone.errors.0 }}</div>
                             {% endif %}
@@ -605,28 +719,42 @@
         }
     }
 </script>
+    <!-- intl-tel-input JS and utils -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const phoneInput = document.getElementById('id_contact_phone');
             const countryInput = document.getElementById('id_contact_country');
+            const contactForm = document.getElementById('contactForm');
+
             if (phoneInput && window.intlTelInput) {
                 const initCountry = (countryInput && countryInput.value) ? countryInput.value.toLowerCase() : 'in';
                 const iti = window.intlTelInput(phoneInput, {
                     initialCountry: initCountry,
-                    preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                    onlyCountries: ['in', 'us'],
+                    preferredCountries: [],
                     separateDialCode: true,
+                    autoPlaceholder: 'polite',
                     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
                 });
+
                 function syncCountry() {
                     const data = iti.getSelectedCountryData();
                     if (data && data.iso2 && countryInput) {
                         countryInput.value = data.iso2.toUpperCase();
                     }
                 }
+
                 phoneInput.addEventListener('countrychange', syncCountry);
                 phoneInput.addEventListener('blur', syncCountry);
                 syncCountry();
+
+                if (contactForm) {
+                    contactForm.addEventListener('submit', function() {
+                        syncCountry();
+                    });
+                }
             }
         });
     </script>

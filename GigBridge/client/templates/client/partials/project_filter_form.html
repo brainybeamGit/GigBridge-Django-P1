@@ -133,7 +133,7 @@
 
         <!-- Dynamic Currency-Aware Budget Presets -->
         <div class="gb-pl-presets-wrap">
-            {% if user_currency == 'INR' %}
+            {% if active_currency == 'INR' or user_currency == 'INR' %}
                 <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', '', 5000)">Under ₹5k</button>
                 <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 5000, 25000)">₹5k - ₹25k</button>
                 <button type="button" class="gb-pl-preset-btn" onclick="applyBudgetPreset('{{ prefix }}', 25000, 100000)">₹25k - ₹1L</button>

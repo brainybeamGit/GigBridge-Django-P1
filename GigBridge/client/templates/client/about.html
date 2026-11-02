@@ -17,16 +17,16 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center mb-3 small text-white-50">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                    <a href="{% url 'home' %}" class="text-dark-50 text-decoration-none">
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page">About Us</li>
+                <li class="breadcrumb-item active text-dark" aria-current="page">About Us</li>
             </ol>
         </nav>
 
-        <h1 class="gb-about-hero-title">Connecting Ambition with World-Class Expertise</h1>
-        <p class="gb-about-hero-subtitle mx-auto">
+        <h1 class="gb-about-hero-title text-dark">Connecting Ambition with World-Class Expertise</h1>
+        <p class="gb-about-hero-subtitle mx-auto text-dark" style="max-width: 640px;">
             GigBridge was created to eliminate the friction, uncertainty, and financial risk in freelance hiring. We provide a transparent, milestone-protected ecosystem where verified talent and visionary companies build together.
         </p>
 
@@ -35,7 +35,7 @@
             <a href="{% url 'project_list' %}" class="btn btn-primary rounded-pill px-4 py-2 fw-bold shadow-sm">
                 <i class="bi bi-search me-1"></i> Browse Open Gigs
             </a>
-            <a href="{% url 'client_project_create' %}" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold">
+            <a href="{% url 'client_project_create' %}" class="btn btn-outline-dark rounded-pill px-4 py-2 fw-bold">
                 <i class="bi bi-plus-circle me-1"></i> Post a Project
             </a>
         </div>
@@ -337,7 +337,7 @@
             <div class="col-lg-6">
                 <div class="gb-audience-card gb-card-freelancer">
                     <div class="d-flex align-items-center gap-2 mb-2">
-                        <div class="gb-stat-icon-box m-0 text-white" style="width: 40px; height: 40px; font-size: 1.15rem; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25);">
+                        <div class="gb-stat-icon-box m-0 text-dark" style="width: 40px; height: 40px; font-size: 1.15rem; background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25);">
                             <i class="bi bi-person-workspace"></i>
                         </div>
                         <span class="badge bg-white text-dark fw-bold rounded-pill">Independent Specialists</span>
@@ -527,7 +527,7 @@
                     <a href="{% url 'register' %}?role=client" class="btn btn-primary rounded-pill px-4 py-2 fw-bold text-nowrap shadow-sm">
                         Hire Talent
                     </a>
-                    <a href="{% url 'register' %}?role=freelancer" class="btn btn-outline-light rounded-pill px-4 py-2 fw-bold text-nowrap">
+                    <a href="{% url 'register' %}?role=freelancer" class="btn btn-outline-light text-dark rounded-pill px-4 py-2 fw-bold text-nowrap">
                         Find Work
                     </a>
                 </div>

@@ -13,19 +13,16 @@
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb mb-2 small text-white-50">
                 <li class="breadcrumb-item">
-                    <a href="{% url 'home' %}" class="text-white-50 text-decoration-none">
+                    <a href="{% url 'home' %}" class="text-dark-50 text-decoration-none">
                         <i class="bi bi-house-door me-1"></i> Home
                     </a>
                 </li>
-                <li class="breadcrumb-item active text-white" aria-current="page">Categories</li>
+                <li class="breadcrumb-item active text-dark" aria-current="page">Categories</li>
             </ol>
         </nav>
 
         <div class="row align-items-center g-4">
             <div class="col-lg-8">
-                <div class="gb-hero-pill-badge">
-                    <i class="bi bi-grid-1x2-fill"></i> Discover Marketplace Specializations
-                </div>
                 <h1 class="gb-categories-hero-title">Explore Project Categories &amp; Domains</h1>
                 <p class="gb-categories-hero-subtitle">
                     Connect with high-caliber talent across all disciplines. Browse open projects by specialized domain or find top freelancers ready to work on your ideas.
@@ -39,21 +36,6 @@
                         <span>Find Category</span>
                         <i class="bi bi-arrow-right-short fs-5"></i>
                     </button>
-                </div>
-
-                <!-- Stats Strip -->
-                <div class="d-flex align-items-center gap-3 mt-3 pt-1 flex-wrap text-white-50 small">
-                    <span class="d-inline-flex align-items-center gap-1 text-white">
-                        <i class="bi bi-check-circle-fill text-info"></i> {{ total_categories }} Specializations
-                    </span>
-                    <span>&bull;</span>
-                    <span class="d-inline-flex align-items-center gap-1 text-white">
-                        <i class="bi bi-briefcase-fill text-primary"></i> {{ total_open_projects }} Active Projects
-                    </span>
-                    <span>&bull;</span>
-                    <span class="d-inline-flex align-items-center gap-1 text-white">
-                        <i class="bi bi-shield-check text-success"></i> 100% Escrow Protected
-                    </span>
                 </div>
             </div>
 

@@ -585,7 +585,8 @@
             const initCountry = (countryEl && countryEl.value) ? countryEl.value.toLowerCase() : 'in';
             const iti = window.intlTelInput(phoneEl, {
                 initialCountry: initCountry,
-                preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                onlyCountries: ['in', 'us'],
+                preferredCountries: [],
                 separateDialCode: true,
                 utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"
             });

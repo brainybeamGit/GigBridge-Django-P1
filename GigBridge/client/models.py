@@ -70,7 +70,10 @@ class UserProfile(models.Model):
     def save(self, *args, **kwargs):
         if self.country:
             self.country = self.country.strip().upper()
-            self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+            if getattr(self, '_state', None) and self._state.adding:
+                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
+            elif not self.display_currency:
+                self.display_currency = 'INR' if self.country == 'IN' else 'USD'
         elif not self.display_currency:
             self.display_currency = 'INR'
 
@@ -255,14 +258,20 @@ class Project(models.Model):
                 return self.image.url
             except Exception:
                 pass
-        slug = self.category.slug if self.category else ''
-        if 'ecommerce' in slug or 'web' in slug:
+        slug = (self.category.slug if self.category else '').lower()
+        if 'mobile' in slug or 'app' in slug:
+            return '/static/images/moblie app.jpg'
+        elif 'ui' in slug or 'ux' in slug:
+            return '/static/images/ui_UX.jpg'
+        elif 'ecommerce' in slug:
             return '/static/images/project_ecommerce.jpg'
+        elif 'web' in slug:
+            return '/static/images/web developement.jpg'
         elif 'marketing' in slug or 'seo' in slug:
             return '/static/images/project_marketing.jpg'
         elif 'content' in slug or 'writing' in slug:
             return '/static/images/project_seo_blog.jpg'
-        elif 'design' in slug or 'logo' in slug or 'ui' in slug or 'graphic' in slug:
+        elif 'design' in slug or 'logo' in slug or 'graphic' in slug:
             return '/static/images/project_logo.jpg'
         return '/static/images/project_ecommerce.jpg'
 
@@ -500,8 +509,26 @@ class Milestone(models.Model):
     class Meta:
         ordering = ['order', 'id']
 
+    @property
+    def short_description(self):
+        """Returns clean short milestone summary without raw deliverables text."""
+        desc = (self.description or '').strip()
+        if '\nDeliverables:' in desc:
+            return desc.split('\nDeliverables:')[0].strip()
+        if 'Deliverables:' in desc:
+            return desc.split('Deliverables:')[0].strip()
+        return desc
+
+    @property
+    def display_title(self):
+        """Returns the title with exactly one 'Phase X:' prefix."""
+        t = (self.title or '').strip()
+        if t.lower().startswith('phase '):
+            return t
+        return f"Phase {self.order}: {t}"
+
     def __str__(self):
-        return f"Phase {self.order}: {self.title} ({self.contract.project.title})"
+        return f"{self.display_title} ({self.contract.project.title})"
 
     def clean(self):
         super().clean()

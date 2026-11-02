@@ -3,7 +3,7 @@
 {% load currency_tags %}
 
 {% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
-{% block dashboard_title %}Contract #{{ contract.id }}: {{ contract.project.title }}{% endblock %}
+{% block dashboard_title %}{{ contract.project.title }}{% endblock %}
 
 {% block dashboard_content %}
 <style>
@@ -108,8 +108,8 @@
     .cd-step-grid {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
-        gap: 14px;
-        margin-bottom: 20px;
+        gap: 16px;
+        margin-bottom: 24px;
     }
 
     @media (max-width: 768px) {
@@ -119,12 +119,23 @@
     }
 
     .cd-step-box {
-        background: #F8FAFC;
+        background: #FFFFFF;
         border: 1.5px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 18px 20px;
+        border-radius: 14px;
+        padding: 20px 22px;
         position: relative;
         transition: all 0.2s ease;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 140px;
+        height: 100%;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+    }
+
+    .cd-step-box:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
     }
 
     .cd-step-box.step-active {
@@ -139,35 +150,35 @@
     }
 
     .cd-step-kicker {
-        font-size: 0.72rem;
+        font-size: 0.74rem;
         font-weight: 800;
-        letter-spacing: 0.06em;
+        letter-spacing: 0.05em;
         text-transform: uppercase;
-        margin-bottom: 4px;
+        margin-bottom: 12px;
         display: flex;
         align-items: center;
         justify-content: space-between;
+        gap: 8px;
     }
 
     .cd-step-title {
-        font-size: 0.96rem;
-        font-weight: 800;
+        font-size: 0.98rem;
+        font-weight: 700;
         color: #0F172A;
-        margin-bottom: 4px;
+        line-height: 1.45;
+        margin-bottom: 14px;
+        flex-grow: 1;
     }
 
     .cd-step-amount {
-        font-size: 1.15rem;
+        font-size: 1.35rem;
         font-weight: 800;
         color: #0284C7;
-        margin-bottom: 4px;
+        margin-top: auto;
     }
 
-    .cd-step-desc {
-        font-size: 0.78rem;
-        color: #64748B;
-        line-height: 1.45;
-        margin: 0;
+    .cd-step-box.step-completed .cd-step-amount {
+        color: #15803D;
     }
 
     /* ─── 4. MILESTONE ITEM CARDS ─── */
@@ -348,10 +359,6 @@
 <div class="cd-hero-banner">
     <div class="row align-items-center g-3">
         <div class="col-xl-8 col-lg-7">
-            <div class="cd-hero-badge">
-                <span class="pulse-dot"></span>
-                <span>Verified Escrow Agreement &bull; Contract #{{ contract.id }}</span>
-            </div>
             <h2 class="cd-hero-title">
                 {{ contract.project.title }}
             </h2>
@@ -490,16 +497,12 @@
                     <span style="color: {% if ms.status == 'paid' %}#166534{% elif ms.is_active %}#0284C7{% else %}#64748B{% endif %};">
                         Phase {{ ms.order }} &bull; {{ ms.get_milestone_type_display }}
                     </span>
-                    <span class="badge {% if ms.status == 'paid' %}bg-success-subtle text-success{% elif ms.is_active %}bg-primary-subtle text-primary{% else %}bg-light text-muted{% endif %} rounded-pill small">
+                    <span class="badge {% if ms.status == 'paid' %}bg-success-subtle text-success border border-success-subtle{% elif ms.is_active %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-light text-muted border{% endif %} rounded-pill px-2 py-1 small fw-bold">
                         {% if ms.status == 'paid' %}Verified &amp; Paid{% elif ms.is_active %}{{ ms.get_status_display }}{% else %}Locked{% endif %}
                     </span>
                 </div>
-                <div class="cd-step-title">{{ ms.title }}</div>
+                <div class="cd-step-title">{{ ms.display_title }}</div>
                 <div class="cd-step-amount">{% contract_money contract ms.amount %}</div>
-                <p class="cd-step-desc">
-                    {% if ms.due_date %}Target Date: {{ ms.due_date|date:"M d, Y" }}{% else %}Flexible delivery timeline{% endif %}
-                    {% if ms.description %}&bull; {{ ms.description|truncatechars:70 }}{% endif %}
-                </p>
             </div>
         {% endfor %}
     </div>
@@ -616,7 +619,7 @@
                             </span>
                         </div>
 
-                        <h5 class="fw-bold text-navy mb-1">Phase {{ ms.order }}: {{ ms.title }}</h5>
+                        <h5 class="fw-bold text-navy mb-1">{{ ms.display_title }}</h5>
                         {% if ms.due_date %}
                             <small class="text-muted d-block">Target Due Date: {{ ms.due_date|date:"M d, Y" }}</small>
                         {% endif %}
@@ -628,37 +631,35 @@
                     </div>
                 </div>
 
-                {% if ms.description %}
-                    <p class="text-secondary small mb-3" style="white-space: pre-line;">{{ ms.description }}</p>
+                {% if ms.short_description %}
+                    <p class="text-secondary small mb-3" style="white-space: pre-line;">{{ ms.short_description }}</p>
                 {% endif %}
 
-                <!-- Submission Deliverables Preview -->
+                <!-- Submission Deliverables Preview & View Work Trigger -->
                 {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
-                    <div class="p-3 rounded-3 bg-light border mb-3">
-                        <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="fw-bold text-navy small">
-                                Freelancer Submission &amp; Deliverables:
-                            </span>
-                            {% if ms.submitted_at %}
-                                <span class="text-muted small" style="font-size: 0.75rem;">Submitted on {{ ms.submitted_at|date:"M d, Y H:i" }}</span>
-                            {% endif %}
-                        </div>
-                        {% if ms.submission_notes %}
-                            <div class="p-3 bg-white rounded-2 border mb-2 small text-secondary" style="white-space: pre-line;">
-                                {{ ms.submission_notes }}
+                    <div class="p-3 rounded-3 bg-light border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.15rem;">
+                                <i class="bi bi-folder-check"></i>
                             </div>
-                        {% endif %}
-                        <div class="d-flex gap-2 flex-wrap">
+                            <div>
+                                <span class="fw-bold text-navy small d-block">Freelancer Deliverables &amp; Work</span>
+                                <span class="text-muted small" style="font-size: 0.78rem;">
+                                    {% if ms.submitted_at %}Submitted on {{ ms.submitted_at|date:"M d, Y H:i" }} &bull; {% endif %}
+                                    {% if ms.deliverable_link %}Live Demo/Git available &bull; {% endif %}
+                                    {% if ms.submission_file %}Files attached{% else %}Complete project documentation{% endif %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
                             {% if ms.deliverable_link %}
-                                <a href="{{ ms.deliverable_link }}" target="_blank" class="btn btn-outline-primary btn-sm py-1 px-3">
-                                    View Live Demo / Git Repository &rarr;
+                                <a href="{{ ms.deliverable_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm py-1 px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Demo / Repo
                                 </a>
                             {% endif %}
-                            {% if ms.submission_file %}
-                                <a href="{{ ms.submission_file.url }}" target="_blank" class="btn btn-outline-secondary btn-sm py-1 px-3">
-                                    Download Deliverables Package &rarr;
-                                </a>
-                            {% endif %}
+                            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#viewWorkModal{{ ms.id }}" style="font-size: 0.82rem;">
+                                <i class="bi bi-eye me-1"></i> View Work &rarr;
+                            </button>
                         </div>
                     </div>
                 {% endif %}
@@ -673,6 +674,11 @@
 
                 <!-- Action Controls for Milestone -->
                 <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top flex-wrap">
+                    {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
+                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-bold px-3 py-2" data-bs-toggle="modal" data-bs-target="#viewWorkModal{{ ms.id }}">
+                            <i class="bi bi-eye me-1"></i> View Work
+                        </button>
+                    {% endif %}
                     <!-- Case 1: Milestone Paid -->
                     {% if ms.status == 'paid' %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 small fw-bold">
@@ -723,12 +729,111 @@
                 </div>
             </div>
 
+            <!-- Modal: View Freelancer Work & Deliverables -->
+            {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
+            <div class="modal fade" id="viewWorkModal{{ ms.id }}" tabindex="-1" aria-labelledby="viewWorkModalLabel{{ ms.id }}" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header text-white p-4" style="background: #0F172A;">
+                            <div>
+                                <h5 class="modal-title fs-6 fw-bold mb-1" id="viewWorkModalLabel{{ ms.id }}">
+                                    <i class="bi bi-folder-check text-info me-2"></i>Freelancer Work &amp; Deliverables
+                                </h5>
+                                <div class="text-white-50 small">{{ ms.display_title }}</div>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+
+                        <div class="modal-body p-4 bg-light">
+                            <!-- Milestone Overview Pill Strip -->
+                            <div class="p-3 rounded-3 bg-white border mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div>
+                                    <span class="text-muted small d-block">Milestone Valuation</span>
+                                    <span class="fw-bold fs-5 text-dark">{% contract_money contract ms.amount %}</span>
+                                </div>
+                                <div>
+                                    <span class="text-muted small d-block">Status</span>
+                                    <span class="badge {% if ms.status == 'paid' %}bg-success{% elif ms.status == 'approved' %}bg-primary{% elif ms.status == 'submitted' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-3 py-1">
+                                        {{ ms.get_status_display }}
+                                    </span>
+                                </div>
+                                {% if ms.submitted_at %}
+                                <div>
+                                    <span class="text-muted small d-block">Submission Timestamp</span>
+                                    <span class="fw-semibold text-secondary small">{{ ms.submitted_at|date:"F d, Y - h:i A" }}</span>
+                                </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Deliverable Links & Files -->
+                            {% if ms.deliverable_link or ms.submission_file %}
+                            <div class="mb-4">
+                                <h6 class="fw-bold text-navy mb-2 small text-uppercase" style="letter-spacing: 0.05em;">
+                                    <i class="bi bi-link-45deg me-1 text-primary"></i>Deliverable Access Links &amp; Files
+                                </h6>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    {% if ms.deliverable_link %}
+                                        <a href="{{ ms.deliverable_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center">
+                                            <i class="bi bi-box-arrow-up-right me-2"></i>Open Live Demo / Git Repository
+                                        </a>
+                                    {% endif %}
+                                    {% if ms.submission_file %}
+                                        <a href="{{ ms.submission_file.url }}" target="_blank" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center bg-white border">
+                                            <i class="bi bi-cloud-arrow-down-fill me-2 text-primary"></i>Download Deliverables Package
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- Full Work Submission Details -->
+                            {% if ms.submission_notes %}
+                            <div class="mb-3">
+                                <h6 class="fw-bold text-navy mb-2 small text-uppercase" style="letter-spacing: 0.05em;">
+                                    <i class="bi bi-card-text me-1 text-primary"></i>Submission Documentation &amp; Notes
+                                </h6>
+                                <div class="p-3 bg-white rounded-3 border shadow-sm text-dark small" style="white-space: pre-line; line-height: 1.65; max-height: 420px; overflow-y: auto;">
+{{ ms.submission_notes }}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <!-- If Revision Notes were issued -->
+                            {% if ms.revision_notes %}
+                            <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle text-warning-emphasis small mt-3">
+                                <strong class="d-block mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Revision Requested Feedback:</strong>
+                                <p class="mb-0">{{ ms.revision_notes }}</p>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="modal-footer border-0 p-3 bg-white d-flex justify-content-between align-items-center">
+                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Close</button>
+                            {% if ms.can_approve %}
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#revisionModal{{ ms.id }}">
+                                        Request Revision
+                                    </button>
+                                    <form method="POST" action="{% url 'client_contract_milestone_approve' contract.id ms.id %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">
+                                            Approve Deliverables &rarr;
+                                        </button>
+                                    </form>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
             <!-- Modal: Request Revision -->
             <div class="modal fade" id="revisionModal{{ ms.id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
                         <div class="modal-header bg-navy text-white p-4">
-                            <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for Phase {{ ms.order }}: {{ ms.title }}</h5>
+                            <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for {{ ms.display_title }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <form method="POST" action="{% url 'client_contract_milestone_revision' contract.id ms.id %}">

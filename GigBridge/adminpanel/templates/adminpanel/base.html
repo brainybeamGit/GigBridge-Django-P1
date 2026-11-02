@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <title>{% block title %}Admin Panel{% endblock %} | GigBridge Command Center</title>
 
     <!-- Global Font: Plus Jakarta Sans -->
@@ -46,10 +47,10 @@
         }
 
         /* ─── 1. LUXURY LIGHT BLUE SIDEBAR (COMPLETELY STATIC & FIXED) ─── */
-        .admin-sidebar {
-            width: 260px;
-            min-width: 260px;
-            background: linear-gradient(180deg, #FFFFFF 0%, #F0F9FF 55%, #E0F2FE 100%);
+                .admin-sidebar {
+            width: 265px;
+            min-width: 265px;
+            background: #F0F9FF !important;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -57,27 +58,15 @@
             bottom: 0;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid var(--adm-sky-200);
-            box-shadow: 4px 0 24px rgba(2, 132, 199, 0.04);
+            border-right: 1.5px solid #BAE6FD !important;
+            box-shadow: 4px 0 24px rgba(2, 132, 199, 0.06) !important;
             z-index: 1000;
             overflow-y: auto;
         }
 
-        .admin-sidebar::-webkit-scrollbar {
-            width: 5px;
-        }
-        .admin-sidebar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .admin-sidebar::-webkit-scrollbar-thumb {
-            background: #BAE6FD;
-            border-radius: 999px;
-        }
-
-        /* Main Content Wrapper Offset for Fixed Sidebar */
         .admin-main-wrapper {
-            margin-left: 260px;
-            width: calc(100% - 260px);
+            margin-left: 265px;
+            width: calc(100% - 265px);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
@@ -95,65 +84,113 @@
             }
         }
 
-        .admin-sidebar-header {
-            padding: 24px 22px;
-            border-bottom: 1px solid var(--adm-sky-200);
-            background: #FFFFFF;
-        }
-
-        .admin-brand-tag {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            background: var(--adm-sky-50);
-            border: 1px solid var(--adm-sky-200);
-            color: var(--adm-primary-hover);
-            border-radius: 999px;
-            padding: 3px 10px;
-            font-size: 0.68rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            margin-top: 8px;
-        }
-
-        .admin-nav-item {
+        .dashboard-sidebar-brand {
+            padding: 18px 20px;
+            background: #E0F2FE !important;
+            border-bottom: 1px solid #BAE6FD !important;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 11px 22px;
-            color: var(--adm-slate-700);
+        }
+
+        .dashboard-sidebar-brand a {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            text-decoration: none;
+        }
+
+        .sidebar-brand-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 11px;
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.28);
+            flex-shrink: 0;
+        }
+
+        .sidebar-brand-title {
+            font-size: 1.2rem;
+            font-weight: 800;
+            letter-spacing: -0.025em;
+            color: #0F172A;
+            line-height: 1;
+        }
+
+        .admin-sidebar .admin-nav-item,
+        .admin-sidebar .dashboard-nav-item {
+            display: flex;
+            align-items: center;
+            margin: 2px 10px !important;
+            padding: 10px 16px !important;
+            color: #0F172A !important;
             text-decoration: none;
             font-weight: 600;
             font-size: 0.88rem;
-            border-left: 3px solid transparent;
-            transition: all 0.16s ease;
+            border-radius: 10px !important;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+            background: none;
         }
 
-        .admin-nav-item:hover {
-            color: var(--adm-primary-hover);
-            background: var(--adm-sky-100);
-            border-left-color: var(--adm-primary);
+        .admin-sidebar .admin-nav-item:hover,
+        .admin-sidebar .dashboard-nav-item:hover {
+            color: #0284C7 !important;
+            background: #FFFFFF !important;
+            border-color: #BAE6FD !important;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.12) !important;
+            transform: translateX(3px);
         }
 
-        .admin-nav-item.active {
-            color: var(--adm-primary-hover);
-            background: var(--adm-sky-100);
-            border-left-color: var(--adm-primary);
-            font-weight: 700;
-            box-shadow: inset 0 0 12px rgba(2, 132, 199, 0.08);
+        .admin-sidebar .admin-nav-item.active,
+        .admin-sidebar .dashboard-nav-item.active {
+            color: #FFFFFF !important;
+            background: linear-gradient(135deg, #0284C7 0%, #0369A1 100%) !important;
+            font-weight: 700 !important;
+            box-shadow: 0 4px 14px rgba(2, 132, 199, 0.35) !important;
+            border-color: #0284C7 !important;
         }
 
-        .admin-nav-index {
-            font-family: monospace;
-            font-size: 0.72rem;
-            font-weight: 800;
-            color: #94A3B8;
-            letter-spacing: 0.05em;
+        .sidebar-footer-links {
+            margin-top: auto;
+            padding-top: 10px;
+            border-top: 1px solid #BAE6FD;
+            margin-left: 10px;
+            margin-right: 10px;
+            padding-bottom: 8px;
         }
 
-        .admin-nav-item.active .admin-nav-index {
-            color: var(--adm-primary);
+        .sidebar-footer-links .admin-nav-item,
+        .sidebar-footer-links .dashboard-nav-item {
+            margin: 2px 0 !important;
+            color: #334155 !important;
+            font-size: 0.82rem;
+        }
+
+        .sidebar-logout-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid transparent;
+            display: flex;
+            align-items: center;
+            padding: 8px 14px;
+            margin: 2px 0;
+            border-radius: 10px;
+            color: #DC2626 !important;
+            font-weight: 600;
+            font-size: 0.82rem;
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .sidebar-logout-btn:hover {
+            background: #FEF2F2 !important;
+            border-color: #FECACA !important;
+            color: #B91C1C !important;
         }
 
         /* ─── 2. TOPBAR & ADMIN PROFILE TRIGGER ─── */
@@ -424,82 +461,69 @@
     <!-- ═══════════════════════════════════════════════════════════
          LEFT SIDEBAR: LUXURY LIGHT BLUE SHINING THEME
          ═══════════════════════════════════════════════════════════ -->
-    <aside class="admin-sidebar">
-        <div class="admin-sidebar-header">
-            <a href="{% url 'adminpanel_dashboard' %}" class="d-flex align-items-center gap-2 text-decoration-none">
+        <aside class="admin-sidebar">
+        <!-- Brand Logo Header in Sidebar -->
+        <div class="dashboard-sidebar-brand">
+            <a href="{% url 'home' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="38" height="38" style="border-radius: 10px; object-fit: contain;">
                 <div>
-                    <span class="fw-bold fs-4 text-dark">GigBridge</span>
-                    <div class="small text-muted" style="font-size:0.75rem;">Command Console</div>
+                    <span class="sidebar-brand-title">GigBridge</span>
+                    <span class="badge d-block text-start px-2 py-0 mt-1" style="background:#FFFFFF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.64rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">
+                        Admin Console
+                    </span>
                 </div>
             </a>
-            <div class="admin-brand-tag">
-                <span>ADMIN // CONTROL SUITE</span>
-            </div>
         </div>
 
-        <nav class="flex-grow-1 pt-3 d-flex flex-column">
+        <!-- Sidebar Navigation Links (No Icons, No Numbers) -->
+        <nav class="d-flex flex-column flex-grow-1 pt-2">
             <a href="{% url 'adminpanel_dashboard' %}" class="admin-nav-item {% if active_tab == 'dashboard' or request.resolver_match.url_name == 'adminpanel_dashboard' %}active{% endif %}">
                 <span>Overview &amp; KPIs</span>
-                <span class="admin-nav-index">01</span>
             </a>
             <a href="{% url 'adminpanel_clients' %}" class="admin-nav-item {% if active_tab == 'clients' or request.resolver_match.url_name == 'adminpanel_clients' %}active{% endif %}">
                 <span>Clients Directory</span>
-                <span class="admin-nav-index">02</span>
             </a>
             <a href="{% url 'adminpanel_freelancers' %}" class="admin-nav-item {% if active_tab == 'freelancers' or request.resolver_match.url_name == 'adminpanel_freelancers' or request.resolver_match.url_name == 'adminpanel_users' %}active{% endif %}">
                 <span>Freelancers</span>
-                <span class="admin-nav-index">03</span>
             </a>
             <a href="{% url 'adminpanel_projects' %}" class="admin-nav-item {% if active_tab == 'projects' or request.resolver_match.url_name == 'adminpanel_projects' %}active{% endif %}">
                 <span>All Projects</span>
-                <span class="admin-nav-index">04</span>
             </a>
             <a href="{% url 'adminpanel_proposals' %}" class="admin-nav-item {% if active_tab == 'proposals' or request.resolver_match.url_name == 'adminpanel_proposals' %}active{% endif %}">
                 <span>Proposals &amp; Bids</span>
-                <span class="admin-nav-index">05</span>
             </a>
             <a href="{% url 'adminpanel_contracts' %}" class="admin-nav-item {% if active_tab == 'contracts' or request.resolver_match.url_name == 'adminpanel_contracts' %}active{% endif %}">
                 <span>Contracts &amp; Escrow</span>
-                <span class="admin-nav-index">06</span>
             </a>
             <a href="{% url 'adminpanel_payments' %}" class="admin-nav-item {% if active_tab == 'payments' or request.resolver_match.url_name == 'adminpanel_payments' %}active{% endif %}">
                 <span>Financial Ledger</span>
-                <span class="admin-nav-index">07</span>
             </a>
             <a href="{% url 'adminpanel_categories' %}" class="admin-nav-item {% if active_tab == 'categories' or request.resolver_match.url_name == 'adminpanel_categories' %}active{% endif %}">
                 <span>Market Categories</span>
-                <span class="admin-nav-index">08</span>
             </a>
             <a href="{% url 'adminpanel_reviews' %}" class="admin-nav-item {% if active_tab == 'reviews' or request.resolver_match.url_name == 'adminpanel_reviews' %}active{% endif %}">
                 <span>Ratings &amp; Reviews</span>
-                <span class="admin-nav-index">09</span>
             </a>
             <a href="{% url 'adminpanel:messages' %}" class="admin-nav-item {% if active_tab == 'messages' or request.resolver_match.url_name == 'messages' or request.resolver_match.url_name == 'adminpanel_messages' or request.resolver_match.url_name == 'message_detail' or request.resolver_match.url_name == 'adminpanel_message_detail' %}active{% endif %}">
-                <span class="d-flex align-items-center gap-2">
-                    <span>Messages</span>
-                    {% if unread_messages_count %}
-                        <span class="badge rounded-pill bg-primary" style="font-size:0.68rem;padding:2px 7px;font-weight:700;">{{ unread_messages_count }}</span>
-                    {% endif %}
-                </span>
-                <span class="admin-nav-index">10</span>
+                <span>Messages</span>
             </a>
             <a href="{% url 'adminpanel_settings' %}" class="admin-nav-item {% if active_tab == 'settings' or request.resolver_match.url_name == 'adminpanel_settings' %}active{% endif %}">
-                <span class="d-flex align-items-center gap-2">
-                    <i class="bi bi-currency-exchange text-success"></i>
-                    <span>Currency &amp; Rates</span>
-                </span>
-                <span class="admin-nav-index">11</span>
+                <span>Currency &amp; Rates</span>
             </a>
 
-            <div class="mt-auto pt-3 border-top mx-3 mb-3">
-                <a href="{% url 'admin:index' %}" target="_blank" class="admin-nav-item px-2 py-2">
-                    <span class="small">Django SuperAdmin</span>
-                    <span class="admin-nav-index">&rarr;</span>
+            <div class="sidebar-footer-links">
+                <a href="{% url 'admin:index' %}" target="_blank" class="admin-nav-item">
+                    <span>Django SuperAdmin</span>
                 </a>
-                <a href="{% url 'home' %}" class="admin-nav-item px-2 py-2">
-                    <span class="small">Public Marketplace</span>
-                    <span class="admin-nav-index">&rarr;</span>
+                <a href="{% url 'home' %}" class="admin-nav-item">
+                    <span>Public Marketplace</span>
                 </a>
+                <form method="POST" action="{% url 'logout' %}" class="mt-1">
+                    {% csrf_token %}
+                    <button type="submit" class="sidebar-logout-btn">
+                        <span>Log Out</span>
+                    </button>
+                </form>
             </div>
         </nav>
     </aside>

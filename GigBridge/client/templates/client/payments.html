@@ -252,7 +252,7 @@
         <div class="pay-metric-card">
             <div class="pay-metric-index">01 / Volume</div>
             <div>
-                <div class="pay-metric-num" style="color: #0F172A;">${{ total_spent|floatformat:0 }}</div>
+                <div class="pay-metric-num" style="color: #0F172A;">&#8377;{{ total_spent|floatformat:0 }}</div>
                 <div class="pay-metric-label">Total Volume Paid</div>
                 <div class="pay-metric-sub">Verified payments released to talent</div>
             </div>
@@ -343,7 +343,7 @@
                             <span class="fw-semibold text-dark">{{ p.freelancer.get_full_name|default:p.freelancer.username }}</span>
                         </td>
                         <td>
-                            <strong style="color: #0284C7; font-size: 0.95rem;">${{ p.amount }}</strong>
+                            <strong style="color: #0284C7; font-size: 0.95rem;">&#8377;{{ p.amount }}</strong>
                         </td>
                         <td>
                             <span class="badge" style="background: #F8FAFC; color: #475569; border: 1px solid #E2E8F0;">

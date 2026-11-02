@@ -691,9 +691,9 @@
                         <td>
                             <div class="fw-bold" style="color: #0F172A;">
                                 {% if project.budget_max > 0 %}
-                                    ${{ project.budget_min|floatformat:0 }} &ndash; ${{ project.budget_max|floatformat:0 }}
+                                    &#8377;{{ project.budget_min|floatformat:0 }} &ndash; &#8377;{{ project.budget_max|floatformat:0 }}
                                 {% else %}
-                                    ${{ project.budget_min|floatformat:0 }}
+                                    &#8377;{{ project.budget_min|floatformat:0 }}
                                 {% endif %}
                             </div>
                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ project.get_budget_type_display }}</small>
