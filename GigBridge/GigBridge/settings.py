@@ -163,8 +163,8 @@ MESSAGE_TAGS = {
 }
 
 # Razorpay Payment Gateway
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'rzp_test_TLXBjvTqPaTWJ1')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '45nuecN4Qb0jbhowIKS8lEZN')
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'your_razorpay_key_id_here')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'your_razorpay_key_secret_here')
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
 

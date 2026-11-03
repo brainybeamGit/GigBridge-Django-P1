@@ -3086,9 +3086,9 @@ def client_payment_create_order_view(request):
 
 
 
-    key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_TLXBjvTqPaTWJ1')
+    key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'your_razorpay_key_id_here')
 
-    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '45nuecN4Qb0jbhowIKS8lEZN')
+    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', 'your_razorpay_key_secret_here')
 
 
 
@@ -3248,9 +3248,9 @@ def client_payment_verify_view(request):
 
 
 
-    key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'rzp_test_TLXBjvTqPaTWJ1')
+    key_id = getattr(settings, 'RAZORPAY_KEY_ID', 'your_razorpay_key_id_here')
 
-    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', '45nuecN4Qb0jbhowIKS8lEZN')
+    key_secret = getattr(settings, 'RAZORPAY_KEY_SECRET', 'your_razorpay_key_secret_here')
 
 
 
