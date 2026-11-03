@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
-{% block dashboard_title %}Contract #{{ contract.id }}: {{ contract.project.title }}{% endblock %}
+{% block dashboard_title %}{{ contract.project.title }}{% endblock %}
 
 {% block dashboard_content %}
 <style>
@@ -95,13 +95,15 @@
         background: #F8FAFC;
         border: 1px solid #E2E8F0;
         border-radius: 12px;
-        padding: 12px 10px;
+        padding: 14px 10px;
+        min-height: 52px;
         text-align: center;
         transition: all 0.2s ease;
         height: 100%;
         display: flex;
         flex-direction: column;
         justify-content: center;
+        align-items: center;
     }
 
     .cd-step-num {
@@ -287,10 +289,6 @@
 
 <!-- 1. Luminous Hero Banner -->
 <div class="cd-hero">
-    <div class="cd-hero-badge">
-        <span class="pulse-dot"></span>
-        <span>CONTRACT // #{{ contract.id }} &bull; GIGBRIDGE ESCROW WORKROOM</span>
-    </div>
     <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
         <div>
             <h1 class="cd-hero-title">{{ contract.project.title }}</h1>
@@ -325,56 +323,48 @@
         <!-- 01 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box cd-step-done">
-                <span class="cd-step-num">STAGE // 01</span>
                 <span class="cd-step-name">Project Posted</span>
             </div>
         </div>
         <!-- 02 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box cd-step-done">
-                <span class="cd-step-num">STAGE // 02</span>
                 <span class="cd-step-name">Bid Accepted</span>
             </div>
         </div>
         <!-- 03 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box cd-step-done">
-                <span class="cd-step-num">STAGE // 03</span>
                 <span class="cd-step-name">Scope Discussed</span>
             </div>
         </div>
         <!-- 04 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box cd-step-done">
-                <span class="cd-step-num">STAGE // 04</span>
                 <span class="cd-step-name">Contract Formed</span>
             </div>
         </div>
         <!-- 05 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box {% if contract.is_advance_paid or contract.paid_amount > 0 %}cd-step-done{% else %}cd-step-active{% endif %}">
-                <span class="cd-step-num">STAGE // 05</span>
                 <span class="cd-step-name">Advance Escrow</span>
             </div>
         </div>
         <!-- 06 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' or active_ms.status == 'submitted' or active_ms.status == 'approved' %}cd-step-done{% elif active_ms and active_ms.status == 'in_progress' or active_ms.status == 'revision_requested' %}cd-step-active{% else %}cd-step-pending{% endif %}">
-                <span class="cd-step-num">STAGE // 06</span>
                 <span class="cd-step-name">Work Delivery</span>
             </div>
         </div>
         <!-- 07 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' or active_ms.status == 'approved' %}cd-step-done{% elif active_ms and active_ms.status == 'submitted' %}cd-step-active{% else %}cd-step-pending{% endif %}">
-                <span class="cd-step-num">STAGE // 07</span>
                 <span class="cd-step-name">Client Approval</span>
             </div>
         </div>
         <!-- 08 -->
         <div class="col-6 col-md-3 col-lg mb-2">
             <div class="cd-step-box {% if contract.all_milestones_paid or contract.status == 'completed' %}cd-step-done{% else %}cd-step-pending{% endif %}">
-                <span class="cd-step-num">STAGE // 08</span>
                 <span class="cd-step-name">Disbursed &amp; Paid</span>
             </div>
         </div>
@@ -529,7 +519,7 @@
             <h4 class="cd-section-title">
                 Stage 06 &bull; Project Deliverables Submission
                 {% if active_ms %}
-                    <span class="badge bg-primary text-white ms-2 small">Phase {{ active_ms.order }}: {{ active_ms.title }}</span>
+                    <span class="badge bg-primary text-white ms-2 small">{{ active_ms.display_title }}</span>
                 {% endif %}
             </h4>
             <p class="cd-section-sub">Deliver your completed source code, build archives, repository links, and architecture notes for client approval.</p>
@@ -595,7 +585,7 @@
         <!-- Active Milestone Submission Area -->
         {% if active_ms.revision_notes and active_ms.status == 'revision_requested' %}
             <div class="p-4 rounded-4 bg-danger-subtle border border-danger-subtle mb-4">
-                <h5 class="fw-bold mb-2 text-danger">Client Revision Requested for Phase {{ active_ms.order }}: {{ active_ms.title }}</h5>
+                <h5 class="fw-bold mb-2 text-danger">Client Revision Requested for {{ active_ms.display_title }}</h5>
                 <p class="mb-2 small text-secondary">
                     The employer reviewed your initial submission and provided the following feedback:
                 </p>
@@ -656,14 +646,14 @@
             <div class="p-4 rounded-4 bg-success-subtle border border-success-subtle text-dark mb-4">
                 <h5 class="fw-bold mb-2 text-success">Phase {{ active_ms.order }} Deliverables Approved by Client!</h5>
                 <p class="mb-0 small text-secondary">
-                    The client has authorized the deliverables for <strong>Phase {{ active_ms.order }}: {{ active_ms.title }}</strong>. Escrow disbursement of <strong>&#8377;{{ active_ms.amount|floatformat:2 }}</strong> is being processed.
+                    The client has authorized the deliverables for <strong>{{ active_ms.display_title }}</strong>. Escrow disbursement of <strong>&#8377;{{ active_ms.amount|floatformat:2 }}</strong> is being processed.
                 </p>
             </div>
         {% elif active_ms.status == 'in_progress' or active_ms.status == 'revision_requested' or active_ms.status == 'submitted' %}
             <!-- Delivery Form (Active) -->
             <form method="POST" action="{% url 'freelancer_milestone_submit' contract.id active_ms.id %}" enctype="multipart/form-data" class="bg-light p-4 rounded-4 border">
                 {% csrf_token %}
-                <h5 class="fw-bold text-dark mb-3">Submit Deliverables for Phase {{ active_ms.order }}: {{ active_ms.title }} (&#8377;{{ active_ms.amount|floatformat:2 }})</h5>
+                <h5 class="fw-bold text-dark mb-3">Submit Deliverables for {{ active_ms.display_title }} (&#8377;{{ active_ms.amount|floatformat:2 }})</h5>
 
                 <div class="mb-3">
                     <label class="form-label small fw-bold text-dark">
@@ -728,7 +718,7 @@
             <tbody>
                 {% for ms in milestones %}
                     <tr>
-                        <td class="fw-bold text-dark">Phase {{ ms.order }}: {{ ms.title }}</td>
+                        <td class="fw-bold text-dark">{{ ms.display_title }}</td>
                         <td><span class="badge bg-light text-dark border">{{ ms.get_milestone_type_display }}</span></td>
                         <td class="fw-bold text-success fs-6">&#8377;{{ ms.amount|floatformat:2 }}</td>
                         <td>

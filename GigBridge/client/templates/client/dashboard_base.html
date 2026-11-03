@@ -187,10 +187,8 @@
     <aside class="dashboard-sidebar">
         <!-- 1. Brand Logo Header in Sidebar -->
         <div class="dashboard-sidebar-brand">
-            <a href="{% url 'home' %}">
-                <span class="sidebar-brand-icon">
-                    <i class="bi bi-briefcase-fill"></i>
-                </span>
+            <a href="{% url 'home' %}" class="d-inline-flex align-items-center gap-2 text-decoration-none">
+                <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="38" height="38" style="border-radius: 10px; object-fit: contain;">
                 <div>
                     <span class="sidebar-brand-title">GigBridge</span>
                     <span class="badge d-block text-start px-2 py-0 mt-1" style="background:#FFFFFF;color:#0284C7;border:1px solid #BAE6FD;font-size:0.64rem;font-weight:800;letter-spacing:0.06em;text-transform:uppercase;">
@@ -200,76 +198,58 @@
             </a>
         </div>
 
-        <!-- 2. Sidebar Navigation Links -->
+                <!-- 2. Sidebar Navigation Links -->
         <nav class="d-flex flex-column flex-grow-1 pt-2">
             <a href="{% url 'client_dashboard' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_dashboard' %}active{% endif %}">
-                <i class="bi bi-speedometer2"></i>
                 <span>Overview</span>
             </a>
 
             <a href="{% url 'client_projects' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_projects' %}active{% endif %}">
-                <i class="bi bi-folder2-open"></i>
                 <span>My Projects</span>
             </a>
 
             <a href="{% url 'client_project_create' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_project_create' %}active{% endif %}">
-                <i class="bi bi-plus-circle"></i>
                 <span>Post New Project</span>
             </a>
 
             <a href="{% url 'client_proposals' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_proposals' %}active{% endif %}">
-                <i class="bi bi-envelope-paper"></i>
                 <span>Received Proposals</span>
             </a>
 
             <a href="{% url 'client_contracts' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_contracts' or request.resolver_match.url_name == 'client_contract_detail' %}active{% endif %}">
-                <i class="bi bi-file-earmark-check"></i>
                 <span>Hired &amp; Contracts</span>
             </a>
 
             <a href="{% url 'client_milestones' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_milestones' %}active{% endif %}">
-                <i class="bi bi-check2-circle"></i>
                 <span>Milestones</span>
             </a>
 
             <a href="{% url 'client_payments' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_payments' %}active{% endif %}">
-                <i class="bi bi-credit-card-2-front"></i>
                 <span>Payments &amp; Invoices</span>
             </a>
 
             <a href="{% url 'messages_inbox' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'messages_inbox' or request.resolver_match.url_name == 'conversation_detail' or request.resolver_match.url_name == 'client_messages' or request.resolver_match.url_name == 'client_conversation_detail' %}active{% endif %}">
-                <i class="bi bi-chat-dots"></i>
-                <span class="d-flex align-items-center justify-content-between flex-grow-1">
-                    <span>Messages</span>
-                    {% if unread_messages_count > 0 %}
-                        <span class="badge rounded-pill bg-danger" style="font-size: 0.7rem; padding: 2px 7px;">{{ unread_messages_count }}</span>
-                    {% endif %}
-                </span>
+                <span>Messages</span>
             </a>
 
             <a href="{% url 'client_reviews' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_reviews' %}active{% endif %}">
-                <i class="bi bi-star"></i>
                 <span>Reviews &amp; Ratings</span>
             </a>
 
             <a href="{% url 'client_profile' %}" class="dashboard-nav-item {% if request.resolver_match.url_name == 'client_profile' %}active{% endif %}">
-                <i class="bi bi-person-gear"></i>
                 <span>Profile &amp; Settings</span>
             </a>
 
             <div class="sidebar-footer-links">
                 <a href="{% url 'home' %}" class="dashboard-nav-item">
-                    <i class="bi bi-house"></i>
                     <span>Back to Website</span>
                 </a>
                 <a href="{% url 'project_list' %}" class="dashboard-nav-item">
-                    <i class="bi bi-search"></i>
                     <span>Browse Marketplace</span>
                 </a>
                 <form method="POST" action="{% url 'logout' %}" class="mt-1">
                     {% csrf_token %}
                     <button type="submit" class="sidebar-logout-btn">
-                        <i class="bi bi-box-arrow-right"></i>
                         <span>Log Out</span>
                     </button>
                 </form>

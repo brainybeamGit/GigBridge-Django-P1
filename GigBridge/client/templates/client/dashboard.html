@@ -630,6 +630,7 @@
             </div>
             <div>
                 <div class="cd-metric-num" style="color: #0F172A;">{{ total_spent|money }}</div>
+
                 <div class="cd-metric-label">Total Volume Spent</div>
                 <div class="cd-metric-sub">Verified milestone payouts successfully released to talent</div>
             </div>
@@ -647,6 +648,7 @@
             </div>
             <div>
                 <div class="cd-metric-num" style="color: #4F46E5;">{{ active_contracts_value|money }}</div>
+
                 <div class="cd-metric-label">Active Contract Value</div>
                 <div class="cd-metric-sub">Total committed value across {{ active_contracts }} running contracts</div>
             </div>
@@ -686,6 +688,7 @@
                 <div class="d-flex gap-2 align-items-center">
                     <div class="cd-kpi-pill">
                         <span class="cd-kpi-pill-val">{{ total_spent|money }}</span>
+
                         <span class="cd-kpi-pill-lbl">Lifetime Spend</span>
                     </div>
                 </div>
@@ -840,6 +843,7 @@
                                 </td>
                                 <td>
                                     <span class="fw-bold d-block" style="color: #0F172A;">{{ prop.bid_amount|money }}</span>
+
                                     <span class="text-muted" style="font-size: 0.72rem;">
                                         {{ prop.delivery_days }} days delivery
                                     </span>
@@ -912,6 +916,7 @@
                             </small>
                         </div>
                         <span class="fw-bold" style="color: #0284C7; font-size: 0.95rem;">{{ contract.total_amount|money }}</span>
+
                     </div>
 
                     <!-- Milestone Progress Bar -->
@@ -992,6 +997,7 @@
                         <td>
                             <span class="fw-semibold" style="color: #0F172A;">
                                 {% money_range proj.budget_min proj.budget_max %}
+
                             </span>
                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ proj.get_budget_type_display }}</small>
                         </td>

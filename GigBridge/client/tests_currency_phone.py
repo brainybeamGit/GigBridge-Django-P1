@@ -408,3 +408,4 @@ class ComprehensiveCurrencyAndPhoneTestCase(TestCase):
         self.assertEqual(fl_profile.country, 'IN')
         self.assertEqual(fl_profile.phone, '+919876543210')
         self.assertEqual(fl_profile.display_currency, 'INR')
+

@@ -70,6 +70,51 @@
         align-items: center;
         justify-content: space-between;
     }
+
+    /* Stat Cards in Hero - Solid Blue with White Text */
+    .gb-hero-glass-card {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        border: 1px solid rgba(255, 255, 255, 0.25) !important;
+        border-radius: 14px !important;
+        padding: 12px 18px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 16px rgba(37, 99, 235, 0.3) !important;
+        transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease !important;
+        height: 100% !important;
+    }
+    .gb-hero-glass-card:hover {
+        transform: translateY(-3px) !important;
+        background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%) !important;
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.45) !important;
+    }
+    .gb-glass-card-icon {
+        width: 40px !important;
+        height: 40px !important;
+        border-radius: 10px !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.25rem !important;
+        background: rgba(255, 255, 255, 0.2) !important;
+        color: #ffffff !important;
+        flex-shrink: 0 !important;
+    }
+    .gb-glass-card-val {
+        font-weight: 700 !important;
+        font-size: 0.95rem !important;
+        color: #ffffff !important;
+        line-height: 1.2 !important;
+    }
+    .gb-glass-card-lbl {
+        font-size: 0.775rem !important;
+        color: #ffffff !important;
+        opacity: 0.95 !important;
+        line-height: 1.2 !important;
+    }
+
 </style>
 {% endblock %}
 
@@ -91,9 +136,7 @@
             </ol>
         </nav>
 
-        <div class="gb-hero-pill-badge mx-auto mb-2">
-            <i class="bi bi-chat-dots-fill me-1" aria-hidden="true"></i> Specialized Support &amp; Inquiries
-        </div>
+
 
         <h1 class="gb-contact-hero-title text-dark">Get in Touch with the GigBridge Team</h1>
         <p class="gb-contact-hero-subtitle mx-auto">
@@ -104,7 +147,7 @@
         <div class="row g-3 justify-content-center mt-2 mx-auto gb-ct-stats">
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-warning"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-lightning-charge-fill" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">4 hrs</div>
                         <div class="gb-glass-card-lbl">Avg Response Time</div>
@@ -113,7 +156,7 @@
             </div>
             <div class="col-md-4 col-sm-6 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-info"><i class="bi bi-clock-history" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-clock-history" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">Mon &ndash; Sat</div>
                         <div class="gb-glass-card-lbl">10 AM &ndash; 7 PM IST</div>
@@ -122,7 +165,7 @@
             </div>
             <div class="col-md-4 col-sm-12 col-12">
                 <div class="gb-hero-glass-card">
-                    <div class="gb-glass-card-icon text-info"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></div>
+                    <div class="gb-glass-card-icon text-white"><i class="bi bi-patch-check-fill" aria-hidden="true"></i></div>
                     <div>
                         <div class="gb-glass-card-val">Escrow Desk</div>
                         <div class="gb-glass-card-lbl">Payments &amp; Disputes</div>
@@ -690,7 +733,8 @@
                 const initCountry = (countryInput && countryInput.value) ? countryInput.value.toLowerCase() : 'in';
                 const iti = window.intlTelInput(phoneInput, {
                     initialCountry: initCountry,
-                    preferredCountries: ['in', 'us', 'gb', 'ae', 'ca', 'au'],
+                    onlyCountries: ['in', 'us'],
+                    preferredCountries: [],
                     separateDialCode: true,
                     autoPlaceholder: 'polite',
                     utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.19/js/utils.js"

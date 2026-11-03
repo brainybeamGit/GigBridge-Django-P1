@@ -21,6 +21,10 @@
     <!-- GigBridge Master CSS -->
     <link rel="stylesheet" href="{% static 'css/gigbridge.css' %}">
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'images/logo.png' %}">
+    
     {% block extra_css %}{% endblock %}
 </head>
 <body class="gb-body-light">
@@ -31,9 +35,7 @@
         <div class="container">
             <!-- Brand Logo -->
             <a class="navbar-brand gb-brand-clean" href="{% url 'home' %}">
-                <span class="gb-brand-icon-clean">
-                    <i class="bi bi-briefcase-fill"></i>
-                </span>
+                <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="38" height="38" style="border-radius: 10px; object-fit: contain;">
                 <span class="gb-brand-text">GigBridge</span>
             </a>
 
@@ -287,9 +289,7 @@
                 <!-- Col 1: Brand & Info -->
                 <div class="col-lg-3 col-md-6">
                     <a class="gb-brand-clean d-inline-flex align-items-center gap-2 mb-3 text-decoration-none" href="{% url 'home' %}">
-                        <span class="gb-brand-icon-clean">
-                            <i class="bi bi-briefcase-fill"></i>
-                        </span>
+                        <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="38" height="38" style="border-radius: 10px; object-fit: contain;">
                         <span class="gb-brand-text" style="color: #0b132b; font-weight: 800;">GigBridge</span>
                     </a>
                     <p class="gb-footer-desc">
@@ -384,6 +384,7 @@
                                         <span class="gb-curr-label">$ USD</span>
                                     </span>
                                     {% if active_currency == 'USD' %}<i class="bi bi-check2 text-primary fw-bold fs-6"></i>{% endif %}
+
                                 </a>
                             </li>
                         </ul>

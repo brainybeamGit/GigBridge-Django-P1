@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="GigBridge Platform Administration & Control Portal.">
+    <link rel="icon" type="image/png" href="{% static 'images/logo.png' %}">
     <title>Administrator Sign In | GigBridge Command Center</title>
 
     <!-- Global Font: Plus Jakarta Sans -->
@@ -361,8 +362,9 @@
     <div class="auth-showcase-side">
         <!-- Top Brand Wordmark -->
         <div>
-            <a href="{% url 'home' %}" style="text-decoration:none;font-weight:800;font-size:1.75rem;color:#0F172A;display:inline-flex;align-items:center;gap:8px;line-height:1;">
-                GigBridge
+            <a href="{% url 'home' %}" style="text-decoration:none;font-weight:800;font-size:1.75rem;color:#0F172A;display:inline-flex;align-items:center;gap:10px;line-height:1;">
+                <img src="{% static 'images/logo.png' %}" alt="GigBridge" width="36" height="36" style="border-radius: 8px; object-fit: contain;">
+                <span>GigBridge</span>
                 <span style="width:8px;height:8px;background:#0284C7;border-radius:50%;display:inline-block;box-shadow:0 0 10px rgba(2, 132, 199, 0.6);"></span>
             </a>
             <div class="mt-3">

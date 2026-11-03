@@ -295,9 +295,9 @@
     </div>
 </div>
 
-<!-- 6 Editorial KPI Cards (Icon-Free) -->
+<!-- 4 Core Executive KPI Cards -->
 <div class="row g-3 mb-4">
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="col-xl-3 col-md-6 col-12">
         <a href="{% url 'adminpanel_clients' %}" class="adm-kpi-card">
             <div class="d-flex justify-content-between align-items-baseline">
                 <span class="adm-kpi-label">Clients</span>
@@ -308,7 +308,7 @@
         </a>
     </div>
 
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="col-xl-3 col-md-6 col-12">
         <a href="{% url 'adminpanel_freelancers' %}" class="adm-kpi-card">
             <div class="d-flex justify-content-between align-items-baseline">
                 <span class="adm-kpi-label">Freelancers</span>
@@ -319,7 +319,7 @@
         </a>
     </div>
 
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="col-xl-3 col-md-6 col-12">
         <a href="{% url 'adminpanel_projects' %}" class="adm-kpi-card">
             <div class="d-flex justify-content-between align-items-baseline">
                 <span class="adm-kpi-label">Projects</span>
@@ -330,29 +330,7 @@
         </a>
     </div>
 
-    <div class="col-xl-2 col-md-4 col-6">
-        <a href="{% url 'adminpanel_projects' %}?status=open" class="adm-kpi-card">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <span class="adm-kpi-label">Open Bidding</span>
-                <span class="adm-kpi-index">04</span>
-            </div>
-            <div class="adm-kpi-value text-primary">{{ open_projects }}</div>
-            <p class="adm-kpi-caption">Accepting proposals</p>
-        </a>
-    </div>
-
-    <div class="col-xl-2 col-md-4 col-6">
-        <a href="{% url 'adminpanel_contracts' %}" class="adm-kpi-card">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <span class="adm-kpi-label">Contracts</span>
-                <span class="adm-kpi-index">05</span>
-            </div>
-            <div class="adm-kpi-value">{{ active_contracts }}</div>
-            <p class="adm-kpi-caption">Active engagements</p>
-        </a>
-    </div>
-
-    <div class="col-xl-2 col-md-4 col-6">
+    <div class="col-xl-3 col-md-6 col-12">
         <a href="{% url 'adminpanel_payments' %}" class="adm-kpi-card">
             <div class="d-flex justify-content-between align-items-baseline">
                 <span class="adm-kpi-label">Volume ({{ currency_symbol }})</span>
@@ -362,19 +340,6 @@
             <p class="adm-kpi-caption">Cleared escrow volume</p>
         </a>
     </div>
-
-    <div class="col-xl-2 col-md-4 col-6">
-        <a href="{% url 'adminpanel:messages' %}?status=new" class="adm-kpi-card" style="border-left: 3px solid #0284c7;">
-            <div class="d-flex justify-content-between align-items-baseline">
-                <span class="adm-kpi-label text-primary">New Messages</span>
-                <span class="adm-kpi-index">07</span>
-            </div>
-            <div class="adm-kpi-value {% if new_messages_count %}text-primary{% else %}text-muted{% endif %}">
-                {{ new_messages_count }}
-            </div>
-            <p class="adm-kpi-caption">Awaiting response</p>
-        </a>
-    </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════════════
@@ -382,23 +347,8 @@
      ═══════════════════════════════════════════════════════════════════ -->
 
 <!-- Telemetry Control Bar -->
-<div class="telemetry-control-bar d-flex flex-wrap align-items-center justify-content-between gap-3">
-    <div class="d-flex align-items-center gap-3">
-        <div class="d-flex align-items-center gap-2">
-            <span class="live-beacon-dot"></span>
-            <span class="fw-bold text-dark small text-uppercase" style="letter-spacing:0.06em;">Real-Time Telemetry Stream</span>
-        </div>
-        <span class="text-muted d-none d-md-inline" style="font-size:0.8rem;">&bull;</span>
-        <span class="text-secondary small d-none d-md-inline">
-            Auto-refresh in <strong id="telemetryCountdown" class="text-dark">30s</strong>
-        </span>
-        <span class="text-muted d-none d-md-inline" style="font-size:0.8rem;">&bull;</span>
-        <span class="text-muted small d-none d-md-inline">
-            Last sync: <span id="telemetryLastSync" class="fw-semibold text-dark">{{ initial_analytics.last_sync }}</span>
-        </span>
-    </div>
-
-    <div class="d-flex align-items-center gap-2 flex-wrap">
+<div class="telemetry-control-bar d-flex flex-wrap align-items-center justify-content-end gap-3">
+    <div class="d-flex align-items-center gap-2 flex-wrap ms-auto">
         <!-- Range Switcher Pills -->
         <div class="d-flex align-items-center gap-1" id="telemetryRangeGroup">
             <button type="button" class="telemetry-range-pill" data-range="7d">7D</button>

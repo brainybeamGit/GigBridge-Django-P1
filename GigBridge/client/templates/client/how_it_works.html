@@ -3,11 +3,58 @@
 
 {% block title %}How It Works | GigBridge Freelance Marketplace{% endblock %}
 
+{% block extra_css %}
+<style>
+    .gb-hw-hero {
+        position: relative;
+        overflow: hidden;
+        padding: 44px 0 115px;
+        color: #0f172a;
+        background-color: #f0f7ff;
+        background:
+            radial-gradient(circle at 14% 20%, rgba(37, 99, 235, 0.16) 0%, transparent 48%),
+            radial-gradient(circle at 86% 75%, rgba(56, 189, 248, 0.22) 0%, transparent 45%),
+            radial-gradient(circle at 50% 50%, rgba(219, 234, 254, 0.5) 0%, transparent 70%),
+            linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 50%, #eff6ff 100%) !important;
+    }
+    .gb-hw-blob {
+        display: none !important;
+    }
+    .gb-hw-switcher {
+        display: inline-flex;
+        gap: .25rem;
+        padding: .35rem;
+        border-radius: 999px;
+        background: #ffffff;
+        border: 1px solid #bae6fd;
+        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+        max-width: 100%;
+    }
+    .gb-hw-switch-btn {
+        border: 0;
+        background: transparent;
+        color: #475569;
+        font-weight: 700;
+        font-size: 0.9rem;
+        padding: .65rem 1.4rem;
+        border-radius: 999px;
+        transition: all .2s ease;
+        white-space: nowrap;
+    }
+    .gb-hw-switch-btn:hover {
+        color: #0284c7;
+    }
+    .gb-hw-switch-btn.active {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35) !important;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <section class="gb-hw-hero">
-    <span class="gb-hw-blob gb-hw-blob-1" aria-hidden="true"></span>
-    <span class="gb-hw-blob gb-hw-blob-2" aria-hidden="true"></span>
-
+    
     <div class="container position-relative text-center gb-hw-hero-inner">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb justify-content-center mb-3 small">
@@ -23,6 +70,7 @@
         <div class="gb-hw-pill text-dark mx-auto">
             <i class="bi bi-shield-check"></i> Transparent &amp; Secure Marketplace
         </div>
+
 
         <h1 class="gb-hw-title">How GigBridge Works</h1>
         <p class="gb-hw-subtitle mx-auto">

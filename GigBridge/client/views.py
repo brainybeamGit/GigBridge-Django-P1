@@ -384,9 +384,19 @@ def home_view(request):
         proj_count=Count('projects', filter=Q(projects__status='open'))
     ).order_by('-proj_count')[:8]
 
-    featured_projects = Project.objects.filter(
+    featured_projects_qs = Project.objects.filter(
         status='open'
-    ).select_related('client', 'category', 'client__profile').order_by('-created_at')[:6]
+    ).select_related('client', 'category', 'client__profile').annotate(
+        proposals_count=Count('proposals', distinct=True)
+    ).order_by('-created_at')
+
+    if request.user.is_authenticated:
+        user_bookmarks = Bookmark.objects.filter(project=OuterRef('pk'), user=request.user)
+        featured_projects_qs = featured_projects_qs.annotate(is_bookmarked=Exists(user_bookmarks))
+    else:
+        featured_projects_qs = featured_projects_qs.annotate(is_bookmarked=Value(False, output_field=BooleanField()))
+
+    featured_projects = list(featured_projects_qs[:6])
 
     top_freelancers = list(User.objects.filter(
         profile__role='freelancer'
@@ -1229,7 +1239,7 @@ def client_proposal_accept_view(request, proposal_id):
             order=3,
             milestone_type='final',
             title=f"Phase 3: Complete Project Delivery & Handover (25% — ₹{final_amount:.2f})",
-            description=f"Final 25% milestone for complete project delivery including source code repository, documentation, and handover.\nDeliverables: {deliverables_text}",
+            description=f"Final 25% milestone for complete project delivery including source code repository, documentation, and handover.",
             amount=final_amount,
             status='pending',
             due_date=due_date_3,
