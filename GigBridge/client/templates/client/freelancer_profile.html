@@ -240,7 +240,7 @@
             </div>
             <h4 class="fw-bold text-navy mb-1">{{ proposal_context.project.title }}</h4>
             <div class="d-flex align-items-center gap-3 text-secondary small mb-2 flex-wrap">
-                <div>Bid: <strong class="text-primary fs-6">&#8377;{{ proposal_context.bid_amount|floatformat:0 }}</strong></div>
+                <div>Bid: <strong class="text-primary fs-6">{{ proposal_context.bid_amount|money }}</strong></div>
                 <div>&bull;</div>
                 <div>Delivery: <strong>{{ proposal_context.delivery_days }} calendar days</strong></div>
                 <div>&bull;</div>
@@ -516,7 +516,7 @@
                     <div class="d-flex align-items-center gap-3 text-muted small flex-wrap mb-2">
                         <span><i class="bi bi-folder2-open me-1"></i>{{ contract.project.category.name|default:"General" }}</span>
                         <span>&bull;</span>
-                        <span>Value: <strong class="text-dark">&#8377;{{ contract.total_amount|floatformat:0 }}</strong></span>
+                        <span>Value: <strong class="text-dark">{% contract_money contract contract.total_amount %}</strong></span>
                         <span>&bull;</span>
                         <span>Timeline: {{ contract.start_date|date:"M Y" }} &ndash; {% if contract.end_date %}{{ contract.end_date|date:"M Y" }}{% else %}Present{% endif %}</span>
                     </div>

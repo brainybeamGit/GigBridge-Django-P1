@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Hired &amp; Contracts{% endblock %}
 {% block dashboard_title %}Hired Freelancers &amp; Contracts{% endblock %}
@@ -440,7 +441,7 @@
         <!-- Budget & Milestone Progress -->
         <div class="col-lg-2 col-md-6">
             <span class="small text-muted d-block" style="font-size: 0.72rem;">Agreed Value</span>
-            <div class="fw-bold" style="color: #0284C7; font-size: 1.15rem;">&#8377;{{ contract.total_amount|floatformat:0 }}</div>
+            <div class="fw-bold" style="color: #0284C7; font-size: 1.15rem;">{% contract_money contract contract.total_amount %}</div>
             <div class="d-flex align-items-center justify-content-between text-muted mt-1" style="font-size: 0.72rem;">
                 <span>Progress</span>
                 <span class="fw-bold text-dark">{{ contract.progress_percentage }}%</span>

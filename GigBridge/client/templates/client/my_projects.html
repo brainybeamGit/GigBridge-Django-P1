@@ -1,5 +1,6 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}My Projects{% endblock %}
 {% block dashboard_title %}Manage Your Projects{% endblock %}
@@ -691,9 +692,9 @@
                         <td>
                             <div class="fw-bold" style="color: #0F172A;">
                                 {% if project.budget_max > 0 %}
-                                    &#8377;{{ project.budget_min|floatformat:0 }} &ndash; &#8377;{{ project.budget_max|floatformat:0 }}
+                                    {% money_range project.budget_min project.budget_max %}
                                 {% else %}
-                                    &#8377;{{ project.budget_min|floatformat:0 }}
+                                    {{ project.budget_min|money }}
                                 {% endif %}
                             </div>
                             <small class="text-muted d-block" style="font-size: 0.72rem;">{{ project.get_budget_type_display }}</small>

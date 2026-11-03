@@ -1,6 +1,7 @@
 {% extends 'client/dashboard_base.html' %}
 {% load static %}
 {% load review_tags %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}{% if is_edit %}Edit Review{% else %}Rate Freelancer{% endif %}{% endblock %}
 {% block dashboard_title %}{% if is_edit %}Edit Contract Review{% else %}Rate &amp; Review Freelancer{% endif %}{% endblock %}
@@ -259,7 +260,7 @@
                     {% if is_edit %}Update Your Review{% else %}Rate &amp; Review Specialist{% endif %}
                 </h1>
                 <p class="gb-review-sub">
-                    Project: <strong>{{ contract.project.title }}</strong> &bull; Valuation: <strong>&#8377;{{ contract.total_amount|floatformat:2 }}</strong>. Share verified performance feedback to conclude the engagement.
+                    Project: <strong>{{ contract.project.title }}</strong> &bull; Valuation: <strong>{% contract_money contract contract.total_amount %}</strong>. Share verified performance feedback to conclude the engagement.
                 </p>
             </div>
             <div class="col-md-4 text-md-end">

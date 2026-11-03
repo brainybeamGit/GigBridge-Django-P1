@@ -3,12 +3,12 @@
 {% load currency_tags %}
 
 {% block breadcrumb_current %}Contract #{{ contract.id }}{% endblock %}
-{% block dashboard_title %}{{ contract.project.title }}{% endblock %}
+{% block dashboard_title %}Contract Workspace{% endblock %}
 
 {% block dashboard_content %}
 <style>
     /* ==========================================================================
-       Contract Detail - Minimalist Editorial & Light Blue Shining Theme
+       Client Contract Workspace - Minimalist Luxury Light Blue Shining Theme
        Palette: #0284C7, #0369A1, #F0F9FF, #E0F2FE, #BAE6FD, #0F172A, #64748B
        ========================================================================== */
     :root {
@@ -19,25 +19,23 @@
         --cd-sky-100: #E0F2FE;
         --cd-sky-200: #BAE6FD;
         --cd-sky-300: #7DD3FC;
-        --cd-text-dark: #0F172A;
-        --cd-text-muted: #64748B;
         --cd-border: #E2E8F0;
-        --cd-radius: 14px;
+        --cd-radius: 16px;
     }
 
-    /* ─── 1. HERO BANNER ─── */
+    /* ─── 1. LUMINOUS HERO BANNER ─── */
     .cd-hero-banner {
         background:
             radial-gradient(circle at 92% 18%, rgba(255, 255, 255, 0.95) 0%, rgba(224, 242, 254, 0.6) 30%, transparent 65%),
             radial-gradient(circle at 8% 82%, rgba(56, 189, 248, 0.3) 0%, transparent 55%),
             linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 35%, #BAE6FD 75%, #7DD3FC 100%);
         border: 1px solid #BAE6FD;
-        border-radius: 18px;
-        padding: 30px 34px;
+        border-radius: var(--cd-radius);
+        padding: 26px 32px;
         position: relative;
         overflow: hidden;
         box-shadow: 0 10px 30px -5px rgba(2, 132, 199, 0.15), inset 0 0 60px rgba(255, 255, 255, 0.6);
-        margin-bottom: 24px;
+        margin-bottom: 22px;
     }
 
     .cd-hero-badge {
@@ -48,13 +46,13 @@
         color: #0369A1;
         border: 1px solid #BAE6FD;
         border-radius: 999px;
-        padding: 5px 14px;
-        font-size: 0.74rem;
+        padding: 4px 12px;
+        font-size: 0.72rem;
         font-weight: 700;
-        letter-spacing: 0.08em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 10px;
-        box-shadow: 0 2px 8px rgba(2, 132, 199, 0.08);
+        margin-bottom: 8px;
+        box-shadow: 0 2px 6px rgba(2, 132, 199, 0.08);
     }
 
     .cd-hero-badge .pulse-dot {
@@ -66,147 +64,121 @@
     }
 
     .cd-hero-title {
-        font-size: 1.8rem;
+        font-size: 1.7rem;
         font-weight: 800;
         letter-spacing: -0.025em;
         color: #0F172A;
-        margin-bottom: 6px;
+        margin-bottom: 4px;
         line-height: 1.25;
     }
 
     .cd-hero-sub {
-        font-size: 0.92rem;
+        font-size: 0.9rem;
         color: #334155;
-        max-width: 720px;
+        max-width: 680px;
         line-height: 1.5;
         margin-bottom: 0;
     }
 
-    /* ─── 2. EDITORIAL CARDS ─── */
-    .cd-card {
+    /* ─── 2. EDITORIAL PANELS ─── */
+    .cd-panel {
         background: #FFFFFF;
         border: 1px solid #E2E8F0;
-        border-radius: 16px;
-        padding: 26px 30px;
-        box-shadow: 0 2px 14px rgba(15, 23, 42, 0.03);
-        margin-bottom: 24px;
+        border-radius: var(--cd-radius);
+        padding: 24px 28px;
+        box-shadow: 0 2px 12px rgba(15, 23, 42, 0.03);
+        margin-bottom: 22px;
     }
 
-    .cd-section-title {
+    .cd-panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-bottom: 14px;
+        margin-bottom: 18px;
+        border-bottom: 1px solid #F1F5F9;
+    }
+
+    .cd-panel-title {
         font-size: 1.05rem;
         font-weight: 800;
         color: #0F172A;
-        margin-bottom: 18px;
-        padding-bottom: 12px;
-        border-bottom: 1px solid #F1F5F9;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
+        margin-bottom: 0;
+        letter-spacing: -0.015em;
     }
 
-    /* ─── 3. AGREEMENT 25% / 50% / 25% STEPPER ─── */
-    .cd-step-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 16px;
-        margin-bottom: 24px;
-    }
-
-    @media (max-width: 768px) {
-        .cd-step-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-
-    .cd-step-box {
-        background: #FFFFFF;
-        border: 1.5px solid #E2E8F0;
-        border-radius: 14px;
-        padding: 20px 22px;
-        position: relative;
-        transition: all 0.2s ease;
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        min-height: 140px;
+    /* ─── 3. FINANCIAL PROGRESS PILLS ─── */
+    .cd-metric-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 12px;
+        padding: 16px 18px;
+        text-align: center;
         height: 100%;
-        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+        transition: all 0.15s ease;
     }
 
-    .cd-step-box:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
-    }
-
-    .cd-step-box.step-active {
+    .cd-metric-box:hover {
         background: #F0F9FF;
-        border-color: #0284C7;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.12);
+        border-color: #BAE6FD;
+        transform: translateY(-1px);
     }
 
-    .cd-step-box.step-completed {
-        background: #F0FDF4;
-        border-color: #86EFAC;
-    }
-
-    .cd-step-kicker {
-        font-size: 0.74rem;
+    .cd-metric-label {
+        font-size: 0.7rem;
         font-weight: 800;
-        letter-spacing: 0.05em;
+        letter-spacing: 0.06em;
         text-transform: uppercase;
-        margin-bottom: 12px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        color: #64748B;
+        margin-bottom: 4px;
     }
 
-    .cd-step-title {
-        font-size: 0.98rem;
-        font-weight: 700;
-        color: #0F172A;
-        line-height: 1.45;
-        margin-bottom: 14px;
-        flex-grow: 1;
-    }
-
-    .cd-step-amount {
+    .cd-metric-val {
         font-size: 1.35rem;
         font-weight: 800;
-        color: #0284C7;
-        margin-top: auto;
+        line-height: 1.15;
     }
 
-    .cd-step-box.step-completed .cd-step-amount {
-        color: #15803D;
-    }
-
-    /* ─── 4. MILESTONE ITEM CARDS ─── */
-    .cd-milestone-card {
+    /* ─── 4. UNIFIED MILESTONE PIPELINE ─── */
+    .cd-ms-card {
         background: #FFFFFF;
         border: 1.5px solid #E2E8F0;
         border-radius: 14px;
         padding: 22px 26px;
-        margin-bottom: 18px;
-        transition: all 0.2s ease;
+        margin-bottom: 16px;
+        transition: all 0.15s ease;
     }
 
-    .cd-milestone-card:hover {
+    .cd-ms-card:hover {
         border-color: #BAE6FD;
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.08);
+        box-shadow: 0 4px 18px rgba(2, 132, 199, 0.08);
     }
 
-    .cd-milestone-card.ms-paid {
-        border-left: 4px solid #10B981;
+    .cd-ms-card.status-paid {
+        border-left: 5px solid #10B981;
     }
 
-    .cd-milestone-card.ms-in-progress {
-        border-left: 4px solid #0284C7;
+    .cd-ms-card.status-submitted {
+        border-left: 5px solid #F59E0B;
+        background: #FFFDF7;
     }
 
-    .cd-milestone-card.ms-submitted {
-        border-left: 4px solid #F59E0B;
-        background: #FFFEFA;
+    .cd-ms-card.status-in-progress {
+        border-left: 5px solid #0284C7;
+    }
+
+    .cd-ms-card.status-locked {
+        border-left: 5px solid #CBD5E1;
+        opacity: 0.85;
+    }
+
+    .cd-deliverables-box {
+        background: #F8FAFC;
+        border: 1px solid #E2E8F0;
+        border-radius: 10px;
+        padding: 14px 18px;
+        margin-top: 14px;
+        margin-bottom: 14px;
     }
 
     /* Action Buttons */
@@ -215,13 +187,14 @@
         color: #FFFFFF !important;
         border: 1px solid #0284C7;
         border-radius: 8px;
-        font-size: 0.86rem;
+        font-size: 0.84rem;
         font-weight: 700;
-        padding: 9px 20px;
+        padding: 8px 18px;
         display: inline-flex;
         align-items: center;
-        box-shadow: 0 4px 14px rgba(2, 132, 199, 0.28);
-        transition: all 0.2s ease;
+        gap: 6px;
+        box-shadow: 0 3px 10px rgba(2, 132, 199, 0.25);
+        transition: all 0.15s ease;
         text-decoration: none;
         cursor: pointer;
     }
@@ -230,7 +203,7 @@
         background: #0369A1;
         border-color: #0369A1;
         transform: translateY(-1px);
-        box-shadow: 0 6px 20px rgba(2, 132, 199, 0.4);
+        box-shadow: 0 5px 16px rgba(2, 132, 199, 0.35);
     }
 
     .btn-cd-outline {
@@ -238,12 +211,13 @@
         color: #0F172A !important;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
-        font-size: 0.84rem;
+        font-size: 0.82rem;
         font-weight: 600;
-        padding: 8px 18px;
+        padding: 7px 16px;
         text-decoration: none;
         display: inline-flex;
         align-items: center;
+        gap: 6px;
         transition: all 0.15s ease;
         cursor: pointer;
     }
@@ -259,13 +233,14 @@
         color: #FFFFFF !important;
         border: 1px solid #10B981;
         border-radius: 8px;
-        font-size: 0.86rem;
+        font-size: 0.84rem;
         font-weight: 700;
-        padding: 9px 20px;
+        padding: 8px 18px;
         display: inline-flex;
         align-items: center;
-        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.25);
-        transition: all 0.2s ease;
+        gap: 6px;
+        box-shadow: 0 3px 10px rgba(16, 185, 129, 0.25);
+        transition: all 0.15s ease;
         cursor: pointer;
         text-decoration: none;
     }
@@ -281,11 +256,12 @@
         color: #FFFFFF !important;
         border: 1px solid #F59E0B;
         border-radius: 8px;
-        font-size: 0.84rem;
+        font-size: 0.82rem;
         font-weight: 700;
-        padding: 8px 18px;
+        padding: 7px 16px;
         display: inline-flex;
         align-items: center;
+        gap: 6px;
         cursor: pointer;
         text-decoration: none;
     }
@@ -294,98 +270,32 @@
         background: #D97706;
         border-color: #D97706;
     }
-
-    /* Badges */
-    .badge-cd-active {
-        background: #E0F2FE;
-        color: #0284C7;
-        border: 1px solid #BAE6FD;
-        font-weight: 700;
-        font-size: 0.74rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: 999px;
-    }
-
-    .badge-cd-success {
-        background: #DCFCE7;
-        color: #166534;
-        border: 1px solid #BBF7D0;
-        font-weight: 700;
-        font-size: 0.74rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: 999px;
-    }
-
-    .badge-cd-warning {
-        background: #FEF3C7;
-        color: #92400E;
-        border: 1px solid #FDE68A;
-        font-weight: 700;
-        font-size: 0.74rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: 999px;
-    }
-
-    .badge-cd-muted {
-        background: #F1F5F9;
-        color: #475569;
-        border: 1px solid #E2E8F0;
-        font-weight: 700;
-        font-size: 0.74rem;
-        letter-spacing: 0.04em;
-        text-transform: uppercase;
-        padding: 5px 12px;
-        border-radius: 999px;
-    }
-
-    /* Financial Metrics Box */
-    .cd-metric-card {
-        background: #F8FAFC;
-        border: 1px solid #E2E8F0;
-        border-radius: 12px;
-        padding: 16px 20px;
-    }
 </style>
 
-<!-- =========================================================================
-     1. LUMINOUS SHINING HERO BANNER
-     ========================================================================= -->
+<!-- ═══════════════════════════════════════════════════════════
+     1. HERO HEADER
+     ═══════════════════════════════════════════════════════════ -->
 <div class="cd-hero-banner">
     <div class="row align-items-center g-3">
         <div class="col-xl-8 col-lg-7">
-            <h2 class="cd-hero-title">
-                {{ contract.project.title }}
-            </h2>
+            <div class="cd-hero-badge">
+                <span class="pulse-dot"></span>
+                <span>Active Engagement &bull; Contract #{{ contract.id }}</span>
+            </div>
+            <h1 class="cd-hero-title">{{ contract.project.title }}</h1>
             <p class="cd-hero-sub">
-                Agreed contract pipeline for project deliverables, 25% / 50% milestone releases, and verified source code approval.
+                Milestone-protected contract for project deliverables, escrow funding, and verified code releases.
             </p>
         </div>
         <div class="col-xl-4 col-lg-5 text-lg-end">
             <div class="d-flex align-items-center justify-content-lg-end gap-2 flex-wrap">
-                <span class="{% if contract.status == 'completed' %}badge-cd-success{% elif contract.status == 'active' %}badge-cd-active{% else %}badge-cd-muted{% endif %}">
+                <span class="badge {% if contract.status == 'completed' %}bg-success text-white{% elif contract.status == 'active' %}bg-primary text-white{% else %}bg-secondary text-white{% endif %} rounded-pill px-3 py-1.5 fw-bold" style="font-size: 0.78rem;">
                     Status: {{ contract.get_status_display }}
                 </span>
-                {% if contract.status == 'completed' %}
-                    {% if not contract.review %}
-                        <a href="{% url 'contract_review_create' contract.id %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
-                            <i class="bi bi-star-fill me-1"></i> Rate Freelancer
-                        </a>
-                    {% else %}
-                        <span class="badge bg-white text-dark border rounded-pill px-3 py-1 small fw-bold">
-                            <i class="bi bi-star-fill text-warning me-1"></i> {{ contract.review.overall_rating }}★ Reviewed
-                        </span>
-                        {% if contract.review.is_editable %}
-                            <a href="{% url 'contract_review_edit' contract.id %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3 fw-semibold">
-                                <i class="bi bi-pencil-square me-1"></i> Edit Review
-                            </a>
-                        {% endif %}
-                    {% endif %}
+                {% if contract.status == 'completed' and not contract.review %}
+                    <a href="{% url 'contract_review_create' contract.id %}" class="btn btn-warning btn-sm rounded-pill px-3 fw-bold text-dark shadow-sm">
+                        Rate Freelancer
+                    </a>
                 {% endif %}
                 <a href="{% url 'client_contracts' %}" class="btn-cd-outline">
                     &larr; All Contracts
@@ -395,300 +305,204 @@
     </div>
 </div>
 
-{% if contract.status == 'completed' %}
-    {% if not contract.review %}
-        <!-- Contract Review Call-to-Action -->
-        <div class="cd-card border-warning border-2" style="background: linear-gradient(135deg, #FFFBEB 0%, #FEF3C7 100%);">
-            <div class="row align-items-center g-3">
-                <div class="col-md-8">
-                    <div class="d-flex align-items-center gap-2 mb-1">
-                        <span class="badge bg-warning text-dark rounded-pill px-3 py-1 fw-bold small">
-                            <i class="bi bi-star-fill me-1"></i> Milestone Feedback Required
-                        </span>
-                        <span class="text-muted small">Project Officially Completed</span>
-                    </div>
-                    <h4 class="fw-bold text-dark mb-1">Rate &amp; Review {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}</h4>
-                    <p class="text-secondary small mb-0">
-                        All milestones are approved and paid! Please take 60 seconds to rate the freelancer's performance across quality, communication, and deadlines.
-                    </p>
-                </div>
-                <div class="col-md-4 text-md-end">
-                    <a href="{% url 'contract_review_create' contract.id %}" class="btn btn-warning rounded-pill px-4 py-2 fw-bold text-dark shadow-sm">
-                        <i class="bi bi-star-fill me-1"></i> Rate Freelancer Now &rarr;
-                    </a>
-                </div>
-            </div>
-        </div>
-    {% else %}
-        <!-- Contract Review Summary Card -->
-        <div class="cd-card">
-            <div class="cd-section-title d-flex justify-content-between align-items-center">
-                <span><i class="bi bi-star-fill text-warning me-2"></i> Client Rating &amp; Review</span>
-                <div>
-                    {% if contract.review.is_editable %}
-                        <a href="{% url 'contract_review_edit' contract.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
-                            <i class="bi bi-pencil-square me-1"></i> Edit Review (Within 7 Days)
-                        </a>
-                    {% else %}
-                        <span class="badge bg-light text-muted border small"><i class="bi bi-lock me-1"></i> Review Locked</span>
-                    {% endif %}
-                </div>
-            </div>
-
-            <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
-                <div class="display-6 fw-bold text-dark">{{ contract.review.overall_rating }} <span class="fs-4 text-warning">★</span></div>
-                <div class="d-flex flex-wrap gap-2">
-                    <span class="badge bg-light text-dark border">Quality: {{ contract.review.quality_of_work }}★</span>
-                    <span class="badge bg-light text-dark border">Communication: {{ contract.review.communication }}★</span>
-                    <span class="badge bg-light text-dark border">Deadline: {{ contract.review.deadline_adherence }}★</span>
-                    <span class="badge bg-light text-dark border">Professionalism: {{ contract.review.professionalism }}★</span>
-                    {% if contract.review.would_recommend %}
-                        <span class="badge bg-success-subtle text-success border border-success-subtle">
-                            <i class="bi bi-check-circle me-1"></i> Recommended
-                        </span>
-                    {% endif %}
-                </div>
-                <small class="text-muted ms-auto">Submitted on {{ contract.review.created_at|date:"M d, Y" }}</small>
-            </div>
-
-            <p class="text-secondary small mb-2 fst-italic">"{{ contract.review.comment }}"</p>
-
-            {% if contract.review.tags_list %}
-                <div class="mb-3">
-                    {% for tag in contract.review.tags_list %}
-                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill me-1 small">
-                            {{ tag }}
-                        </span>
-                    {% endfor %}
-                </div>
-            {% endif %}
-
-            {% if contract.review.freelancer_reply %}
-                <div class="p-3 bg-light rounded-3 border-start border-primary border-3 mt-3">
-                    <div class="d-flex justify-content-between align-items-center mb-1">
-                        <strong class="text-primary small"><i class="bi bi-reply-fill me-1"></i> Response from {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}:</strong>
-                        <small class="text-muted" style="font-size: 0.72rem;">{{ contract.review.replied_at|date:"M d, Y" }}</small>
-                    </div>
-                    <p class="mb-0 text-dark small fst-italic">"{{ contract.review.freelancer_reply }}"</p>
-                </div>
+{% if contract.status == 'completed' and contract.review %}
+    <!-- Review Summary Card -->
+    <div class="cd-panel">
+        <div class="cd-panel-header">
+            <h5 class="cd-panel-title">Your Client Rating &amp; Review</h5>
+            {% if contract.review.is_editable %}
+                <a href="{% url 'contract_review_edit' contract.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                    Edit Review
+                </a>
             {% endif %}
         </div>
-    {% endif %}
+        <div class="d-flex align-items-center gap-3 mb-2 flex-wrap">
+            <div class="fs-3 fw-bold text-dark">{{ contract.review.overall_rating }} <span class="text-warning">★</span></div>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="badge bg-light text-dark border">Quality: {{ contract.review.quality_of_work }}★</span>
+                <span class="badge bg-light text-dark border">Communication: {{ contract.review.communication }}★</span>
+                <span class="badge bg-light text-dark border">Deadline: {{ contract.review.deadline_adherence }}★</span>
+            </div>
+        </div>
+        <p class="text-secondary small mb-0 fst-italic">"{{ contract.review.comment }}"</p>
+    </div>
 {% endif %}
 
-<!-- =========================================================================
-     2. DYNAMIC MILESTONE ESCROW CONTRACT STRUCTURE CARD
-     ========================================================================= -->
-<div class="cd-card">
-    <div class="cd-section-title">
-        <span>Agreed Contract Milestone Pipeline</span>
-        <span class="badge bg-light text-secondary border small">Sequential Escrow Release</span>
-    </div>
-
-    <p class="text-secondary small mb-3">
-        This contract is executed under structured sequential milestones. Funds are securely held in escrow and disbursed sequentially upon your review and approval of deliverables.
-    </p>
-
-    <!-- Dynamic Milestones Stepper -->
-    <div class="cd-step-grid" style="grid-template-columns: repeat({{ milestones|length|default:3 }}, 1fr);">
-        {% for ms in milestones %}
-            <div class="cd-step-box {% if ms.status == 'paid' %}step-completed{% elif ms.is_active %}step-active{% endif %}">
-                <div class="cd-step-kicker">
-                    <span style="color: {% if ms.status == 'paid' %}#166534{% elif ms.is_active %}#0284C7{% else %}#64748B{% endif %};">
-                        Phase {{ ms.order }} &bull; {{ ms.get_milestone_type_display }}
-                    </span>
-                    <span class="badge {% if ms.status == 'paid' %}bg-success-subtle text-success border border-success-subtle{% elif ms.is_active %}bg-primary-subtle text-primary border border-primary-subtle{% else %}bg-light text-muted border{% endif %} rounded-pill px-2 py-1 small fw-bold">
-                        {% if ms.status == 'paid' %}Verified &amp; Paid{% elif ms.is_active %}{{ ms.get_status_display }}{% else %}Locked{% endif %}
-                    </span>
-                </div>
-                <div class="cd-step-title">{{ ms.display_title }}</div>
-                <div class="cd-step-amount">{% contract_money contract ms.amount %}</div>
-            </div>
-        {% endfor %}
-    </div>
-
-    <!-- Financial & Progress Overview Grid -->
-    <div class="row g-3">
-        <div class="col-sm-6 col-md-3">
-            <div class="cd-metric-card text-center">
-                <small class="text-muted fw-bold d-block mb-1">TOTAL PROJECT BUDGET</small>
-                <div class="fw-bold fs-4 text-dark">{% contract_money contract contract.total_amount %}</div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-3">
-            <div class="cd-metric-card text-center">
-                <small class="text-muted fw-bold d-block mb-1">PAID TO DATE</small>
-                <div class="fw-bold fs-4 text-success">{% contract_money contract contract.paid_amount %}</div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-3">
-            <div class="cd-metric-card text-center">
-                <small class="text-muted fw-bold d-block mb-1">REMAINING BALANCE</small>
-                <div class="fw-bold fs-4 text-primary">&#8377;{{ contract.remaining_amount|floatformat:2 }}</div>
-            </div>
-        </div>
-        <div class="col-sm-6 col-md-3">
-            <div class="cd-metric-card text-center">
-                <small class="text-muted fw-bold d-block mb-1">CONTRACT FULFILLMENT</small>
-                <div class="fw-bold fs-4 text-dark">{{ contract.progress_percentage }}%</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Progress Bar -->
-    <div class="progress mt-3" style="height: 8px; border-radius: 999px; background: #E2E8F0;">
-        <div class="progress-bar bg-success" role="progressbar" style="width: {{ contract.progress_percentage }}%;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
-    </div>
-</div>
-
-<!-- =========================================================================
-     3. FREELANCER DETAILS & AGREED DELIVERABLES
-     ========================================================================= -->
+<!-- ═══════════════════════════════════════════════════════════
+     2. EXECUTIVE OVERVIEW (2 BALANCED CARDS: FINANCIALS & TALENT)
+     ═══════════════════════════════════════════════════════════ -->
 <div class="row g-4 mb-4">
-    <!-- Freelancer Card -->
-    <div class="col-lg-6">
-        <div class="cd-card h-100 mb-0">
-            <div class="cd-section-title">
-                <span>Hired Freelance Professional</span>
+    <!-- Left Card: Escrow Health & Financials -->
+    <div class="col-lg-7">
+        <div class="cd-panel h-100 mb-0">
+            <div class="cd-panel-header">
+                <h5 class="cd-panel-title">Escrow Health &amp; Fulfillment</h5>
+                <span class="badge bg-light text-secondary border small">{{ contract.progress_percentage }}% Completed</span>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="progress mb-4" style="height: 8px; border-radius: 999px; background: #E2E8F0;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ contract.progress_percentage }}%;" aria-valuenow="{{ contract.progress_percentage }}" aria-valuemin="0" aria-valuemax="100"></div>
+            </div>
+
+            <!-- 3 Stat Metrics -->
+            <div class="row g-3">
+                <div class="col-sm-4">
+                    <div class="cd-metric-box">
+                        <div class="cd-metric-label">Total Agreed Budget</div>
+                        <div class="cd-metric-val text-dark">{% contract_money contract contract.total_amount %}</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="cd-metric-box">
+                        <div class="cd-metric-label">Paid to Date</div>
+                        <div class="cd-metric-val text-success">{% contract_money contract contract.paid_amount %}</div>
+                    </div>
+                </div>
+                <div class="col-sm-4">
+                    <div class="cd-metric-box">
+                        <div class="cd-metric-label">Remaining Balance</div>
+                        <div class="cd-metric-val text-primary">{% contract_money contract contract.remaining_amount %}</div>
+                    </div>
+                </div>
+            </div>
+
+            <p class="text-muted small mt-3 mb-0" style="font-size: 0.78rem;">
+                Funds are held in secure escrow. You only authorize release of funds after inspecting and approving each phase.
+            </p>
+        </div>
+    </div>
+
+    <!-- Right Card: Hired Talent & Agreed Scope -->
+    <div class="col-lg-5">
+        <div class="cd-panel h-100 mb-0">
+            <div class="cd-panel-header">
+                <h5 class="cd-panel-title">Hired Specialist</h5>
                 <a href="{% url 'start_conversation' %}?user_id={{ contract.freelancer.id }}&project_id={{ contract.project.id }}" class="btn-cd-outline py-1 px-3 small">
                     Private Chat &rarr;
                 </a>
             </div>
 
-            <div class="d-flex align-items-center gap-3">
-                <a href="{% url 'freelancer_public_profile' contract.freelancer.id %}" class="text-decoration-none">
-                    <div class="user-avatar-sm" style="width: 58px; height: 58px; font-size: 1.4rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 14px; font-weight: 800;">
-                        {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
-                    </div>
-                </a>
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="user-avatar-sm" style="width: 52px; height: 52px; font-size: 1.3rem; background: linear-gradient(135deg, #0284C7, #0369A1); color: #fff; display: flex; align-items: center; justify-content: center; border-radius: 12px; font-weight: 800;">
+                    {{ contract.freelancer.first_name|default:contract.freelancer.username|slice:":1"|upper }}
+                </div>
                 <div>
-                    <h5 class="fw-bold text-navy mb-0">
-                        <a href="{% url 'freelancer_public_profile' contract.freelancer.id %}" class="text-decoration-none text-navy">
-                            {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
-                        </a>
-                    </h5>
+                    <h6 class="fw-bold text-navy mb-0">
+                        {{ contract.freelancer.get_full_name|default:contract.freelancer.username }}
+                    </h6>
                     <small class="text-muted d-block">{{ contract.freelancer.profile.title|default:"Full-Stack Independent Developer" }}</small>
-                    <div class="d-flex align-items-center gap-2 mt-1">
-                        <span class="badge bg-light text-dark border small">Rating: {{ contract.freelancer.profile.average_rating|default:"5.0" }} / 5.0</span>
-                        <span class="text-muted small">&bull; {{ contract.freelancer.profile.location|default:"Remote" }}</span>
-                    </div>
+                    <small class="text-muted">
+                        Rating: {{ contract.freelancer.profile.average_rating|default:"5.0" }}★ &bull; {{ contract.freelancer.profile.location|default:"Remote" }}
+                    </small>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- Agreed Scope & Deliverables Card -->
-    <div class="col-lg-6">
-        <div class="cd-card h-100 mb-0">
-            <div class="cd-section-title">
-                <span>Agreed Deliverables &amp; Timeline</span>
-                <span class="badge bg-light text-secondary border small">Milestone Scope</span>
-            </div>
-
-            <div class="small text-secondary mb-2">
-                <strong class="text-dark">Target Deadline:</strong>
-                {% if contract.end_date %}{{ contract.end_date|date:"F d, Y" }}{% else %}Flexible Delivery Schedule{% endif %}
-            </div>
-            <div class="p-3 bg-light rounded-3 border small text-dark" style="max-height: 90px; overflow-y: auto;">
-                {{ contract.deliverables|default:"Complete REST API endpoints, serializers, models, authentication, documentation, and clean git repository handover." }}
+            <div class="p-3 bg-light rounded-3 border small">
+                <div class="d-flex justify-content-between mb-1">
+                    <strong class="text-dark">Delivery Schedule:</strong>
+                    <span class="text-muted">{% if contract.end_date %}{{ contract.end_date|date:"F d, Y" }}{% else %}Flexible{% endif %}</span>
+                </div>
+                <div class="text-secondary" style="max-height: 58px; overflow-y: auto;">
+                    {{ contract.deliverables|default:"Complete REST API endpoints, serializers, models, authentication, documentation, and clean git repository handover." }}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- =========================================================================
-     4. MILESTONES & PAYMENTS PIPELINE
-     ========================================================================= -->
-<div class="cd-card">
-    <div class="cd-section-title">
-        <span>Payment Schedule &amp; Milestone Deliverables</span>
-        <span class="badge bg-light text-secondary border small">Escrow Pipeline</span>
+<!-- ═══════════════════════════════════════════════════════════
+     3. CLEAR MILESTONE PIPELINE (ACTION CENTER)
+     ═══════════════════════════════════════════════════════════ -->
+<div class="cd-panel">
+    <div class="cd-panel-header">
+        <div>
+            <h5 class="cd-panel-title">Agreed Milestone Pipeline &amp; Deliverables</h5>
+            <small class="text-muted">Review submissions, authorize adjustments, and release escrow payments sequentially</small>
+        </div>
+        <span class="badge bg-light text-secondary border small">{{ milestones|length }} Phase{{ milestones|length|pluralize }}</span>
     </div>
 
-    <div class="milestone-list">
+    <div class="milestone-pipeline">
         {% for ms in milestones %}
-            <div class="cd-milestone-card {% if ms.status == 'paid' %}ms-paid{% elif ms.status == 'submitted' %}ms-submitted{% elif ms.status == 'in_progress' %}ms-in-progress{% endif %}">
+            <div class="cd-ms-card {% if ms.status == 'paid' %}status-paid{% elif ms.status == 'submitted' %}status-submitted{% elif ms.status == 'in_progress' %}status-in-progress{% else %}status-locked{% endif %}">
                 <div class="d-flex justify-content-between align-items-start flex-wrap gap-2 mb-2">
                     <div>
-                        <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-                            <span class="badge {% if ms.status == 'paid' %}bg-success{% elif ms.status == 'approved' %}bg-primary{% elif ms.status == 'submitted' %}bg-warning text-dark{% elif ms.status == 'revision_requested' %}bg-danger text-white{% elif ms.status == 'in_progress' %}bg-info text-white{% else %}bg-secondary{% endif %} px-3 py-1 rounded-pill small">
-                                {{ ms.get_status_display }}
-                            </span>
-                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small">
+                        <div class="d-flex align-items-center gap-2 mb-1">
+                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill small fw-bold">
                                 Phase {{ ms.order }}: {{ ms.get_milestone_type_display }}
                             </span>
+                            <span class="badge {% if ms.status == 'paid' %}bg-success text-white{% elif ms.status == 'approved' %}bg-primary text-white{% elif ms.status == 'submitted' %}bg-warning text-dark{% elif ms.status == 'revision_requested' %}bg-danger text-white{% elif ms.status == 'in_progress' %}bg-info text-white{% else %}bg-secondary text-white{% endif %} rounded-pill small">
+                                {{ ms.get_status_display }}
+                            </span>
                         </div>
-
-                        <h5 class="fw-bold text-navy mb-1">{{ ms.display_title }}</h5>
+                        <h5 class="fw-bold text-navy mb-0">{{ ms.display_title }}</h5>
                         {% if ms.due_date %}
-                            <small class="text-muted d-block">Target Due Date: {{ ms.due_date|date:"M d, Y" }}</small>
+                            <small class="text-muted">Target Due Date: {{ ms.due_date|date:"M d, Y" }}</small>
                         {% endif %}
                     </div>
 
                     <div class="text-end">
-                        <span class="fw-bold text-navy fs-4">{% contract_money contract ms.amount %}</span>
-                        <small class="text-muted d-block">{{ contract.contract_currency|default:"INR" }} Escrow</small>
+                        <div class="fw-bold text-navy fs-4">{% contract_money contract ms.amount %}</div>
+                        <small class="text-muted">{{ contract.contract_currency|default:"INR" }} Escrow</small>
                     </div>
                 </div>
 
                 {% if ms.short_description %}
-                    <p class="text-secondary small mb-3" style="white-space: pre-line;">{{ ms.short_description }}</p>
+                    <p class="text-secondary small mb-2" style="white-space: pre-line;">{{ ms.short_description }}</p>
                 {% endif %}
 
-                <!-- Submission Deliverables Preview & View Work Trigger -->
+                <!-- Submission Deliverables Preview Box -->
                 {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
-                    <div class="p-3 rounded-3 bg-light border mb-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
-                        <div class="d-flex align-items-center gap-3">
-                            <div class="bg-primary-subtle text-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0" style="width: 40px; height: 40px; font-size: 1.15rem;">
-                                <i class="bi bi-folder-check"></i>
-                            </div>
-                            <div>
-                                <span class="fw-bold text-navy small d-block">Freelancer Deliverables &amp; Work</span>
-                                <span class="text-muted small" style="font-size: 0.78rem;">
-                                    {% if ms.submitted_at %}Submitted on {{ ms.submitted_at|date:"M d, Y H:i" }} &bull; {% endif %}
-                                    {% if ms.deliverable_link %}Live Demo/Git available &bull; {% endif %}
-                                    {% if ms.submission_file %}Files attached{% else %}Complete project documentation{% endif %}
-                                </span>
-                            </div>
+                    <div class="cd-deliverables-box">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-2">
+                            <strong class="text-navy small">
+                                <i class="bi bi-folder-check text-primary me-1"></i> Deliverables Handover
+                            </strong>
+                            {% if ms.submitted_at %}
+                                <small class="text-muted">{{ ms.submitted_at|date:"M d, Y - h:i A" }}</small>
+                            {% endif %}
                         </div>
-                        <div class="d-flex align-items-center gap-2">
+
+                        {% if ms.submission_notes %}
+                            <div class="p-2.5 bg-white rounded-2 border text-dark small mb-2" style="white-space: pre-line; max-height: 120px; overflow-y: auto;">
+                                {{ ms.submission_notes }}
+                            </div>
+                        {% endif %}
+
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
                             {% if ms.deliverable_link %}
-                                <a href="{{ ms.deliverable_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm py-1 px-3 rounded-pill fw-semibold" style="font-size: 0.8rem;">
-                                    <i class="bi bi-box-arrow-up-right me-1"></i> Demo / Repo
+                                <a href="{{ ms.deliverable_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary btn-sm py-1 px-3 rounded-pill fw-semibold">
+                                    <i class="bi bi-box-arrow-up-right me-1"></i> Live Demo / Repo
                                 </a>
                             {% endif %}
-                            <button type="button" class="btn btn-primary btn-sm rounded-pill px-3 py-1 fw-bold shadow-sm" data-bs-toggle="modal" data-bs-target="#viewWorkModal{{ ms.id }}" style="font-size: 0.82rem;">
-                                <i class="bi bi-eye me-1"></i> View Work &rarr;
-                            </button>
+                            {% if ms.submission_file %}
+                                <a href="{{ ms.submission_file.url }}" target="_blank" class="btn btn-outline-dark btn-sm py-1 px-3 rounded-pill fw-semibold bg-white border">
+                                    <i class="bi bi-cloud-arrow-down-fill text-primary me-1"></i> Download Files
+                                </a>
+                            {% endif %}
                         </div>
                     </div>
                 {% endif %}
 
-                <!-- Revision Notes if present -->
+                <!-- Revision Feedback if any -->
                 {% if ms.revision_notes %}
                     <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle text-warning-emphasis small mb-3">
-                        <strong class="d-block mb-1">Revision Requested by You:</strong>
+                        <strong class="d-block mb-1"><i class="bi bi-arrow-repeat me-1"></i>Revision Requested by You:</strong>
                         <p class="mb-0">{{ ms.revision_notes }}</p>
                     </div>
                 {% endif %}
 
-                <!-- Action Controls for Milestone -->
+                <!-- Action Controls -->
                 <div class="d-flex justify-content-end align-items-center gap-2 pt-3 border-top flex-wrap">
-                    {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
-                        <button type="button" class="btn btn-outline-primary btn-sm rounded-pill fw-bold px-3 py-2" data-bs-toggle="modal" data-bs-target="#viewWorkModal{{ ms.id }}">
-                            <i class="bi bi-eye me-1"></i> View Work
-                        </button>
-                    {% endif %}
-                    <!-- Case 1: Milestone Paid -->
                     {% if ms.status == 'paid' %}
                         <span class="badge bg-success-subtle text-success border border-success-subtle px-3 py-2 small fw-bold">
                             <i class="bi bi-check-circle-fill me-1"></i> Payment Verified &amp; Released
                         </span>
 
-                    <!-- Case 2: Work Submitted for Review (can_approve) -->
                     {% elif ms.can_approve %}
                         <button type="button" class="btn-cd-warning" data-bs-toggle="modal" data-bs-target="#revisionModal{{ ms.id }}">
-                            <i class="bi bi-arrow-repeat me-1"></i> Request Revision
+                            <i class="bi bi-arrow-repeat me-1"></i> Request Adjustment
                         </button>
                         <form method="POST" action="{% url 'client_contract_milestone_approve' contract.id ms.id %}" class="d-inline">
                             {% csrf_token %}
@@ -697,142 +511,38 @@
                             </button>
                         </form>
 
-                    <!-- Case 3: Ready for Escrow Payment (can_pay: either Advance or Approved Milestone) -->
                     {% elif ms.can_pay %}
                         <button type="button" class="btn-cd-primary" id="payBtn{{ ms.id }}" onclick="initiateRazorpayPayment('{{ ms.id }}', '{{ ms.amount }}', '{{ ms.title|escapejs }}')">
-                            {% if ms.milestone_type == 'advance' %}Pay Advance Initiation ({% contract_money contract ms.amount %}) &rarr;{% else %}Release Escrow Payment ({% contract_money contract ms.amount %}) &rarr;{% endif %}
+                            <i class="bi bi-shield-check me-1"></i>
+                            {% if ms.milestone_type == 'advance' %}Fund Advance Initiation ({% contract_money contract ms.amount %}) &rarr;{% else %}Release Escrow Payment ({% contract_money contract ms.amount %}) &rarr;{% endif %}
                         </button>
 
-                    <!-- Case 4: Revision Requested -->
                     {% elif ms.status == 'revision_requested' %}
                         <span class="text-warning fw-semibold small">
                             <i class="bi bi-arrow-repeat me-1"></i> Awaiting revised deliverables from freelancer...
                         </span>
 
-                    <!-- Case 5: In Progress -->
                     {% elif ms.status == 'in_progress' %}
                         <span class="text-primary small">
                             <i class="bi bi-hourglass-split me-1"></i> Freelancer is currently developing Phase {{ ms.order }} deliverables...
                         </span>
 
-                    <!-- Case 6: Locked -->
                     {% elif ms.is_locked %}
                         <span class="text-muted small">
-                            <i class="bi bi-lock-fill me-1"></i> Locked: Complete and settle Phase {{ ms.order|add:"-1" }} first.
+                            <i class="bi bi-lock-fill me-1"></i> Complete Phase {{ ms.order|add:"-1" }} first to unlock
                         </span>
 
                     {% else %}
-                        <span class="text-muted small">
-                            Pending initiation
-                        </span>
+                        <span class="text-muted small">Pending initiation</span>
                     {% endif %}
                 </div>
             </div>
 
-            <!-- Modal: View Freelancer Work & Deliverables -->
-            {% if ms.submission_notes or ms.submission_file or ms.deliverable_link %}
-            <div class="modal fade" id="viewWorkModal{{ ms.id }}" tabindex="-1" aria-labelledby="viewWorkModalLabel{{ ms.id }}" aria-hidden="true">
-                <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                        <div class="modal-header text-white p-4" style="background: #0F172A;">
-                            <div>
-                                <h5 class="modal-title fs-6 fw-bold mb-1" id="viewWorkModalLabel{{ ms.id }}">
-                                    <i class="bi bi-folder-check text-info me-2"></i>Freelancer Work &amp; Deliverables
-                                </h5>
-                                <div class="text-white-50 small">{{ ms.display_title }}</div>
-                            </div>
-                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-
-                        <div class="modal-body p-4 bg-light">
-                            <!-- Milestone Overview Pill Strip -->
-                            <div class="p-3 rounded-3 bg-white border mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div>
-                                    <span class="text-muted small d-block">Milestone Valuation</span>
-                                    <span class="fw-bold fs-5 text-dark">{% contract_money contract ms.amount %}</span>
-                                </div>
-                                <div>
-                                    <span class="text-muted small d-block">Status</span>
-                                    <span class="badge {% if ms.status == 'paid' %}bg-success{% elif ms.status == 'approved' %}bg-primary{% elif ms.status == 'submitted' %}bg-warning text-dark{% else %}bg-secondary{% endif %} rounded-pill px-3 py-1">
-                                        {{ ms.get_status_display }}
-                                    </span>
-                                </div>
-                                {% if ms.submitted_at %}
-                                <div>
-                                    <span class="text-muted small d-block">Submission Timestamp</span>
-                                    <span class="fw-semibold text-secondary small">{{ ms.submitted_at|date:"F d, Y - h:i A" }}</span>
-                                </div>
-                                {% endif %}
-                            </div>
-
-                            <!-- Deliverable Links & Files -->
-                            {% if ms.deliverable_link or ms.submission_file %}
-                            <div class="mb-4">
-                                <h6 class="fw-bold text-navy mb-2 small text-uppercase" style="letter-spacing: 0.05em;">
-                                    <i class="bi bi-link-45deg me-1 text-primary"></i>Deliverable Access Links &amp; Files
-                                </h6>
-                                <div class="d-flex gap-2 flex-wrap">
-                                    {% if ms.deliverable_link %}
-                                        <a href="{{ ms.deliverable_link }}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center">
-                                            <i class="bi bi-box-arrow-up-right me-2"></i>Open Live Demo / Git Repository
-                                        </a>
-                                    {% endif %}
-                                    {% if ms.submission_file %}
-                                        <a href="{{ ms.submission_file.url }}" target="_blank" class="btn btn-outline-dark btn-sm px-3 py-2 rounded-3 fw-bold d-inline-flex align-items-center bg-white border">
-                                            <i class="bi bi-cloud-arrow-down-fill me-2 text-primary"></i>Download Deliverables Package
-                                        </a>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- Full Work Submission Details -->
-                            {% if ms.submission_notes %}
-                            <div class="mb-3">
-                                <h6 class="fw-bold text-navy mb-2 small text-uppercase" style="letter-spacing: 0.05em;">
-                                    <i class="bi bi-card-text me-1 text-primary"></i>Submission Documentation &amp; Notes
-                                </h6>
-                                <div class="p-3 bg-white rounded-3 border shadow-sm text-dark small" style="white-space: pre-line; line-height: 1.65; max-height: 420px; overflow-y: auto;">
-{{ ms.submission_notes }}
-                                </div>
-                            </div>
-                            {% endif %}
-
-                            <!-- If Revision Notes were issued -->
-                            {% if ms.revision_notes %}
-                            <div class="p-3 rounded-3 bg-warning-subtle border border-warning-subtle text-warning-emphasis small mt-3">
-                                <strong class="d-block mb-1"><i class="bi bi-exclamation-triangle-fill me-1"></i>Revision Requested Feedback:</strong>
-                                <p class="mb-0">{{ ms.revision_notes }}</p>
-                            </div>
-                            {% endif %}
-                        </div>
-
-                        <div class="modal-footer border-0 p-3 bg-white d-flex justify-content-between align-items-center">
-                            <button type="button" class="btn btn-outline-secondary btn-sm rounded-pill px-4" data-bs-dismiss="modal">Close</button>
-                            {% if ms.can_approve %}
-                                <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-outline-warning btn-sm rounded-pill px-3 fw-bold" data-bs-toggle="modal" data-bs-target="#revisionModal{{ ms.id }}">
-                                        Request Revision
-                                    </button>
-                                    <form method="POST" action="{% url 'client_contract_milestone_approve' contract.id ms.id %}" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-success btn-sm rounded-pill px-4 fw-bold">
-                                            Approve Deliverables &rarr;
-                                        </button>
-                                    </form>
-                                </div>
-                            {% endif %}
-                        </div>
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Modal: Request Revision -->
+            <!-- Modal: Request Adjustment/Revision -->
             <div class="modal fade" id="revisionModal{{ ms.id }}" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">
                     <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
-                        <div class="modal-header bg-navy text-white p-4">
+                        <div class="modal-header text-white p-4" style="background: #0F172A;">
                             <h5 class="modal-title fs-6 fw-bold mb-0">Request Adjustments for {{ ms.display_title }}</h5>
                             <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
@@ -840,7 +550,7 @@
                             {% csrf_token %}
                             <div class="modal-body p-4">
                                 <label class="form-label small fw-bold text-navy mb-2">What adjustments or fixes are required?</label>
-                                <textarea name="revision_notes" class="form-control" rows="4" placeholder="Detail any API discrepancies, missing unit tests, or UI corrections..." required></textarea>
+                                <textarea name="revision_notes" class="form-control" rows="4" placeholder="Detail any discrepancies, missing requirements, or corrections..." required></textarea>
                             </div>
                             <div class="modal-footer border-0 p-3 bg-light">
                                 <button type="button" class="btn btn-outline-secondary btn-sm px-3" data-bs-dismiss="modal">Cancel</button>
@@ -858,12 +568,12 @@
     </div>
 </div>
 
-<!-- =========================================================================
-     5. PAYMENT & ESCROW TRANSACTION RECORDS
-     ========================================================================= -->
-<div class="cd-card">
-    <div class="cd-section-title">
-        <span>Payment &amp; Escrow Transaction Records</span>
+<!-- ═══════════════════════════════════════════════════════════
+     4. PAYMENT & INVOICE RECEIPTS
+     ═══════════════════════════════════════════════════════════ -->
+<div class="cd-panel">
+    <div class="cd-panel-header">
+        <h5 class="cd-panel-title">Payment &amp; Escrow Receipts</h5>
         <span class="badge bg-light text-secondary border small">Verified Invoices</span>
     </div>
 
@@ -872,10 +582,9 @@
             <thead class="table-light small">
                 <tr>
                     <th>Invoice #</th>
-                    <th>Payment Type</th>
+                    <th>Payment For</th>
                     <th>Amount</th>
                     <th>Payment Method</th>
-                    <th>Transaction Reference</th>
                     <th>Status</th>
                     <th>Date Paid</th>
                     <th class="text-end">Invoice</th>
@@ -890,20 +599,19 @@
                                 {{ p.get_payment_type_display|default:p.milestone.title }}
                             </span>
                         </td>
-                        <td class="fw-bold text-success">&#8377;{{ p.amount|floatformat:2 }}</td>
+                        <td class="fw-bold text-success">{% contract_money contract p.amount %}</td>
                         <td><span class="badge bg-light text-secondary border">{{ p.payment_method }}</span></td>
-                        <td><span class="font-monospace text-muted" style="font-size: 0.75rem;">{{ p.razorpay_payment_id|default:"pay_verified" }}</span></td>
-                        <td><span class="badge bg-success-subtle text-success">Completed &amp; Verified</span></td>
+                        <td><span class="badge bg-success-subtle text-success">Verified</span></td>
                         <td>{{ p.created_at|date:"M d, Y H:i" }}</td>
                         <td class="text-end">
-                            <a href="{% url 'client_invoice' p.id %}" target="_blank" class="btn btn-outline-primary btn-sm py-0 px-2" style="font-size: 0.75rem;">
+                            <a href="{% url 'client_invoice' p.id %}" target="_blank" class="btn btn-outline-primary btn-sm py-1 px-3 rounded-pill" style="font-size: 0.75rem;">
                                 View Invoice &rarr;
                             </a>
                         </td>
                     </tr>
                 {% empty %}
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-muted">No payments released for this contract yet.</td>
+                        <td colspan="7" class="text-center py-4 text-muted">No payments released for this contract yet.</td>
                     </tr>
                 {% endfor %}
             </tbody>
@@ -920,7 +628,7 @@ async function initiateRazorpayPayment(milestoneId, amount, title) {
     if (btn) {
         originalHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Opening Razorpay...';
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Opening Payment Gateway...';
     }
 
     try {
@@ -938,7 +646,7 @@ async function initiateRazorpayPayment(milestoneId, amount, title) {
 
         const orderData = await orderRes.json();
         if (orderData.status !== 'ok') {
-            alert('Payment Notice: ' + (orderData.message || 'Unable to initialize Razorpay order.'));
+            alert('Payment Notice: ' + (orderData.message || 'Unable to initialize order.'));
             if (btn) {
                 btn.disabled = false;
                 btn.innerHTML = originalHtml;
@@ -956,7 +664,7 @@ async function initiateRazorpayPayment(milestoneId, amount, title) {
             "order_id": orderData.order_id,
             "handler": async function (response) {
                 if (btn) {
-                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Verifying Escrow Payment...';
+                    btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status"></span> Verifying Payment...';
                 }
 
                 const verifyData = new URLSearchParams();

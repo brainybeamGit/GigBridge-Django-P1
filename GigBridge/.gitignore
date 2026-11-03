@@ -16,6 +16,8 @@ local_settings.py
 *.sqlite3
 *.db
 
+leaningai.py
+
 # Django media & static collections
 media/
 staticfiles/
