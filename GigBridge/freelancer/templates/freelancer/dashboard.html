@@ -870,7 +870,7 @@
                     <div class="col-6">
                         <div class="fd-stat-tile">
                             <div class="fd-stat-tile-label">Hourly Rate</div>
-                            <div class="fd-stat-tile-val text-primary">&#8377;{{ profile.hourly_rate|default:"0.00" }}<span style="font-size:0.7rem;font-weight:600;color:#64748B;">/hr</span></div>
+                            <div class="fd-stat-tile-val text-primary">{{ profile.hourly_rate|default:0|money }}<span style="font-size:0.7rem;font-weight:600;color:#64748B;">/hr</span></div>
                         </div>
                     </div>
                     <div class="col-6">

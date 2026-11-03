@@ -1,5 +1,6 @@
 {% extends 'freelancer/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}Active Contracts{% endblock %}
 {% block dashboard_title %}My Contracts &amp; Projects{% endblock %}
@@ -352,7 +353,7 @@
                 <span class="ctr-kpi-label">Contract Value</span>
                 <span class="ctr-kpi-index">VAL // 04</span>
             </div>
-            <div class="ctr-kpi-value">&#8377;{{ total_val|floatformat:0 }}</div>
+            <div class="ctr-kpi-value">{{ total_val|money }}</div>
             <p class="ctr-kpi-caption">Cumulative contract book</p>
         </div>
     </div>
@@ -420,9 +421,9 @@
                     <!-- Financial Valuation & Escrow Status -->
                     <div class="col-sm-6 col-lg-3 border-start-md">
                         <div class="small text-muted fw-bold text-uppercase letter-spacing-1 mb-1">Contract Valuation</div>
-                        <div class="fs-4 fw-bold text-dark mb-1">&#8377;{{ contract.total_amount }}</div>
+                        <div class="fs-4 fw-bold text-dark mb-1">{% contract_money contract contract.total_amount %}</div>
                         <div class="small text-muted">
-                            Advance: <strong class="{% if contract.is_advance_paid %}text-success{% else %}text-warning{% endif %}">&#8377;{{ contract.advance_amount|floatformat:2 }}</strong>
+                            Advance: <strong class="{% if contract.is_advance_paid %}text-success{% else %}text-warning{% endif %}">{% contract_money contract contract.advance_amount %}</strong>
                             {% if contract.is_advance_paid %}(Escrow Secured){% else %}(Pending){% endif %}
                         </div>
                     </div>
@@ -464,7 +465,7 @@
                                             <div class="text-muted" style="font-size: 0.72rem;">{{ ms.due_date|default:"Flexible timeline" }}</div>
                                         </div>
                                         <div class="text-end flex-shrink-0">
-                                            <div class="fw-bold text-dark">&#8377;{{ ms.amount }}</div>
+                                            <div class="fw-bold text-dark">{% contract_money contract ms.amount %}</div>
                                             <span class="badge {% if ms.status == 'approved' or ms.status == 'paid' %}bg-success-subtle text-success border border-success-subtle{% elif ms.status == 'submitted' %}bg-warning-subtle text-warning border border-warning-subtle{% else %}bg-light text-secondary border{% endif %} py-0 px-2" style="font-size: 0.65rem;">
                                                 {{ ms.get_status_display }}
                                             </span>

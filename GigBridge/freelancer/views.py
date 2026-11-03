@@ -172,10 +172,11 @@ def profile_view(request):
 
             response = redirect('freelancer_profile')
             response.set_cookie('gb_currency', updated_profile.display_currency, max_age=365*24*3600, samesite='Lax', path='/')
+            curr_sym = '₹' if updated_profile.display_currency == 'INR' else '$'
             if updated_profile.display_currency != old_currency:
-                messages.success(request, f"Your profile has been updated! Your prices are now shown in {updated_profile.display_currency}.")
+                messages.success(request, f"Your profile has been updated! Your prices are now shown in {updated_profile.display_currency} ({curr_sym}).")
             else:
-                messages.success(request, "Your profile has been updated successfully!")
+                messages.success(request, f"Your profile has been updated successfully! Prices are shown in {updated_profile.display_currency} ({curr_sym}).")
             return response
         else:
             messages.error(request, "Please correct the errors below.")
@@ -509,6 +510,7 @@ def earnings_view(request):
         'active_pipeline_value': active_pipeline_value,
         'completed_payouts_count': completed_payouts_count,
         'approved_milestones_count': approved_milestones_count,
+        'completed_contracts_count': contracts.filter(status='completed').count(),
         'total_count': payments_qs.count(),
         'status_filter': status_filter,
         'active_contracts': active_contracts[:5],

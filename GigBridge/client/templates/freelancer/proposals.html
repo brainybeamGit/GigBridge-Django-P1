@@ -1,5 +1,6 @@
 {% extends 'freelancer/dashboard_base.html' %}
 {% load static %}
+{% load currency_tags %}
 
 {% block breadcrumb_current %}My Proposals{% endblock %}
 {% block dashboard_title %}Submitted Proposals &amp; Bids{% endblock %}
@@ -412,7 +413,7 @@
                                 </span>
                             </td>
                             <td>
-                                <div class="fw-bold fs-6 text-dark">&#8377;{{ proposal.bid_amount }}</div>
+                                <div class="fw-bold fs-6 text-dark">{{ proposal.bid_amount|money:request.user }}</div>
                             </td>
                             <td>
                                 <span class="small text-muted">{{ proposal.delivery_days }} calendar days</span>

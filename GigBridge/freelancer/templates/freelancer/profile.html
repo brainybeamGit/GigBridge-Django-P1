@@ -397,7 +397,13 @@
                         </label>
                         {{ form.phone }}
                         <div id="flPhoneNotice" class="text-muted mt-1" style="font-size: 0.72rem;">
-                            <i class="bi bi-globe2 me-1 text-primary"></i> <span id="flPhoneNoticeText">India (+91) &bull; Prices in INR (₹)</span>
+                            <i class="bi bi-globe2 me-1 text-primary"></i> <span id="flPhoneNoticeText">
+                                {% if profile.country == 'US' or profile.phone_country_code == '+1' %}
+                                    <span class="badge bg-primary-subtle text-primary me-1">US</span> <strong>United States (+1)</strong> &bull; Currency: <strong>USD ($)</strong>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success me-1">IN</span> <strong>India (+91)</strong> &bull; Currency: <strong>INR (₹)</strong>
+                                {% endif %}
+                            </span>
                         </div>
                         {% if form.phone.errors %}<div class="text-danger small mt-1">{{ form.phone.errors.0 }}</div>{% endif %}
                     </div>
@@ -495,7 +501,7 @@
             <div class="row g-3">
                 <div class="col-sm-6 col-md-3">
                     <div class="p-3 rounded-3 border bg-light text-center">
-                        <div class="fw-bold fs-4 text-dark mb-0">&#8377;{{ total_earned|floatformat:0 }}</div>
+                        <div class="fw-bold fs-4 text-dark mb-0">{{ total_earned|money }}</div>
                         <small class="text-muted fw-semibold">Total Earned</small>
                     </div>
                 </div>
@@ -660,6 +666,16 @@
                 phoneEl.addEventListener('blur', syncFlPhone);
                 phoneEl.addEventListener('keyup', syncFlPhone);
                 syncFlPhone();
+
+                const formEl = phoneEl.closest('form');
+                if (formEl) {
+                    formEl.addEventListener('submit', function() {
+                        syncFlPhone();
+                        if (numberEl) {
+                            numberEl.value = phoneEl.value.replace(/[^0-9]/g, '');
+                        }
+                    });
+                }
             }
 
             // Real-time live hourly rate converter
