@@ -38,7 +38,7 @@
                     {% if budget_type %}<input type="hidden" name="budget_type" value="{{ budget_type }}">{% endif %}
                     {% if min_budget %}<input type="hidden" name="min_budget" value="{{ min_budget }}">{% endif %}
                     {% if max_budget %}<input type="hidden" name="max_budget" value="{{ max_budget }}">{% endif %}
-                    {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+                    {% if status_filter and status_filter != "all" %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
                     {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
 
                     <span class="gb-pl-search-icon"><i class="bi bi-search"></i></span>
@@ -70,7 +70,9 @@
                         <a href="?{% query_transform category=cat.slug page=None %}"
                            class="gb-pl-cat-chip {% if selected_category == cat.slug %}active{% endif %}">
                             <i class="bi {{ cat.icon|default:'bi-briefcase' }}"></i> {{ cat.name }}
-                            {% if cat.open_project_count %}
+                            {% if cat.total_projects_count %}
+                                <span class="gb-pl-cat-chip-count">{{ cat.total_projects_count }}</span>
+                            {% elif cat.open_project_count %}
                                 <span class="gb-pl-cat-chip-count">{{ cat.open_project_count }}</span>
                             {% endif %}
                         </a>
@@ -384,7 +386,13 @@
                                     </div>
 
                                     <a href="{% url 'project_detail' project.id %}" class="btn gb-pl-btn-bid">
-                                        <span>View &amp; Bid</span>
+                                        {% if project.status == 'open' %}
+                                            <span>View &amp; Bid</span>
+                                        {% elif project.status == 'in_progress' %}
+                                            <span>View Project</span>
+                                        {% else %}
+                                            <span>View Details</span>
+                                        {% endif %}
                                         <i class="bi bi-arrow-right"></i>
                                     </a>
                                 </div>
@@ -406,7 +414,7 @@
                                     <li>Clear or widen your minimum and maximum budget ranges.</li>
                                     <li>Select "All Categories" to view jobs across all disciplines.</li>
                                 </ul>
-                                <div class="d-flex justify-content-center gap-3 flex-wrap">
+                                <div class="d-flex justify-content-center gap-3 flex-wrap mb-4">
                                     <a href="{% url 'project_list' %}" class="btn gb-pl-btn-primary">
                                         <i class="bi bi-arrow-counterclockwise me-1"></i> Reset All Filters
                                     </a>
@@ -414,6 +422,46 @@
                                         <i class="bi bi-plus-circle me-1"></i> Post a Project Instead
                                     </a>
                                 </div>
+
+                                {% if suggested_projects %}
+                                    <div class="mt-4 pt-4 border-top text-start">
+                                        <h5 class="fw-bold text-navy mb-3">
+                                            <i class="bi bi-lightbulb text-warning me-2"></i>Other Available Projects You May Like:
+                                        </h5>
+                                        <div class="row g-3">
+                                            {% for sp in suggested_projects %}
+                                                <div class="col-md-6 col-12">
+                                                    <div class="card p-3 rounded-3 border border-light-subtle bg-white shadow-sm h-100 d-flex flex-column">
+                                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                                            <span class="badge bg-primary-subtle text-primary rounded-pill small">
+                                                                <i class="bi {{ sp.category.icon|default:'bi-briefcase' }}"></i> {{ sp.category.name|default:"General" }}
+                                                            </span>
+                                                            <span class="badge bg-light text-secondary rounded-pill border small">
+                                                                {{ sp.get_status_display }}
+                                                            </span>
+                                                        </div>
+                                                        <h6 class="fw-bold mb-1">
+                                                            <a href="{% url 'project_detail' sp.id %}" class="text-navy text-decoration-none">
+                                                                {{ sp.title }}
+                                                            </a>
+                                                        </h6>
+                                                        <p class="small text-muted mb-3 text-truncate">
+                                                            {{ sp.description }}
+                                                        </p>
+                                                        <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top border-light-subtle">
+                                                            <span class="fw-bold text-primary small">
+                                                                {% money_range sp.budget_min sp.budget_max request.user sp.budget_type %}
+                                                            </span>
+                                                            <a href="{% url 'project_detail' sp.id %}" class="btn btn-sm btn-outline-primary rounded-pill px-3">
+                                                                View
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                {% endif %}
                             </div>
                         </div>
                     {% endfor %}
