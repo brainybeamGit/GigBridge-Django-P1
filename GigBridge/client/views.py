@@ -1,3 +1,5 @@
+import os
+import json
 from django.utils.http import url_has_allowed_host_and_scheme
 
 from django.utils.cache import patch_vary_headers
@@ -410,6 +412,79 @@ def logout_view(request):
 
 
 
+def _send_otp_email(user, otp_code, title="GigBridge - Your Password Reset Verification Code"):
+    env_file = settings.BASE_DIR / '.env'
+    if env_file.exists():
+        try:
+            with open(env_file, 'r', encoding='utf-8') as _f:
+                for _line in _f:
+                    _line = _line.strip()
+                    if _line and not _line.startswith('#') and '=' in _line:
+                        _k, _v = _line.split('=', 1)
+                        _k = _k.strip()
+                        _v = _v.strip()
+                        if len(_v) >= 2 and ((_v[0] == '"' and _v[-1] == '"') or (_v[0] == "'" and _v[-1] == "'")):
+                            _v = _v[1:-1].strip()
+                        os.environ[_k] = _v
+        except Exception:
+            pass
+
+    from django.core.mail import get_connection, EmailMultiAlternatives
+
+    subject = title
+    body = (
+        f"Hello {user.first_name or user.username},\n\n"
+        f"Your 6-digit verification code to reset your GigBridge account password is:\n\n"
+        f"   {otp_code}\n\n"
+        f"This code is strictly valid for 10 minutes only.\n"
+        f"If you did not request this, please disregard this email.\n\n"
+        f"- The GigBridge Team"
+    )
+
+    host_user = os.getenv("EMAIL_HOST_USER", getattr(settings, 'EMAIL_HOST_USER', '')).strip().strip("'\"")
+    host_password = os.getenv("EMAIL_HOST_PASSWORD", getattr(settings, 'EMAIL_HOST_PASSWORD', '')).strip().strip("'\"").replace(" ", "")
+    from_email = os.getenv("DEFAULT_FROM_EMAIL", getattr(settings, 'DEFAULT_FROM_EMAIL', '')).strip().strip("'\"")
+    if not from_email:
+        from_email = f"GigBridge Support <{host_user}>" if host_user else "support@gigbridge.com"
+
+    backend_name = os.getenv("EMAIL_BACKEND", getattr(settings, 'EMAIL_BACKEND', 'django.core.mail.backends.smtp.EmailBackend')).strip().strip("'\"")
+    host = os.getenv("EMAIL_HOST", getattr(settings, 'EMAIL_HOST', 'smtp.gmail.com')).strip().strip("'\"")
+    port = int(str(os.getenv("EMAIL_PORT", getattr(settings, 'EMAIL_PORT', 587))).strip().strip("'\""))
+    use_tls = str(os.getenv("EMAIL_USE_TLS", getattr(settings, 'EMAIL_USE_TLS', True))).strip().strip("'\"").lower() in ('1', 'true', 'yes', 'on')
+
+    try:
+        connection = get_connection(
+            backend=backend_name,
+            host=host,
+            port=port,
+            username=host_user,
+            password=host_password,
+            use_tls=use_tls,
+            fail_silently=False
+        )
+
+        email_msg = EmailMultiAlternatives(
+            subject=subject,
+            body=body,
+            from_email=from_email,
+            to=[user.email],
+            connection=connection
+        )
+        email_msg.send(fail_silently=False)
+        print(f"\n[GigBridge Email Delivered] Verification code {otp_code} dispatched successfully to {user.email}\n")
+        return True, None
+    except Exception as e:
+        err = str(e)
+        print("\n" + "="*70)
+        print(f"[GigBridge EMAIL ERROR - VERIFICATION CODE DELIVERY FAILED]")
+        print(f"Recipient Email : {user.email}")
+        print(f"SMTP Error      : {err}")
+        print(f">>> YOUR 6-DIGIT VERIFICATION CODE (OTP) IS: {otp_code} <<<")
+        print("Validity: 10 minutes.")
+        print("="*70 + "\n")
+        return False, err
+
+
 def forgot_password_view(request):
     default_email = request.user.email if request.user.is_authenticated else ''
 
@@ -439,40 +514,7 @@ def forgot_password_view(request):
         request.session['reset_email'] = user.email
         request.session['otp_verified'] = False
 
-        # Attempt sending via configured email backend
-        email_sent = False
-        smtp_error_message = None
-        try:
-            from django.core.mail import send_mail
-            subject = "GigBridge - Your Password Reset Verification Code"
-            body = (
-                f"Hello {user.first_name or user.username},\n\n"
-                f"Your 6-digit verification code to reset your GigBridge account password is:\n\n"
-                f"   {otp_obj.otp}\n\n"
-                f"This code is strictly valid for 10 minutes only.\n"
-                f"If you did not request this, please disregard this email.\n\n"
-                f"- The GigBridge Team"
-            )
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER or 'support@gigbridge.com'
-            send_mail(
-                subject=subject,
-                message=body,
-                from_email=from_email,
-                recipient_list=[user.email],
-                fail_silently=False
-            )
-            email_sent = True
-        except Exception as e:
-            smtp_error_message = str(e)
-            print("\n" + "="*70)
-            print(f"[GigBridge EMAIL ERROR - VERIFICATION CODE DELIVERY FAILED]")
-            print(f"Recipient Email : {user.email}")
-            print(f"SMTP Error      : {smtp_error_message}")
-            print(f">>> YOUR 6-DIGIT VERIFICATION CODE (OTP) IS: {otp_obj.otp} <<<")
-            print("Validity: 10 minutes.")
-            print("="*70 + "\n")
-
-        print(f"\n[GigBridge Password Reset] OTP for {user.email}: {otp_obj.otp} (Valid 10 mins)\n")
+        email_sent, smtp_error_message = _send_otp_email(user, otp_obj.otp)
 
         parts = user.email.split('@')
         masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
@@ -624,42 +666,11 @@ def resend_otp_view(request):
     request.session['reset_otp_id'] = otp_obj.id
     request.session['otp_verified'] = False
 
+    email_sent, smtp_error_message = _send_otp_email(user, otp_obj.otp, title="GigBridge - Your New Verification Code")
+
     parts = user.email.split('@')
     masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
     masked_email = f"{masked_local}@{parts[1]}" if len(parts) > 1 else user.email
-
-    email_sent = False
-    smtp_error_message = None
-    try:
-        from django.core.mail import send_mail
-        subject = "GigBridge - Your New Verification Code"
-        body = (
-            f"Hello {user.first_name or user.username},\n\n"
-            f"Your new 6-digit verification code to reset your GigBridge account password is:\n\n"
-            f"   {otp_obj.otp}\n\n"
-            f"This code is strictly valid for 10 minutes only.\n"
-            f"- The GigBridge Team"
-        )
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER or 'support@gigbridge.com'
-        send_mail(
-            subject=subject,
-            message=body,
-            from_email=from_email,
-            recipient_list=[user.email],
-            fail_silently=False
-        )
-        email_sent = True
-    except Exception as e:
-        smtp_error_message = str(e)
-        print("\n" + "="*70)
-        print("[GigBridge EMAIL ERROR - RESEND OTP DELIVERY FAILED]")
-        print(f"Recipient Email : {user.email}")
-        print(f"SMTP Error      : {smtp_error_message}")
-        print(f">>> YOUR 6-DIGIT RESEND VERIFICATION CODE (OTP) IS: {otp_obj.otp} <<<")
-        print("Validity: 10 minutes.")
-        print("="*70 + "\n")
-
-    print(f"\n[GigBridge Password Reset] Resent OTP for {user.email}: {otp_obj.otp} (Valid 10 mins)\n")
 
     if email_sent:
         msg = f"A fresh 6-digit verification code has been dispatched to {masked_email}."
