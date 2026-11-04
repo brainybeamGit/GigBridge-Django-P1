@@ -430,6 +430,7 @@ def _send_otp_email(user, otp_code, title="GigBridge - Your Password Reset Verif
             pass
 
     from django.core.mail import get_connection, EmailMultiAlternatives
+    from django.template.loader import render_to_string
 
     subject = title
     body = (
@@ -440,6 +441,16 @@ def _send_otp_email(user, otp_code, title="GigBridge - Your Password Reset Verif
         f"If you did not request this, please disregard this email.\n\n"
         f"- The GigBridge Team"
     )
+
+    html_content = None
+    try:
+        html_content = render_to_string('emails/otp_verification_email.html', {
+            'user': user,
+            'otp_code': otp_code,
+            'validity_minutes': 10,
+        })
+    except Exception as _render_err:
+        print(f"[GigBridge Email Notice] Could not render HTML email: {_render_err}")
 
     host_user = os.getenv("EMAIL_HOST_USER", getattr(settings, 'EMAIL_HOST_USER', '')).strip().strip("'\"")
     host_password = os.getenv("EMAIL_HOST_PASSWORD", getattr(settings, 'EMAIL_HOST_PASSWORD', '')).strip().strip("'\"").replace(" ", "")
@@ -470,6 +481,8 @@ def _send_otp_email(user, otp_code, title="GigBridge - Your Password Reset Verif
             to=[user.email],
             connection=connection
         )
+        if html_content:
+            email_msg.attach_alternative(html_content, "text/html")
         email_msg.send(fail_silently=False)
         print(f"\n[GigBridge Email Delivered] Verification code {otp_code} dispatched successfully to {user.email}\n")
         return True, None
