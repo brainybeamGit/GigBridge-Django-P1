@@ -391,8 +391,17 @@ def client_approve_view(request, user_id):
         profile = client_user.profile
         profile.is_approved = not profile.is_approved
         profile.save(update_fields=['is_approved'])
-        action_text = "approved and can now post projects" if profile.is_approved else "unapproved (pending review)"
-        messages.success(request, f"Client '{client_user.username}' has been successfully {action_text}.")
+
+        if profile.is_approved:
+            from client.email_service import send_client_approved_email
+            email_sent, _ = send_client_approved_email(request, client_user, profile)
+            if email_sent:
+                messages.success(request, f"Client '{client_user.username}' has been approved and notified via email at {client_user.email}.")
+            else:
+                messages.success(request, f"Client '{client_user.username}' has been approved and can now post projects.")
+        else:
+            messages.info(request, f"Client '{client_user.username}' approval has been revoked (account is now pending review).")
+
     return redirect('adminpanel_clients')
 
 

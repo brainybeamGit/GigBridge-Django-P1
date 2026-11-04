@@ -1,3 +1,4 @@
+from .email_service import send_client_registered_email, send_freelancer_welcome_email, send_otp_email
 import os
 import json
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -184,7 +185,7 @@ def register_view(request):
 
                 if selected_role == 'client':
 
-                    UserProfile.objects.create(
+                    client_profile = UserProfile.objects.create(
 
                         user=user,
 
@@ -208,19 +209,21 @@ def register_view(request):
 
                     )
 
+                    send_client_registered_email(request, user, client_profile)
+
                     messages.success(
 
                         request,
 
                         f"Welcome to GigBridge, {user.first_name}! Your client registration has been submitted. "
 
-                        f"Your account is pending administrator verification before you can post projects. You may now sign in."
+                        f"A confirmation email has been dispatched to {user.email}. Your account is pending administrator verification before you can post projects."
 
                     )
 
                 else:
 
-                    UserProfile.objects.create(
+                    fl_profile = UserProfile.objects.create(
 
                         user=user,
 
@@ -244,11 +247,13 @@ def register_view(request):
 
                     )
 
+                    send_freelancer_welcome_email(request, user, fl_profile)
+
                     messages.success(
 
                         request,
 
-                        f"Welcome to GigBridge, {user.first_name}! Your freelancer profile has been created successfully. "
+                        f"Welcome to GigBridge, {user.first_name}! Your freelancer profile has been created and a welcome email has been sent to {user.email}. "
 
                         f"Please sign in with your credentials to get started."
 
@@ -527,7 +532,7 @@ def forgot_password_view(request):
         request.session['reset_email'] = user.email
         request.session['otp_verified'] = False
 
-        email_sent, smtp_error_message = _send_otp_email(user, otp_obj.otp)
+        email_sent, smtp_error_message = send_otp_email(user, otp_obj.otp)
 
         parts = user.email.split('@')
         masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
@@ -679,7 +684,7 @@ def resend_otp_view(request):
     request.session['reset_otp_id'] = otp_obj.id
     request.session['otp_verified'] = False
 
-    email_sent, smtp_error_message = _send_otp_email(user, otp_obj.otp, title="GigBridge - Your New Verification Code")
+    email_sent, smtp_error_message = send_otp_email(user, otp_obj.otp, title="GigBridge - Your New Verification Code")
 
     parts = user.email.split('@')
     masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
