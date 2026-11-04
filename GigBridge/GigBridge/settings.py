@@ -28,7 +28,7 @@ if env_file.exists():
 
 
 # Quick-start development settings - unsuitable for production
-SECRET_KEY = 'django-insecure-!ev#@c%+&0!hc0c+j3m1$saq01!%nzer1kha4wit@&t+%dkc34'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-!ev#@c%+&0!hc0c+j3m1$saq01!%nzer1kha4wit@&t+%dkc34')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
@@ -161,7 +161,7 @@ if "<" not in _raw_from and "@" in _raw_from:
 else:
     DEFAULT_FROM_EMAIL = _raw_from
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", EMAIL_HOST_USER).strip().strip("'\"")
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", EMAIL_HOST_USER or "support@gigbridge.com").strip().strip("'\"")
 EMAIL_TIMEOUT = 10
 
 # Messages tags mapping
@@ -175,8 +175,8 @@ MESSAGE_TAGS = {
 }
 
 # Razorpay Payment Gateway
-RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', 'your_razorpay_key_id_here')
-RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', 'your_razorpay_key_secret_here')
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID', '').strip().strip(''"')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET', '').strip().strip(''"')
 RAZORPAY_WEBHOOK_SECRET = os.getenv('RAZORPAY_WEBHOOK_SECRET', '')
 
 

@@ -220,8 +220,12 @@
                     </p>
                 </div>
                 <div class="st-card-footer">
-                    <span>Gateway Identifier:</span>
-                    <strong class="text-dark font-monospace">{{ razorpay_key_id|slice:":8" }}...</strong>
+                    <span>Gateway Status:</span>
+                    {% if razorpay_configured %}
+                    <strong class="text-success font-monospace"><i class="bi bi-shield-check me-1"></i>Configured in .env</strong>
+                    {% else %}
+                    <strong class="text-muted font-monospace"><i class="bi bi-dash-circle me-1"></i>Not configured</strong>
+                    {% endif %}
                 </div>
             </div>
         </div>

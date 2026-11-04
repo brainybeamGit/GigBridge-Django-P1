@@ -1338,7 +1338,7 @@ def admin_settings_view(request):
         'rate_obj': rate_obj,
         'env_rate': env_rate,
         'payment_currency': payment_currency,
-        'razorpay_key_id': getattr(settings, 'RAZORPAY_KEY_ID', ''),
+        'razorpay_configured': bool(getattr(settings, 'RAZORPAY_KEY_ID', '')),
         'base_currency': 'INR',
     }
     return render(request, 'adminpanel/settings.html', context)
