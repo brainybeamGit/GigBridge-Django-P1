@@ -239,3 +239,130 @@ def send_otp_email(user, otp_code, title="GigBridge - Your Password Reset Verifi
         print("Validity: 10 minutes.")
         print("="*70 + "\n")
         return False, err
+
+
+
+def send_payment_received_freelancer_email(request, payment):
+    """Notify freelancer that a client has completed milestone payment into escrow."""
+    if not payment or not payment.freelancer or not payment.freelancer.email:
+        return False, "Freelancer has no email address."
+
+    try:
+        connection, from_email, _ = _get_smtp_connection()
+        contract = payment.contract
+        project = contract.project if contract else None
+        milestone = payment.milestone
+        client_name = payment.client.first_name or payment.client.username
+        project_title = project.title if project else "Milestone Contract"
+
+        subject = f"GigBridge - Payment Received for Project: {project_title}"
+
+        try:
+            contract_url = request.build_absolute_uri(reverse('freelancer_contract_detail', kwargs={'pk': contract.id}))
+        except Exception:
+            contract_url = f"http://127.0.0.1:8000/freelancer/contracts/{contract.id}/"
+
+        context = {
+            'freelancer': payment.freelancer,
+            'client_name': client_name,
+            'payment': payment,
+            'contract': contract,
+            'project': project,
+            'milestone': milestone,
+            'contract_url': contract_url,
+        }
+        html_content = render_to_string('emails/payment_freelancer_notification.html', context)
+        amt_str = f"${payment.amount:,.2f} USD" if payment.currency == 'USD' else f"₹{payment.base_amount_inr or payment.amount:,.2f} INR"
+        plain_body = (
+            f"Hello {payment.freelancer.first_name or payment.freelancer.username},\n\n"
+            f"Great news! Client {client_name} has completed payment of {amt_str} for milestone '{milestone.title if milestone else 'Contract Milestone'}' on project '{project_title}'.\n\n"
+            f"Status: Funded & Protected in Escrow\n"
+            f"Invoice Reference: {payment.invoice_number}\n"
+            f"Payment ID: {payment.razorpay_payment_id}\n\n"
+            f"View Contract: {contract_url}\n\n"
+            f"- The GigBridge Team"
+        )
+
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_body,
+            from_email=from_email,
+            to=[payment.freelancer.email],
+            connection=connection
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=False)
+        print(f"\n[GigBridge Email Delivered] Freelancer Payment Notification sent to {payment.freelancer.email}\n")
+        return True, None
+    except Exception as e:
+        err = str(e)
+        print(f"\n[GigBridge Email Notice] Freelancer payment email failed to send to {payment.freelancer.email}: {err}\n")
+        return False, err
+
+
+def send_payment_receipt_client_email(request, payment):
+    """Send payment receipt and confirmation to client who funded milestone."""
+    if not payment or not payment.client or not payment.client.email:
+        return False, "Client has no email address."
+
+    try:
+        connection, from_email, _ = _get_smtp_connection()
+        contract = payment.contract
+        project = contract.project if contract else None
+        milestone = payment.milestone
+        freelancer_name = payment.freelancer.first_name or payment.freelancer.username
+        project_title = project.title if project else "Milestone Contract"
+
+        subject = f"GigBridge - Payment Receipt for Project: {project_title}"
+
+        try:
+            invoice_url = request.build_absolute_uri(reverse('client_invoice', kwargs={'pk': payment.id}))
+        except Exception:
+            invoice_url = f"http://127.0.0.1:8000/client/payments/{payment.id}/invoice/"
+
+        try:
+            contract_url = request.build_absolute_uri(reverse('client_contract_detail', kwargs={'pk': contract.id}))
+        except Exception:
+            contract_url = f"http://127.0.0.1:8000/client/contracts/{contract.id}/"
+
+        context = {
+            'client': payment.client,
+            'freelancer_name': freelancer_name,
+            'payment': payment,
+            'contract': contract,
+            'project': project,
+            'milestone': milestone,
+            'invoice_url': invoice_url,
+            'contract_url': contract_url,
+        }
+        html_content = render_to_string('emails/payment_client_receipt.html', context)
+        amt_str = f"${payment.amount:,.2f} USD" if payment.currency == 'USD' else f"₹{payment.amount:,.2f} INR"
+        plain_body = (
+            f"Hello {payment.client.first_name or payment.client.username},\n\n"
+            f"Thank you for your payment. Your milestone payment has been processed and safely locked in escrow on GigBridge.\n\n"
+            f"Project: {project_title}\n"
+            f"Milestone: {milestone.title if milestone else 'Contract Milestone'}\n"
+            f"Freelancer: {freelancer_name}\n"
+            f"Amount Paid: {amt_str}\n"
+            f"Invoice Reference: {payment.invoice_number}\n"
+            f"Gateway Ref: {payment.razorpay_payment_id}\n\n"
+            f"View Invoice: {invoice_url}\n"
+            f"Manage Contract: {contract_url}\n\n"
+            f"- The GigBridge Team"
+        )
+
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body=plain_body,
+            from_email=from_email,
+            to=[payment.client.email],
+            connection=connection
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send(fail_silently=False)
+        print(f"\n[GigBridge Email Delivered] Client Payment Receipt sent to {payment.client.email}\n")
+        return True, None
+    except Exception as e:
+        err = str(e)
+        print(f"\n[GigBridge Email Notice] Client payment receipt failed to send to {payment.client.email}: {err}\n")
+        return False, err

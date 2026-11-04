@@ -1,4 +1,4 @@
-from .email_service import send_client_registered_email, send_freelancer_welcome_email, send_otp_email
+from .email_service import send_client_registered_email, send_freelancer_welcome_email, send_otp_email, send_payment_received_freelancer_email, send_payment_receipt_client_email
 import os
 import json
 from django.utils.http import url_has_allowed_host_and_scheme
@@ -3552,6 +3552,13 @@ def client_payment_verify_view(request):
             redirect_url = reverse('client_contract_detail', kwargs={'pk': contract_locked.id})
 
 
+
+    # Send payment emails to Freelancer and Client
+    try:
+        send_payment_received_freelancer_email(request, payment)
+        send_payment_receipt_client_email(request, payment)
+    except Exception as _mail_err:
+        print(f"[GigBridge Payment Email Error]: {_mail_err}")
 
     messages.success(request, success_msg)
 
