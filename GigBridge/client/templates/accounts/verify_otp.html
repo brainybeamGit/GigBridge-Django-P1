@@ -658,6 +658,18 @@
                     Enter the 6-digit security code dispatched to <strong>{{ masked_email }}</strong>.
                 </p>
 
+                {% if dev_otp %}
+                    <div style="background-color: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 18px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span><i class="bi bi-shield-check me-1 text-success"></i> <strong>Dev Mode Code:</strong></span>
+                            <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: 3px; color: #15803d; font-family: monospace;">{{ dev_otp }}</span>
+                        </div>
+                        <div style="font-size: 0.74rem; color: #166534; margin-top: 4px; opacity: 0.9;">
+                            Active in local development mode (<code>DEBUG=True</code>). Also logged in your server console.
+                        </div>
+                    </div>
+                {% endif %}
+
                 <form method="POST" action="{% url 'verify_otp' %}" id="otpForm">
                     {% csrf_token %}
 

@@ -17,7 +17,12 @@ if env_file.exists():
                 _line = _line.strip()
                 if _line and not _line.startswith('#') and '=' in _line:
                     _k, _v = _line.split('=', 1)
-                    os.environ.setdefault(_k.strip(), _v.strip())
+                    _k = _k.strip()
+                    _v = _v.strip()
+                    # Strip enclosing quotes if present in .env
+                    if len(_v) >= 2 and ((_v[0] == '"' and _v[-1] == '"') or (_v[0] == "'" and _v[-1] == "'")):
+                        _v = _v[1:-1].strip()
+                    os.environ[_k] = _v
     except Exception:
         pass
 
@@ -136,20 +141,27 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_BACKEND = os.getenv(
     "EMAIL_BACKEND",
     "django.core.mail.backends.smtp.EmailBackend",
-)
-EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
-EMAIL_USE_TLS = str(os.getenv("EMAIL_USE_TLS", "True")).strip().lower() in {
+).strip().strip("'\"")
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com").strip().strip("'\"")
+EMAIL_PORT = int(str(os.getenv("EMAIL_PORT", "587")).strip().strip("'\""))
+EMAIL_USE_TLS = str(os.getenv("EMAIL_USE_TLS", "True")).strip().strip("'\"").lower() in {
     "1",
     "true",
     "yes",
     "on",
 }
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "ishangodhani7@gmail.com")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "njrawjcvtdqnrtdx").replace(" ", "")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER or "ishangodhani7@gmail.com")
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "").strip().strip("'\"")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "").strip().strip("'\"").replace(" ", "")
+_raw_from = os.getenv("DEFAULT_FROM_EMAIL", f"GigBridge Support <{EMAIL_HOST_USER}>").strip().strip("'\"")
+if "<" not in _raw_from and "@" in _raw_from:
+    _parts = _raw_from.split()
+    _email_addr = _parts[-1]
+    _display_name = " ".join(_parts[:-1]) or "GigBridge Support"
+    DEFAULT_FROM_EMAIL = f"{_display_name} <{_email_addr}>"
+else:
+    DEFAULT_FROM_EMAIL = _raw_from
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
-SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", EMAIL_HOST_USER)
+SUPPORT_EMAIL = os.getenv("SUPPORT_EMAIL", EMAIL_HOST_USER).strip().strip("'\"")
 EMAIL_TIMEOUT = 10
 
 # Messages tags mapping

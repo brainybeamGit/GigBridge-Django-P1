@@ -411,223 +411,140 @@ def logout_view(request):
 
 
 def forgot_password_view(request):
-
     default_email = request.user.email if request.user.is_authenticated else ''
 
-
-
     if request.method == 'POST':
-
         raw_email = request.POST.get('email', '').strip()
-
         if not raw_email and request.user.is_authenticated and request.user.email:
-
             raw_email = request.user.email
 
-
-
         if not raw_email:
-
             messages.error(request, "Please enter your registered email address.")
-
             return render(request, 'accounts/forgot_password.html', {'entered_email': default_email})
 
-
-
         user = User.objects.filter(email__iexact=raw_email).first()
-
         if not user:
-
             user = User.objects.filter(username__iexact=raw_email).first()
 
-
-
         if not user or not user.email:
-
             messages.error(request, "No account was found with that email address. Please check and try again.")
-
             return render(request, 'accounts/forgot_password.html', {'entered_email': raw_email})
 
-
-
         # Generate 6-digit OTP (10 minutes validity)
-
         otp_obj = PasswordResetOTP.generate_otp(user=user, email=user.email)
 
-
-
         # Store in session
-
         request.session['reset_otp_id'] = otp_obj.id
-
         request.session['reset_user_id'] = user.id
-
         request.session['reset_email'] = user.email
-
         request.session['otp_verified'] = False
 
-
-
-        # Send via email backend
-
+        # Attempt sending via configured email backend
+        email_sent = False
+        smtp_error_message = None
         try:
-
             from django.core.mail import send_mail
-
-            subject = "GigBridge — Your Password Reset Verification Code"
-
+            subject = "GigBridge - Your Password Reset Verification Code"
             body = (
-
                 f"Hello {user.first_name or user.username},\n\n"
-
                 f"Your 6-digit verification code to reset your GigBridge account password is:\n\n"
-
                 f"   {otp_obj.otp}\n\n"
-
                 f"This code is strictly valid for 10 minutes only.\n"
-
                 f"If you did not request this, please disregard this email.\n\n"
-
-                f"— The GigBridge Team"
-
+                f"- The GigBridge Team"
             )
-
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', None) or settings.EMAIL_HOST_USER or 'support@gigbridge.com'
             send_mail(
-
                 subject=subject,
-
                 message=body,
-
-                from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@gigbridge.com'),
-
+                from_email=from_email,
                 recipient_list=[user.email],
-
-                fail_silently=True
-
+                fail_silently=False
             )
-
-        except Exception:
-
-            pass
-
-
+            email_sent = True
+        except Exception as e:
+            smtp_error_message = str(e)
+            print("\n" + "="*70)
+            print(f"[GigBridge EMAIL DELIVERY NOTICE] Could not send via SMTP to: {user.email}")
+            print(f"SMTP Reason: {e}")
+            print(f">>> YOUR 6-DIGIT VERIFICATION CODE (OTP) IS: {otp_obj.otp} <<<")
+            print("Valid for 10 minutes.")
+            print("="*70 + "\n")
 
         print(f"\n[GigBridge Password Reset] OTP for {user.email}: {otp_obj.otp} (Valid 10 mins)\n")
 
-
-
         parts = user.email.split('@')
-
         masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
-
         masked_email = f"{masked_local}@{parts[1]}" if len(parts) > 1 else user.email
 
-
-
-        messages.info(request, f"A 6-digit verification code has been sent to {masked_email}. Valid for 10 minutes.")
+        if email_sent:
+            messages.success(request, f"A 6-digit verification code has been sent to {masked_email}. Valid for 10 minutes.")
+        else:
+            if settings.DEBUG:
+                messages.warning(
+                    request,
+                    f"Email delivery via SMTP could not connect ({smtp_error_message}). "
+                    f"In Dev Mode (DEBUG=True), your 6-digit verification code is: {otp_obj.otp} (also printed in server terminal)."
+                )
+            else:
+                messages.info(request, f"A 6-digit verification code has been dispatched to {masked_email}. Valid for 10 minutes.")
 
         return redirect('verify_otp')
-
-
 
     return render(request, 'accounts/forgot_password.html', {'entered_email': default_email})
 
 
-
-
-
 def verify_otp_view(request):
-
     otp_id = request.session.get('reset_otp_id')
-
     user_id = request.session.get('reset_user_id')
 
-
-
     if not otp_id or not user_id:
-
         messages.warning(request, "Please request a password reset code first.")
-
         return redirect('forgot_password')
-
-
 
     otp_obj = PasswordResetOTP.objects.filter(id=otp_id, user_id=user_id).first()
-
     if not otp_obj or not otp_obj.is_valid():
-
         messages.error(request, "Your verification session has expired (10-minute limit). Please request a new code.")
-
         return redirect('forgot_password')
 
-
-
     user_email = request.session.get('reset_email', otp_obj.email)
-
     parts = user_email.split('@')
-
     masked_local = (parts[0][0] + '***') if len(parts[0]) > 1 else '***'
-
     masked_email = f"{masked_local}@{parts[1]}" if len(parts) > 1 else user_email
 
-
+    dev_otp = otp_obj.otp if settings.DEBUG else None
+    context = {
+        'masked_email': masked_email,
+        'dev_otp': dev_otp,
+    }
 
     if request.method == 'POST':
-
         otp_digits = [request.POST.get(f'digit_{i}', '').strip() for i in range(1, 7)]
-
         combined_digits = "".join(otp_digits)
-
         raw_otp = (request.POST.get('otp', '').strip() or combined_digits).strip()
 
-
-
         if not raw_otp or len(raw_otp) != 6 or not raw_otp.isdigit():
-
             messages.error(request, "Please enter all 6 numeric digits of your verification code.")
-
-            return render(request, 'accounts/verify_otp.html', {'masked_email': masked_email})
-
-
+            return render(request, 'accounts/verify_otp.html', context)
 
         # Check 10-minute limit
-
         if not otp_obj.is_valid():
-
             messages.error(request, "Your verification code has expired (10-minute limit). Please request a new one.")
-
             return redirect('forgot_password')
 
-
-
         if raw_otp != otp_obj.otp:
-
             messages.error(request, "Invalid verification code. Please check and try again.")
-
-            return render(request, 'accounts/verify_otp.html', {'masked_email': masked_email})
-
-
+            return render(request, 'accounts/verify_otp.html', context)
 
         # Successfully verified
-
         otp_obj.is_verified = True
-
         otp_obj.save(update_fields=['is_verified'])
-
         request.session['otp_verified'] = True
 
-
-
-        messages.success(request, "Code verified successfully! Please enter your new password.")
-
+        messages.success(request, "Verification successful! Please choose a new secure password.")
         return redirect('reset_password')
 
-
-
-    return render(request, 'accounts/verify_otp.html', {'masked_email': masked_email})
-
-
-
+    return render(request, 'accounts/verify_otp.html', context)
 
 
 def reset_password_view(request):
@@ -2505,8 +2422,6 @@ def client_contracts_view(request):
     if not _require_client(request):
 
         return redirect('home')
-
-
 
     all_contracts = Contract.objects.filter(client=request.user).select_related(
 
