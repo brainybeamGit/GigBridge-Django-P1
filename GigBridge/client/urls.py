@@ -8,6 +8,7 @@ urlpatterns = [
     path('accounts/logout/', views.logout_view, name='logout'),
     path('accounts/forgot-password/', views.forgot_password_view, name='forgot_password'),
     path('accounts/verify-otp/', views.verify_otp_view, name='verify_otp'),
+    path('accounts/resend-otp/', views.resend_otp_view, name='resend_otp'),
     path('accounts/reset-password/', views.reset_password_view, name='reset_password'),
 
     # ─── Public ───

@@ -561,6 +561,60 @@
                 font-size: 1.5rem;
             }
         }
+    
+        .auth-luxe-otp-digit.is-invalid {
+            border-color: #ef4444 !important;
+            background-color: #fef2f2 !important;
+            color: #b91c1c !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18) !important;
+        }
+
+        .auth-luxe-otp-digit.is-valid {
+            border-color: #22c55e !important;
+            background-color: #f0fdf4 !important;
+            color: #15803d !important;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18) !important;
+        }
+
+        @keyframes otpShake {
+            0%, 100% { transform: translateX(0); }
+            15%, 45%, 75% { transform: translateX(-6px); }
+            30%, 60%, 90% { transform: translateX(6px); }
+        }
+
+        .otp-shake {
+            animation: otpShake 0.42s ease-in-out;
+        }
+
+        .auth-luxe-feedback {
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.85rem;
+            line-height: 1.4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .auth-luxe-feedback.feedback-error {
+            background-color: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+        }
+
+        .auth-luxe-feedback.feedback-success {
+            background-color: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        .auth-luxe-feedback.feedback-info {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+        }
+
     </style>
 </head>
 <body class="auth-luxe">
@@ -658,25 +712,13 @@
                     Enter the 6-digit security code dispatched to <strong>{{ masked_email }}</strong>.
                 </p>
 
-                {% if dev_otp %}
-                    <div style="background-color: #f0fdf4; border: 1.5px solid #86efac; color: #166534; padding: 12px 14px; border-radius: 8px; font-size: 0.85rem; margin-bottom: 18px;">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <span><i class="bi bi-shield-check me-1 text-success"></i> <strong>Dev Mode Code:</strong></span>
-                            <span style="font-size: 1.25rem; font-weight: 800; letter-spacing: 3px; color: #15803d; font-family: monospace;">{{ dev_otp }}</span>
-                        </div>
-                        <div style="font-size: 0.74rem; color: #166534; margin-top: 4px; opacity: 0.9;">
-                            Active in local development mode (<code>DEBUG=True</code>). Also logged in your server console.
-                        </div>
-                    </div>
-                {% endif %}
-
                 <form method="POST" action="{% url 'verify_otp' %}" id="otpForm">
                     {% csrf_token %}
 
                     <input type="hidden" name="otp" id="hiddenOtp">
 
                     <!-- 6 Individual Digit Boxes -->
-                    <div class="auth-luxe-otp-grid">
+                    <div class="auth-luxe-otp-grid" id="otpGrid">
                         <input type="text" name="digit_1" class="auth-luxe-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" autocomplete="one-time-code" required autofocus>
                         <input type="text" name="digit_2" class="auth-luxe-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
                         <input type="text" name="digit_3" class="auth-luxe-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
@@ -685,7 +727,10 @@
                         <input type="text" name="digit_6" class="auth-luxe-otp-digit" maxlength="1" inputmode="numeric" pattern="[0-9]" required>
                     </div>
 
-                    <div class="auth-luxe-timer-note">
+                    <!-- Real-time Verification Feedback -->
+                    <div id="otpFeedback" class="auth-luxe-feedback" style="display: none; margin-top: 14px;"></div>
+
+                    <div class="auth-luxe-timer-note" style="margin-top: 16px;">
                         <span>Validity window</span>
                         <span class="auth-luxe-timer-badge">10 minutes</span>
                     </div>
@@ -700,7 +745,8 @@
                 <div class="auth-luxe-footer-meta">
                     <p class="auth-luxe-register-text" style="font-size:0.84rem;color:var(--text-muted);margin:0;">
                         Didn't receive the code?
-                        <a href="{% url 'forgot_password' %}" class="auth-luxe-resend-link">Resend new code</a>
+                        <a href="{% url 'resend_otp' %}" id="btnResendOtp" class="auth-luxe-resend-link">Resend new code</a>
+                        <span id="resendCountdown" class="text-muted ms-1 small" style="display:none;"></span>
                     </p>
                 </div>
 
@@ -723,6 +769,50 @@
             }, 260);
         }
 
+        function spawnToast(tag, message) {
+            let container = document.getElementById('toastContainer');
+            if (!container) {
+                container = document.createElement('div');
+                container.id = 'toastContainer';
+                container.className = 'auth-luxe-toast-container';
+                container.setAttribute('aria-live', 'polite');
+                container.setAttribute('aria-atomic', 'true');
+                document.body.prepend(container);
+            }
+            const toast = document.createElement('div');
+            toast.className = `auth-luxe-toast toast-${tag}`;
+            toast.setAttribute('role', 'alert');
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const tagLabel = tag === 'success' ? 'SUCCESS' : (tag === 'error' || tag === 'danger' ? 'NOTICE' : 'INFO');
+            toast.innerHTML = `
+                <div class="auth-luxe-toast-header">
+                    <div class="auth-luxe-toast-label">
+                        <span class="auth-luxe-toast-dot"></span>
+                        <span class="auth-luxe-toast-tag">${tagLabel}</span>
+                    </div>
+                    <div class="auth-luxe-toast-meta">
+                        <span class="auth-luxe-toast-time">just now • ${timeStr}</span>
+                        <button type="button" class="auth-luxe-toast-close" aria-label="Close">&times;</button>
+                    </div>
+                </div>
+                <div class="auth-luxe-toast-body">${message}</div>
+                <div class="auth-luxe-toast-progress">
+                    <div class="auth-luxe-toast-progress-bar"></div>
+                </div>
+            `;
+            const closeBtn = toast.querySelector('.auth-luxe-toast-close');
+            if (closeBtn) {
+                closeBtn.onclick = () => closeToast(toast);
+            }
+            container.appendChild(toast);
+            let timer = setTimeout(() => closeToast(toast), 6000);
+            toast.addEventListener('mouseenter', () => clearTimeout(timer));
+            toast.addEventListener('mouseleave', () => {
+                timer = setTimeout(() => closeToast(toast), 3000);
+            });
+        }
+
         function initToasts() {
             const toasts = document.querySelectorAll('.auth-luxe-toast');
             toasts.forEach(toast => {
@@ -742,14 +832,148 @@
         }
         document.addEventListener('DOMContentLoaded', initToasts);
 
-        // 6-Digit OTP Input Handler
+        // 6-Digit Real-Time OTP Input & Auto-Verification Handler
         const digits = Array.from(document.querySelectorAll('.auth-luxe-otp-digit'));
         const hiddenOtp = document.getElementById('hiddenOtp');
         const otpForm = document.getElementById('otpForm');
+        const otpGrid = document.getElementById('otpGrid');
+        const otpFeedback = document.getElementById('otpFeedback');
+        const btnSubmitOtp = document.getElementById('btnSubmitOtp');
+        const btnResendOtp = document.getElementById('btnResendOtp');
+        const resendCountdown = document.getElementById('resendCountdown');
+
+        let isVerifying = false;
+
+        function getCsrfToken() {
+            const tokenInput = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            return tokenInput ? tokenInput.value : '';
+        }
+
+        function showFeedback(type, text, icon) {
+            if (!otpFeedback) return;
+            otpFeedback.className = `auth-luxe-feedback feedback-${type}`;
+            otpFeedback.innerHTML = `<i class="bi bi-${icon}"></i> <span>${text}</span>`;
+            otpFeedback.style.display = 'flex';
+        }
+
+        function clearFeedback() {
+            if (!otpFeedback) return;
+            otpFeedback.className = 'auth-luxe-feedback';
+            otpFeedback.innerHTML = '';
+            otpFeedback.style.display = 'none';
+        }
 
         function updateHiddenOtp() {
+            const val = digits.map(d => d.value).join('');
             if (hiddenOtp) {
-                hiddenOtp.value = digits.map(d => d.value).join('');
+                hiddenOtp.value = val;
+            }
+            return val;
+        }
+
+        async function verifyOtpRealtime() {
+            const otpCode = updateHiddenOtp();
+            if (otpCode.length !== 6 || !/^\d{6}$/.test(otpCode)) {
+                return false;
+            }
+            if (isVerifying) return;
+            isVerifying = true;
+
+            // Clear visual states
+            digits.forEach(d => {
+                d.classList.remove('is-invalid', 'is-valid');
+                d.disabled = true;
+            });
+            clearFeedback();
+
+            if (btnSubmitOtp) {
+                btnSubmitOtp.disabled = true;
+                btnSubmitOtp.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Verifying code...';
+            }
+
+            try {
+                const response = await fetch("{% url 'verify_otp' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCsrfToken(),
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ otp: otpCode })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.status === 'success') {
+                    // Mark valid
+                    digits.forEach(d => {
+                        d.classList.remove('is-invalid');
+                        d.classList.add('is-valid');
+                    });
+                    showFeedback('success', data.message || 'Verification successful! Redirecting...', 'check-circle-fill');
+                    if (btnSubmitOtp) {
+                        btnSubmitOtp.innerHTML = '<i class="bi bi-check-lg me-1"></i> Verified!';
+                        btnSubmitOtp.style.backgroundColor = '#16A34A';
+                    }
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "{% url 'reset_password' %}";
+                    }, 450);
+                    return true;
+                } else if (data.status === 'expired') {
+                    digits.forEach(d => {
+                        d.classList.add('is-invalid');
+                        d.disabled = false;
+                    });
+                    if (otpGrid) {
+                        otpGrid.classList.remove('otp-shake');
+                        void otpGrid.offsetWidth;
+                        otpGrid.classList.add('otp-shake');
+                    }
+                    showFeedback('error', data.message || 'Verification code expired.', 'exclamation-circle-fill');
+                    spawnToast('error', data.message || 'Code has expired.');
+                    if (btnSubmitOtp) {
+                        btnSubmitOtp.disabled = false;
+                        btnSubmitOtp.innerHTML = 'Verify code &amp; proceed';
+                    }
+                    isVerifying = false;
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || "{% url 'forgot_password' %}";
+                    }, 1800);
+                    return false;
+                } else {
+                    // Invalid OTP
+                    digits.forEach(d => {
+                        d.classList.add('is-invalid');
+                        d.disabled = false;
+                        d.value = '';
+                    });
+                    updateHiddenOtp();
+                    if (otpGrid) {
+                        otpGrid.classList.remove('otp-shake');
+                        void otpGrid.offsetWidth;
+                        otpGrid.classList.add('otp-shake');
+                    }
+                    showFeedback('error', data.message || 'Invalid verification code. Please check and try again.', 'exclamation-circle-fill');
+                    if (btnSubmitOtp) {
+                        btnSubmitOtp.disabled = false;
+                        btnSubmitOtp.innerHTML = 'Verify code &amp; proceed';
+                    }
+                    isVerifying = false;
+                    digits[0].focus();
+                    return false;
+                }
+            } catch (err) {
+                console.error("Realtime verification error:", err);
+                digits.forEach(d => {
+                    d.disabled = false;
+                });
+                if (btnSubmitOtp) {
+                    btnSubmitOtp.disabled = false;
+                    btnSubmitOtp.innerHTML = 'Verify code &amp; proceed';
+                }
+                isVerifying = false;
+                if (otpForm) otpForm.submit();
             }
         }
 
@@ -757,10 +981,18 @@
             input.addEventListener('input', function(e) {
                 const val = this.value.replace(/[^0-9]/g, '');
                 this.value = val ? val.slice(-1) : '';
-                updateHiddenOtp();
+                this.classList.remove('is-invalid');
+                clearFeedback();
+
+                const combined = updateHiddenOtp();
 
                 if (this.value && idx < digits.length - 1) {
                     digits[idx + 1].focus();
+                }
+
+                // If all 6 digits entered, trigger real-time verification automatically!
+                if (combined.length === 6) {
+                    verifyOtpRealtime();
                 }
             });
 
@@ -769,16 +1001,23 @@
                     if (!this.value && idx > 0) {
                         digits[idx - 1].focus();
                         digits[idx - 1].value = '';
+                        digits[idx - 1].classList.remove('is-invalid');
                         updateHiddenOtp();
+                        clearFeedback();
                         e.preventDefault();
                     } else {
                         this.value = '';
+                        this.classList.remove('is-invalid');
                         updateHiddenOtp();
+                        clearFeedback();
                     }
                 } else if (e.key === 'ArrowLeft' && idx > 0) {
                     digits[idx - 1].focus();
                 } else if (e.key === 'ArrowRight' && idx < digits.length - 1) {
                     digits[idx + 1].focus();
+                } else if (e.key === 'Enter') {
+                    e.preventDefault();
+                    verifyOtpRealtime();
                 }
             });
 
@@ -791,25 +1030,109 @@
                 chars.forEach((ch, i) => {
                     if (digits[i]) {
                         digits[i].value = ch;
+                        digits[i].classList.remove('is-invalid');
                     }
                 });
-                updateHiddenOtp();
+                const combined = updateHiddenOtp();
+                clearFeedback();
 
                 const nextIdx = Math.min(chars.length, digits.length - 1);
                 digits[nextIdx].focus();
+
+                if (combined.length === 6) {
+                    verifyOtpRealtime();
+                }
             });
         });
 
         if (otpForm) {
-            otpForm.addEventListener('submit', function() {
-                updateHiddenOtp();
-                const btn = document.getElementById('btnSubmitOtp');
-                if (btn) {
-                    btn.disabled = true;
-                    btn.textContent = 'Verifying...';
+            otpForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                verifyOtpRealtime();
+            });
+        }
+
+        // Real-time Resend Code Handler
+        if (btnResendOtp) {
+            let resendCooldown = 0;
+            let cooldownTimer = null;
+
+            btnResendOtp.addEventListener('click', async function(e) {
+                e.preventDefault();
+                if (resendCooldown > 0) return;
+
+                btnResendOtp.style.pointerEvents = 'none';
+                btnResendOtp.style.opacity = '0.6';
+                const originalText = btnResendOtp.textContent;
+                btnResendOtp.textContent = 'Sending code...';
+                clearFeedback();
+
+                try {
+                    const response = await fetch("{% url 'resend_otp' %}", {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRFToken': getCsrfToken(),
+                            'X-Requested-With': 'XMLHttpRequest',
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok && data.status === 'success') {
+                        spawnToast('success', data.message || 'A new 6-digit verification code has been dispatched.');
+                        showFeedback('success', data.message || 'New code dispatched!', 'check-circle-fill');
+                        digits.forEach(d => {
+                            d.value = '';
+                            d.classList.remove('is-invalid', 'is-valid');
+                        });
+                        updateHiddenOtp();
+                        digits[0].focus();
+
+                        // Start 30s cooldown
+                        resendCooldown = 30;
+                        btnResendOtp.textContent = 'Resend code';
+                        if (resendCountdown) {
+                            resendCountdown.style.display = 'inline';
+                            resendCountdown.textContent = `(${resendCooldown}s)`;
+                        }
+
+                        cooldownTimer = setInterval(() => {
+                            resendCooldown -= 1;
+                            if (resendCooldown <= 0) {
+                                clearInterval(cooldownTimer);
+                                btnResendOtp.style.pointerEvents = 'auto';
+                                btnResendOtp.style.opacity = '1';
+                                if (resendCountdown) resendCountdown.style.display = 'none';
+                            } else {
+                                if (resendCountdown) resendCountdown.textContent = `(${resendCooldown}s)`;
+                            }
+                        }, 1000);
+                    } else {
+                        // Error (e.g. SMTP delivery error)
+                        spawnToast('error', data.message || 'Failed to dispatch verification email. Please check server console for code.');
+                        showFeedback('error', data.message || 'Failed to dispatch verification email. Check console.', 'exclamation-circle-fill');
+                        btnResendOtp.style.pointerEvents = 'auto';
+                        btnResendOtp.style.opacity = '1';
+                        btnResendOtp.textContent = originalText;
+                        digits.forEach(d => {
+                            d.value = '';
+                            d.classList.remove('is-invalid', 'is-valid');
+                        });
+                        updateHiddenOtp();
+                        digits[0].focus();
+                    }
+                } catch (err) {
+                    console.error("Resend OTP error:", err);
+                    spawnToast('error', 'Error requesting new code. Please check server terminal.');
+                    btnResendOtp.style.pointerEvents = 'auto';
+                    btnResendOtp.style.opacity = '1';
+                    btnResendOtp.textContent = originalText;
                 }
             });
         }
     </script>
+
 </body>
 </html>
